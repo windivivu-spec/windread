@@ -260,17 +260,16 @@ export default function AboutPage() {
       <section className={`about-reader-stage ${ready ? "is-ready" : ""}`} aria-label="Interactive Windread book">
         <div ref={bookHostRef} className="about-pageflip-host" />
         {!ready && <span className="about-reader-loading">Loading pages</span>}
+        <footer className="about-reader-controls" aria-label="Book navigation">
+          <button type="button" onClick={() => flipRef.current?.flipPrev("bottom")}>
+            Prev
+          </button>
+          <span>{pageLabel}</span>
+          <button type="button" onClick={() => flipRef.current?.flipNext("bottom")}>
+            Next
+          </button>
+        </footer>
       </section>
-
-      <footer className="about-reader-controls" aria-label="Book navigation">
-        <button type="button" onClick={() => flipRef.current?.flipPrev("bottom")}>
-          Prev
-        </button>
-        <span>{pageLabel}</span>
-        <button type="button" onClick={() => flipRef.current?.flipNext("bottom")}>
-          Next
-        </button>
-      </footer>
     </main>
   );
 }

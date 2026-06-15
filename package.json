@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@ffmpeg-installer/ffmpeg": "^1.1.0",
     "next": "^16.2.6",
     "page-flip": "^2.0.7",
     "postcss": "8.5.10",

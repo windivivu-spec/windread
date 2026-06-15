@@ -29,6 +29,30 @@ const socialLinks = [
   { label: "TikTok", icon: "TT", href: "https://tiktok.com" }
 ];
 
+const heroHighlights = [
+  {
+    icon: "/images/icon/moc.png",
+    viTitle: "Chuyên Locs",
+    viDesc: "Tạo chất riêng",
+    enTitle: "Locs Focus",
+    enDesc: "Signature texture"
+  },
+  {
+    icon: "/images/icon/clipper.png",
+    viTitle: "Barbers",
+    viDesc: "Nhiều kinh nghiệm",
+    enTitle: "Barber",
+    enDesc: "Style-precise cuts"
+  },
+  {
+    icon: "/images/icon/spray.png",
+    viTitle: "Chất lượng",
+    viDesc: "Sản phẩm cao cấp",
+    enTitle: "Quality",
+    enDesc: "Premium products"
+  }
+] as const;
+
 const locServices = [
   {
     name: "Starter Locs",
@@ -430,6 +454,9 @@ export function SitePage({ page }: { page?: PageKey }) {
               {isEnglish ? item.en : item.vi}
             </a>
           ))}
+          <a className="nav-book-link" href="/booking" onClick={() => setMenuOpen(false)}>
+            {isEnglish ? "Book Now" : "Đặt lịch"}
+          </a>
         </nav>
         <div className="nav-actions">
           <button
@@ -474,7 +501,7 @@ export function SitePage({ page }: { page?: PageKey }) {
                   src="/images/windread-logo.png"
                   alt="WINDREAD"
                   width={1327}
-                  height={404}
+                  height={331}
                   priority
                   className="brand-logo"
                 />
@@ -493,20 +520,33 @@ export function SitePage({ page }: { page?: PageKey }) {
                       event.currentTarget.play().catch(() => undefined);
                     }}
                   >
-                    <source src="/loop-web.mov" />
-                    <source src="/loop.mov" />
+                    <source src="/loop-hero.mov" type="video/quicktime" />
+                    <source src="/loop-hero-web.mp4" type="video/mp4" />
                   </video>
                 </div>
                 <div className="hero-subcopy">
-                  <p className="hero-tagline">
-                    {isEnglish
-                      ? "Dreadlocks, clean fades and braid work with a street-first attitude."
-                      : "Tạo chất riêng trong từng kiểu tóc."}
-                  </p>
+                  <div className="hero-highlights" aria-label={isEnglish ? "Hero service highlights" : "Điểm nổi bật dịch vụ"}>
+                    {heroHighlights.map((item) => (
+                      <div className="hero-highlight" key={item.viTitle}>
+                        <Image
+                          src={item.icon}
+                          alt=""
+                          width={72}
+                          height={72}
+                          className="hero-highlight-icon"
+                          aria-hidden="true"
+                        />
+                        <div className="hero-highlight-copy">
+                          <strong>{isEnglish ? item.enTitle : item.viTitle}</strong>
+                          <p>{isEnglish ? item.enDesc : item.viDesc}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                   <p className="hero-desc">
                     {isEnglish
-                      ? "A dark, disciplined barber club for real texture, sharp lines and honest consultation. Premium service, street soul, no fake energy."
-                      : "Một barber club tối, gọn và kỷ luật cho chất tóc thật, đường line sắc và tư vấn thẳng. Dịch vụ premium, linh hồn đường phố, không làm màu."}
+                      ? "A minimalist, sharp, and disciplined space. Where raw hair texture is elevated by premium services and a street soul."
+                      : "Một không gian tối giản, gọn gàng và đầy tính kỷ luật. Nơi tôn vinh chất tóc thật bằng dịch vụ cao cấp và linh hồn đường phố"}
                   </p>
                   <div className="hero-actions">
                     <a className="book-button large" href="/booking">
@@ -517,14 +557,6 @@ export function SitePage({ page }: { page?: PageKey }) {
                     </a>
                   </div>
                 </div>
-              </div>
-              <div className="follow-row">
-                <span>Follow us</span>
-                {socialLinks.map((link) => (
-                  <a key={link.label} href={link.href} aria-label={link.label}>
-                    <SocialIcon icon={link.icon} label={link.label} />
-                  </a>
-                ))}
               </div>
             </div>
             <div className="hero-visual reveal">
@@ -559,7 +591,17 @@ export function SitePage({ page }: { page?: PageKey }) {
         <section className="signature section-shell">
           <div className="section-heading reveal">
             <p className="eyebrow">{isEnglish ? "Signature Services" : "Dịch vụ chủ lực"}</p>
-            <h2>{isEnglish ? "The services that built the club." : "Những dịch vụ làm nên WINDREAD."}</h2>
+            <h2>
+              {isEnglish ? (
+                <>
+                  The services that built <span className="heading-accent">WINDREAD.</span>
+                </>
+              ) : (
+                <>
+                  Những dịch vụ làm nên <span className="heading-accent">WINDREAD.</span>
+                </>
+              )}
+            </h2>
           </div>
           <div className="service-teaser-grid">
             {[...displayedLocServices.slice(0, 2), ...displayedBarberServices.slice(0, 2)].map((service) => (
@@ -974,27 +1016,54 @@ export function SitePage({ page }: { page?: PageKey }) {
 
       <footer className="site-footer">
         <div className="torn-divider" aria-hidden="true" />
-        <Image
-          src="/images/icon/stay true.png"
-          alt="Stay true"
-          width={2000}
-          height={500}
-          className="footer-stay-mark"
-        />
-        <div>
-          <span>WINDREAD</span>
-          <span>35 - 37 An Thượng 29, Ngũ Hành Sơn, Đà Nẵng</span>
-          <span>223 Chương Dương, Ngũ Hành Sơn, Đà Nẵng</span>
-          <span>0393549656 (Zalo / WhatsApp)</span>
-          <span>10:00-21:00</span>
+        <div className="footer-content">
+          <div className="footer-brand">
+            <Image
+              src="/images/windread-logo.png"
+              alt="Win Dread Locs Barber Club"
+              width={1327}
+              height={404}
+              className="footer-logo"
+            />
+            <div className="footer-contact">
+              <span>35 - 37 An Thượng 29, Ngũ Hành Sơn, Đà Nẵng</span>
+              <span>223 Chương Dương, Ngũ Hành Sơn, Đà Nẵng</span>
+              <a href="tel:0393549656">0393549656 (Zalo / WhatsApp)</a>
+            </div>
+            <div className="footer-brand-follow">
+              <h2>{isEnglish ? "Follow Us" : "Theo dõi"}</h2>
+              <div className="footer-socials">
+                {socialLinks.map((link) => (
+                  <a key={link.label} href={link.href} aria-label={link.label}>
+                    <SocialIcon icon={link.icon} label={link.label} />
+                  </a>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <nav className="footer-links" aria-label={isEnglish ? "Footer quick links" : "Liên kết footer"}>
+            <h2>{isEnglish ? "Quick Links" : "Liên kết nhanh"}</h2>
+            <a href="/">{isEnglish ? "Home" : "Trang chủ"}</a>
+            <a href="/about">{isEnglish ? "About" : "Giới thiệu"}</a>
+            <a href="/services">{isEnglish ? "Services" : "Dịch vụ"}</a>
+            <a href="/gallery">{isEnglish ? "Gallery" : "Thư viện"}</a>
+            <a href="/contact">{isEnglish ? "Contact" : "Liên hệ"}</a>
+          </nav>
         </div>
-        <div className="footer-socials">
-          {socialLinks.map((link) => (
-            <a key={link.label} href={link.href} aria-label={link.label}>
-              <SocialIcon icon={link.icon} label={link.label} />
-            </a>
-          ))}
+
+        <div className="footer-media" aria-hidden="true">
+          <Image
+            src="/images/footerbg.png"
+            alt=""
+            width={1038}
+            height={400}
+            className="footer-image"
+          />
         </div>
+        <p className="footer-copyright">
+          © 2025 Win Dread Locs & Barber Club. All Rights Reserved
+        </p>
       </footer>
 
       {lightboxOpen && currentLightboxItem && (
