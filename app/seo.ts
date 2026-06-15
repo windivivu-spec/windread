@@ -5,7 +5,7 @@ export const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://windread.vn"
 export const siteName = "WINDREAD";
 
 export const defaultDescription =
-  "WINDREAD la locs va barber club cho dreadlocks, braid, clean fades va street grooming tai Viet Nam.";
+  "WINDREAD là locs và barber club cho dreadlocks, braid, clean fades và street grooming tại Việt Nam.";
 
 export const routes = [
   { path: "/", label: "Trang chủ", priority: 1 },
