@@ -3,11 +3,14 @@
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import type { CSSProperties } from "react";
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { branchProfiles } from "./branches/branchData";
+import { BookingExperience } from "./booking/BookingExperience";
 
 const navItems = [
   { key: "home", href: "/", vi: "Trang chủ", en: "Home" },
   { key: "about", href: "/about", vi: "Giới thiệu", en: "About" },
+  { key: "barbers", href: "/barbers", vi: "Barber", en: "Barbers" },
   { key: "pricing", href: "/pricing", vi: "Bảng giá", en: "Pricing" },
   { key: "news", href: "/news", vi: "Tin tức", en: "News" }
 ] as const;
@@ -21,7 +24,8 @@ type PageKey =
   | "booking"
   | "contact";
 type Lang = "vi" | "en";
-type HomeGalleryTab = "DREAD LOCK" | "Braid" | "Other";
+type HomeGalleryTab = "DREAD LOCK" | "Braid" | "Other" | "BARBER";
+type ServiceExplorerKey = "barber" | "dread" | "braid";
 
 const socialLinks = [
   { label: "Instagram", icon: "IG", href: "https://instagram.com" },
@@ -51,6 +55,70 @@ const heroHighlights = [
     enTitle: "Quality",
     enDesc: "Premium products"
   }
+] as const;
+
+const serviceExplorerGroups = [
+  {
+    key: "barber",
+    title: "Barber",
+    viDesc: "Fade gọn, line up sắc và những form cắt có độ chính xác.",
+    enDesc: "Clean fades, sharp line ups and precise classic cuts.",
+    image: "/images/thumb1.webp",
+    services: [
+      { vi: "Clean Fade", en: "Clean Fade", desc: "Low, mid hoặc high fade blend mượt.", image: "/images/barber/barber1.png" },
+      { vi: "Classic Cut", en: "Classic Cut", desc: "Scissor cut và form gọn mỗi ngày.", image: "/images/barber/barber2.png" },
+      { vi: "Beard & Shave", en: "Beard & Shave", desc: "Khăn nóng, tạo form râu, finish sạch.", image: "/images/barber/barber3.png" },
+      { vi: "Texture Cut", en: "Texture Cut", desc: "Layer nhẹ, crop và texture tự nhiên.", image: "/images/barber/barber5.png" },
+      { vi: "Color & Treatment", en: "Color & Treatment", desc: "Màu, uốn và treatment theo nền tóc.", image: "/images/barber/barber4.png" }
+    ]
+  },
+  {
+    key: "dread",
+    title: "Dread",
+    viDesc: "Starter locs, retwist và chăm form giữ đúng texture thật.",
+    enDesc: "Starter locs, retwist and maintenance that keep real texture.",
+    image: "/images/thumb2.webp",
+    services: [
+      { vi: "Starter Locs", en: "Starter Locs", desc: "Tư vấn nền tóc và chia section sạch.", image: "/images/gallery/dreadlock1.png" },
+      { vi: "Retwist", en: "Retwist", desc: "Làm gọn chân locs và giảm frizz.", image: "/images/gallery/dreadlock2.png" },
+      { vi: "Locs Repair", en: "Locs Repair", desc: "Sửa section yếu và locs bung form.", image: "/images/gallery/dreadlock3.png" },
+      { vi: "Locs Styling", en: "Locs Styling", desc: "Barrel, two-strand và rope twist.", image: "/images/gallery/dreadlock4.png" },
+      { vi: "Locs Detox", en: "Locs Detox", desc: "Deep clean buildup cho da đầu nhẹ hơn.", image: "/images/gallery/dreadlock5.png" }
+    ]
+  },
+  {
+    key: "braid",
+    title: "Braid",
+    viDesc: "Cornrow, box braid và pattern gọn, giữ nếp lâu.",
+    enDesc: "Cornrow, box braid and street patterns that hold their shape.",
+    image: "/images/thumb3.webp",
+    services: [
+      { vi: "Cornrow", en: "Cornrow", desc: "Đường tết sát da đầu, form gọn.", image: "/images/gallery/braided1.png" },
+      { vi: "Box Braid", en: "Box Braid", desc: "Tết box braid đều section và bền nếp.", image: "/images/gallery/braided2.png" },
+      { vi: "Knotless Braid", en: "Knotless Braid", desc: "Nền tết nhẹ, tự nhiên và thoải mái.", image: "/images/gallery/braided3.png" },
+      { vi: "Pattern Braid", en: "Pattern Braid", desc: "Pattern theo ý tưởng streetwear cá nhân.", image: "/images/gallery/braided4.png" },
+      { vi: "Braid Refresh", en: "Braid Refresh", desc: "Làm mới chân tết và chỉnh lại form.", image: "/images/gallery/braided5.png" }
+    ]
+  }
+] as const;
+
+const momentImages = [
+  { src: "/images/moment/moment1.webp", orientation: "portrait" },
+  { src: "/images/moment/moment6.webp", orientation: "landscape" },
+  { src: "/images/moment/moment7.webp", orientation: "portrait" },
+  { src: "/images/moment/moment8.webp", orientation: "landscape" },
+  { src: "/images/moment/moment10.webp", orientation: "landscape" },
+  { src: "/images/moment/moment11.webp", orientation: "landscape" },
+  { src: "/images/moment/moment12.webp", orientation: "portrait" },
+  { src: "/images/moment/moment13.webp", orientation: "landscape" },
+  { src: "/images/moment/moment14.webp", orientation: "landscape" },
+  { src: "/images/moment/moment15.webp", orientation: "portrait" },
+  { src: "/images/moment/moment16.webp", orientation: "landscape" },
+  { src: "/images/moment/moment17.webp", orientation: "portrait" },
+  { src: "/images/moment/moment18.webp", orientation: "portrait" },
+  { src: "/images/moment/moment19.webp", orientation: "landscape" },
+  { src: "/images/moment/moment20.webp", orientation: "landscape" },
+  { src: "/images/moment/moment5.webp", orientation: "portrait" }
 ] as const;
 
 const locServices = [
@@ -151,28 +219,81 @@ const priceGroups = [
 
 const barbers = [
   {
+    bookingId: "kai-loc",
     name: "Kai Loc",
     role: "Locs Expert",
-    spec: "Locs",
-    years: "8 năm",
-    bio: "Chuyên starter locs, retwist và repair cho chất tóc khô, dày, tự nhiên.",
-    style: "Natural roots, raw texture, clean sectioning"
+    specialties: ["Locs", "Fade"],
+    years: "6 năm",
+    bio: "Fade mượt, line up sắc và form cắt hợp phong cách streetwear.",
+    style: "Low fade, burst fade, sharp line up",
+    image: "/images/barber/barber1.png",
+    instagram: "https://instagram.com/kailoc"
   },
   {
+    bookingId: "minh-fade",
     name: "Minh Fade",
     role: "Fade Specialist",
-    spec: "Fade",
+    specialties: ["Fade"],
     years: "6 năm",
     bio: "Tay kéo gọn, fade mượt, hợp streetwear và form mặt châu Á.",
-    style: "Low fade, burst fade, sharp line up"
+    style: "Low fade, burst fade, sharp line up",
+    image: "/images/barber/barber2.png",
+    instagram: "https://instagram.com/minhfade"
   },
   {
+    bookingId: "ryo-beard",
     name: "Ryo Beard",
     role: "Beard & Shave",
-    spec: "Beard",
+    specialties: ["Beard"],
     years: "7 năm",
     bio: "Classic barber rituals, hot towel, beard shape và finish premium.",
-    style: "Tapered beard, calm shave, old-school finish"
+    style: "Tapered beard, calm shave, old-school finish",
+    image: "/images/barber/barber3.png",
+    instagram: "https://instagram.com/ryobeard"
+  },
+  {
+    bookingId: "linh-color",
+    name: "Linh Color",
+    role: "Color Artist",
+    specialties: ["Classic"],
+    years: "4 năm",
+    bio: "Tư vấn màu, texture và treatment phù hợp với nền tóc hiện tại.",
+    style: "Color, texture, treatment",
+    image: "/images/barber/barber4.png",
+    instagram: "https://instagram.com/linhcolor"
+  },
+  {
+    bookingId: "bao-crop",
+    name: "Bao Crop",
+    role: "Crop & Texture",
+    specialties: ["Classic"],
+    years: "5 năm",
+    bio: "Xử lý layer và texture tự nhiên cho các form tóc có độ chuyển động.",
+    style: "Textured crop, layered cut, natural volume",
+    image: "/images/barber/barber5.png",
+    instagram: "https://instagram.com/baocrop"
+  },
+  {
+    bookingId: "son-line",
+    name: "Son Line",
+    role: "Line-up Artist",
+    specialties: ["Fade"],
+    years: "4 năm",
+    bio: "Tập trung vào đường viền tóc, taper và finish sạch từ mọi góc nhìn.",
+    style: "Line up, taper, clean finish",
+    image: "/images/barber/barber6.png",
+    instagram: "https://instagram.com/sonline"
+  },
+  {
+    bookingId: "hieu-wave",
+    name: "Hieu Wave",
+    role: "Wave Stylist",
+    specialties: ["Classic"],
+    years: "4 năm",
+    bio: "Tư vấn texture, màu trầm và treatment để giữ tóc khỏe sau xử lý.",
+    style: "Wave, color, treatment",
+    image: "/images/barber/barber7.png",
+    instagram: "https://instagram.com/hieuwave"
   }
 ];
 
@@ -211,6 +332,15 @@ const homeGalleryImages: Record<HomeGalleryTab, string[]> = {
     "/images/gallery/braided4.png",
     "/images/gallery/dreadlock6.png",
     "/images/gallery/braided6.png"
+  ],
+  BARBER: [
+    "/images/barber/barber1.png",
+    "/images/barber/barber2.png",
+    "/images/barber/barber3.png",
+    "/images/barber/barber4.png",
+    "/images/barber/barber5.png",
+    "/images/barber/barber6.png",
+    "/images/barber/barber7.png"
   ]
 };
 
@@ -305,6 +435,8 @@ export function SitePage({ page }: { page?: PageKey }) {
   const [homeGalleryTab, setHomeGalleryTab] = useState<HomeGalleryTab>("DREAD LOCK");
   const [homeGalleryVisibleTab, setHomeGalleryVisibleTab] = useState<HomeGalleryTab>("DREAD LOCK");
   const [homeGalleryChanging, setHomeGalleryChanging] = useState(false);
+  const [activeServiceExplorer, setActiveServiceExplorer] = useState<ServiceExplorerKey>("barber");
+  const [isServiceExplorerOpen, setIsServiceExplorerOpen] = useState(false);
   const isEnglish = language === "en";
 
   const visibleGallery = useMemo(
@@ -319,7 +451,7 @@ export function SitePage({ page }: { page?: PageKey }) {
     () =>
       barberFilter === "All"
         ? barbers
-        : barbers.filter((barber) => barber.spec === barberFilter),
+        : barbers.filter((barber) => barber.specialties.includes(barberFilter)),
     [barberFilter]
   );
 
@@ -378,12 +510,6 @@ export function SitePage({ page }: { page?: PageKey }) {
     return () => window.removeEventListener("keydown", handleKey);
   }, [lightboxOpen, menuOpen, visibleGallery.length]);
 
-  function handleBooking(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const form = event.currentTarget;
-    form.classList.add("submitted");
-  }
-
   function openLightbox(index: number) {
     setSelectedImage(index);
     setLightboxOpen(true);
@@ -401,6 +527,8 @@ export function SitePage({ page }: { page?: PageKey }) {
 
   const currentLightboxItem = visibleGallery[selectedImage] ?? visibleGallery[0];
   const activeHomeGallery = homeGalleryImages[homeGalleryVisibleTab];
+  const isHomeBarberTab = homeGalleryVisibleTab === "BARBER";
+  const activeServiceGroup = serviceExplorerGroups.find((group) => group.key === activeServiceExplorer) ?? serviceExplorerGroups[0];
   const displayedLocServices = isEnglish
     ? [
       { name: "Starter Locs", desc: "Consultation, clean sectioning and a natural loc foundation.", time: "120-240 min", price: "from 900,000đ" },
@@ -570,49 +698,89 @@ export function SitePage({ page }: { page?: PageKey }) {
               />
             </div>
           </div>
-          <div className="feature-strip reveal" aria-label="Dịch vụ nổi bật">
-            {[
-              ["Barber", isEnglish ? "Clean fades, sharp line up and old-school classic cuts." : "Fade gọn, line up sắc, classic cut có chất old-school.", "/images/thumb1.webp"],
-              ["Dread", isEnglish ? "Starter locs, retwist and styling that keeps real texture." : "Starter locs, retwist và styling giữ texture thật, raw, real.", "/images/thumb2.webp"],
-              ["Braid", isEnglish ? "Cornrow, box braid and streetwear patterns that hold." : "Cornrow, box braid và pattern streetwear gọn gàng, bền nếp.", "/images/thumb3.webp"]
-            ].map(([title, text, img]) => (
-              <article key={title} style={{ "--tile-image": `url(${img})` } as CSSProperties}>
-                <div className="feature-title">
-                  <span>{title}</span>
+          <section className="moment-marquee" aria-label={isEnglish ? "Moments at WINDREAD" : "Khoảnh khắc tại WINDREAD"}>
+            <div className="moment-marquee-track">
+              {[0, 1].map((set) => (
+                <div className="moment-marquee-group" aria-hidden={set === 1} key={set}>
+                  {momentImages.map((moment, index) => (
+                    <figure className={`moment-marquee-frame ${moment.orientation}`} key={`${set}-${moment.src}`}>
+                      <Image
+                        src={moment.src}
+                        alt={set === 0 ? `${isEnglish ? "WINDREAD moment" : "Khoảnh khắc WINDREAD"} ${index + 1}` : ""}
+                        fill
+                        sizes="(max-width: 780px) 150px, 300px"
+                      />
+                    </figure>
+                  ))}
                 </div>
-                <p>{text}</p>
+              ))}
+            </div>
+          </section>
+          {isServiceExplorerOpen ? (
+            <div className="service-explorer" aria-label={isEnglish ? "Service explorer" : "Khám phá dịch vụ"}>
+              <article className="service-explorer-panel" key={activeServiceGroup.key}>
+                <Image
+                  className="service-explorer-panel-image"
+                  src={activeServiceGroup.image}
+                  alt=""
+                  fill
+                  sizes="(max-width: 780px) 100vw, 76vw"
+                />
+                <div className="service-explorer-panel-copy">
+                  <button className="service-explorer-back" type="button" onClick={() => setIsServiceExplorerOpen(false)}>
+                    {isEnglish ? "All services" : "Tất cả dịch vụ"}
+                  </button>
+                  <p>{activeServiceGroup.title}</p>
+                  <h2>{isEnglish ? activeServiceGroup.enDesc : activeServiceGroup.viDesc}</h2>
+                </div>
+                <div className="service-explorer-service-grid">
+                  {activeServiceGroup.services.map((service) => (
+                    <a className="service-explorer-service" href="/booking" key={service.en}>
+                      <Image src={service.image} alt="" fill sizes="(max-width: 780px) 50vw, 18vw" />
+                      <div>
+                        <h3>{isEnglish ? service.en : service.vi}</h3>
+                        <p>{service.desc}</p>
+                      </div>
+                    </a>
+                  ))}
+                </div>
               </article>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {showHome && (
-        <section className="signature section-shell">
-          <div className="section-heading reveal">
-            <p className="eyebrow">{isEnglish ? "Signature Services" : "Dịch vụ chủ lực"}</p>
-            <h2>
-              {isEnglish ? (
-                <>
-                  The services that built <span className="heading-accent">WINDREAD.</span>
-                </>
-              ) : (
-                <>
-                  Những dịch vụ làm nên <span className="heading-accent">WINDREAD.</span>
-                </>
-              )}
-            </h2>
-          </div>
-          <div className="service-teaser-grid">
-            {[...displayedLocServices.slice(0, 2), ...displayedBarberServices.slice(0, 2)].map((service) => (
-              <a className="service-teaser reveal" href="/services" key={service.name}>
-                <span>{service.time}</span>
-                <h3>{service.name}</h3>
-                <p>{service.desc}</p>
-                <strong>{service.price}</strong>
-              </a>
-            ))}
-          </div>
+              <nav className="service-explorer-tabs" aria-label={isEnglish ? "Other service groups" : "Nhóm dịch vụ khác"}>
+                {serviceExplorerGroups
+                  .filter((group) => group.key !== activeServiceGroup.key)
+                  .map((group) => (
+                    <button
+                      type="button"
+                      key={group.key}
+                      onClick={() => setActiveServiceExplorer(group.key)}
+                    >
+                      <Image src={group.image} alt="" fill sizes="(max-width: 780px) 50vw, 20vw" />
+                      <span>{group.title}</span>
+                    </button>
+                  ))}
+              </nav>
+            </div>
+          ) : (
+            <div className="feature-strip reveal" aria-label={isEnglish ? "Featured service groups" : "Nhóm dịch vụ nổi bật"}>
+              {serviceExplorerGroups.map((group) => (
+                <button
+                  className="feature-strip-tile"
+                  type="button"
+                  key={group.key}
+                  style={{ "--tile-image": `url(${group.image})` } as CSSProperties}
+                  onClick={() => {
+                    setActiveServiceExplorer(group.key);
+                    setIsServiceExplorerOpen(true);
+                  }}
+                >
+                  <div className="feature-title">
+                    <span>{group.title}</span>
+                  </div>
+                  <p>{isEnglish ? group.enDesc : group.viDesc}</p>
+                </button>
+              ))}
+            </div>
+          )}
         </section>
       )}
 
@@ -638,17 +806,42 @@ export function SitePage({ page }: { page?: PageKey }) {
               </button>
             ))}
           </div>
-          <div className={`home-gallery-grid ${homeGalleryChanging ? "is-changing" : ""}`}>
-            {activeHomeGallery.map((src, index) => (
-              <figure className="home-gallery-tile" key={`${homeGalleryVisibleTab}-${src}-${index}`}>
-                <Image
-                  src={src}
-                  alt={`${homeGalleryVisibleTab} ${index + 1}`}
-                  fill
-                  sizes="(max-width: 700px) 100vw, (max-width: 980px) 50vw, 33vw"
-                />
-              </figure>
-            ))}
+          <div className={`home-gallery-grid ${isHomeBarberTab ? "is-barber-grid" : ""} ${homeGalleryChanging ? "is-changing" : ""}`}>
+            {isHomeBarberTab
+              ? barbers.map((barber) => (
+                <article className="home-barber-card" key={barber.name}>
+                  <div className="home-barber-photo">
+                    <Image
+                      src={barber.image}
+                      alt={`${barber.name}, ${barber.role}`}
+                      fill
+                      sizes="(max-width: 700px) 100vw, (max-width: 980px) 50vw, 33vw"
+                    />
+                  </div>
+    <div className="home-barber-info">
+                    <div>
+                      <h3>{barber.name}</h3>
+                      <p>{barber.role}</p>
+                    </div>
+                    <div className="home-barber-actions">
+                      <a href={`/booking?barber=${barber.bookingId}`}>{isEnglish ? "Book" : "Đặt lịch"}</a>
+                      <a href={barber.instagram} target="_blank" rel="noreferrer" aria-label={`${barber.name} Instagram`}>
+                        Instagram
+                      </a>
+                    </div>
+                  </div>
+                </article>
+              ))
+              : activeHomeGallery.map((src, index) => (
+                <figure className="home-gallery-tile" key={`${homeGalleryVisibleTab}-${src}-${index}`}>
+                  <Image
+                    src={src}
+                    alt={`${homeGalleryVisibleTab} ${index + 1}`}
+                    fill
+                    sizes="(max-width: 700px) 100vw, (max-width: 980px) 50vw, 33vw"
+                  />
+                </figure>
+              ))}
           </div>
         </section>
       )}
@@ -785,28 +978,32 @@ export function SitePage({ page }: { page?: PageKey }) {
             <h2>{isEnglish ? "The hands that hold the shape." : "Những bàn tay giữ form."}</h2>
           </div>
           <FilterChips
-            items={["All", "Locs", "Fade", "Beard"]}
+            items={["All", "Locs", "Fade", "Classic", "Beard"]}
             active={barberFilter}
             onChange={setBarberFilter}
           />
           <div className="barber-grid">
-            {visibleBarbers.map((barber, index) => (
-              <article className="barber-card reveal" key={barber.name}>
-                <Image
-                  src="/images/barber-portrait-v2.png"
-                  alt={`${barber.name}, ${barber.role}`}
-                  width={520}
-                  height={620}
-                  style={{ objectPosition: `${50 + index * 4}% center` }}
-                />
-                <div>
+            {visibleBarbers.map((barber) => (
+              <article className="barber-card" key={barber.name}>
+                <div className="barber-card-photo">
+                  <Image
+                    src={barber.image}
+                    alt={`${barber.name}, ${barber.role}`}
+                    fill
+                    sizes="(max-width: 780px) 50vw, 25vw"
+                  />
+                </div>
+                <div className="barber-card-content">
                   <p>{barber.role} / {barber.years}</p>
                   <h3>{barber.name}</h3>
                   <span>{barber.style}</span>
-                  <p>{barber.bio}</p>
-                  <a href="https://instagram.com" aria-label={`${barber.name} Instagram`}>
-                    <SocialIcon icon="IG" label="Instagram" />
-                  </a>
+                  <p className="barber-card-bio">{barber.bio}</p>
+                  <div className="barber-card-actions">
+                    <a className="barber-book-link" href={`/booking?barber=${barber.bookingId}`}>{isEnglish ? "Book" : "Đặt lịch"}</a>
+                    <a href={barber.instagram} target="_blank" rel="noreferrer" aria-label={`${barber.name} Instagram`}>
+                      Instagram
+                    </a>
+                  </div>
                 </div>
               </article>
             ))}
@@ -887,99 +1084,14 @@ export function SitePage({ page }: { page?: PageKey }) {
             <h2>{isEnglish ? "Book ahead. Sit down with the right vibe." : "Đặt trước. Vào ghế đúng vibe."}</h2>
             <p>
               {isEnglish
-                ? "Send basic details so the crew can arrange timing, barber and slot length. Deposit keeps your chair during peak hours."
-                : "Gửi thông tin cơ bản để crew sắp xếp thời gian, barber và độ dài slot phù hợp. Đặt cọc giúp giữ ghế trong khung giờ cao điểm."}
+                ? "Pick branch, service, barber and a real open slot. The crew sees the details before you sit down."
+                : "Chọn cơ sở, dịch vụ, thợ và khung giờ còn trống thật. Crew nắm đủ thông tin trước khi bạn vào ghế."}
             </p>
-            <div className="booking-rules">
-              <span>{isEnglish ? "Deposit: 30%" : "Đặt cọc: 30%"}</span>
-              <span>{isEnglish ? "Over 15 minutes late may need a new slot" : "Trễ hơn 15 phút có thể cần đổi slot"}</span>
-              <span>{isEnglish ? "Reschedule at least 12 hours ahead" : "Đổi lịch trước ít nhất 12 giờ"}</span>
-            </div>
+            <a className="ghost-button admin-booking-link" href="/admin/bookings">
+              {isEnglish ? "Staff board" : "Bảng quản lý"}
+            </a>
           </div>
-          <form className="booking-form reveal" onSubmit={handleBooking}>
-            <label>
-              <span>{isEnglish ? "1. Choose service" : "1. Chọn dịch vụ"}</span>
-              <select required defaultValue="">
-                <option value="" disabled>{isEnglish ? "Choose service" : "Chọn service"}</option>
-                {[...displayedLocServices, ...displayedBarberServices].map((service) => (
-                  <option key={service.name}>{service.name}</option>
-                ))}
-              </select>
-            </label>
-            <label>
-              <span>{isEnglish ? "2. Choose barber" : "2. Chọn barber"}</span>
-              <select defaultValue="Any crew">
-                <option>Any crew</option>
-                {barbers.map((barber) => (
-                  <option key={barber.name}>{barber.name}</option>
-                ))}
-              </select>
-            </label>
-            <div className="field-pair">
-              <label>
-                <span>{isEnglish ? "3. Date" : "3. Ngày"}</span>
-                <input type="date" required />
-              </label>
-              <label>
-                <span>Time slot</span>
-                <select required defaultValue="">
-                  <option value="" disabled>{isEnglish ? "Choose time" : "Chọn giờ"}</option>
-                  {["10:00", "12:00", "14:00", "16:00", "19:00"].map((slot) => (
-                    <option key={slot}>{slot}</option>
-                  ))}
-                </select>
-              </label>
-            </div>
-            <div className="field-pair">
-              <label>
-                <span>{isEnglish ? "Name" : "Tên"}</span>
-                <input type="text" required placeholder={isEnglish ? "Your name" : "Tên của bạn"} />
-              </label>
-              <label>
-                <span>Phone</span>
-                <input type="tel" required placeholder="0393549656" />
-              </label>
-            </div>
-            <div className="field-pair">
-              <label>
-                <span>Email</span>
-                <input type="email" placeholder="you@email.com" />
-              </label>
-              <label>
-                <span>Social handle</span>
-                <input type="text" placeholder="@instagram" />
-              </label>
-            </div>
-            <div className="field-pair">
-              <label>
-                <span>Location</span>
-                <select>
-                  <option>35 - 37 An Thượng 29, Ngũ Hành Sơn, Đà Nẵng</option>
-                  <option>223 Chương Dương, Ngũ Hành Sơn, Đà Nẵng</option>
-                </select>
-              </label>
-              <label>
-                <span>Method</span>
-                <select>
-                  <option>In-shop</option>
-                  <option>House call</option>
-                </select>
-              </label>
-            </div>
-            <label>
-              <span>{isEnglish ? "Describe the hair you want" : "Mô tả kiểu tóc bạn muốn"}</span>
-              <textarea rows={4} placeholder={isEnglish ? "Send reference images via IG/Zalo if you have them." : "Gửi ảnh reference qua IG/Zalo nếu có."} />
-            </label>
-            <button className="book-button large" type="submit">
-              {isEnglish ? "Send booking request" : "Gửi yêu cầu đặt lịch"}
-            </button>
-            <p className="success-message">{isEnglish ? "Request received. The crew will contact you to confirm as soon as possible." : "Đã nhận thông tin. Crew sẽ liên hệ xác nhận lịch sớm nhất."}</p>
-            <div className="alt-booking">
-              <a href="https://wa.me/">WhatsApp</a>
-              <a href="https://zalo.me/">Zalo</a>
-              <a href="https://instagram.com">Instagram DM</a>
-            </div>
-          </form>
+          <BookingExperience isEnglish={isEnglish} />
         </section>
       )}
 
@@ -1010,6 +1122,31 @@ export function SitePage({ page }: { page?: PageKey }) {
                 {isEnglish ? "Book Now" : "Đặt lịch"}
               </a>
             </div>
+          </div>
+        </section>
+      )}
+
+      {showHome && (
+        <section className="branch-directory section-shell" aria-labelledby="branch-directory-title">
+          <div className="branch-directory-heading reveal">
+            <h2 id="branch-directory-title">{isEnglish ? "Choose your WINDREAD." : "Chọn chi nhánh WINDREAD."}</h2>
+            <p>{isEnglish ? "See the space, meet the crew and book at the branch that fits your style." : "Xem không gian, gặp crew và đặt lịch đúng nơi hợp với style của bạn."}</p>
+          </div>
+          <div className="branch-directory-grid">
+            {branchProfiles.map((branch) => (
+              <a className="branch-directory-card reveal" href={`/branches/${branch.id}`} key={branch.id}>
+                <span className="branch-directory-image">
+                  <Image src={branch.image} alt={`Không gian ${branch.name}`} fill sizes="(max-width: 760px) 100vw, 50vw" />
+                </span>
+                <span className="branch-directory-copy">
+                  <small>{isEnglish ? branch.label.en : branch.label.vi}</small>
+                  <strong>{branch.name}</strong>
+                  <em>{branch.address}</em>
+                  <b>{isEnglish ? "Specializes in" : "Chuyên"}: {isEnglish ? branch.specialties.en.join(", ") : branch.specialties.vi.join(", ")}</b>
+                  <i>{isEnglish ? "View branch" : "Xem chi nhánh"} <span aria-hidden="true">→</span></i>
+                </span>
+              </a>
+            ))}
           </div>
         </section>
       )}
@@ -1048,6 +1185,7 @@ export function SitePage({ page }: { page?: PageKey }) {
             <a href="/about">{isEnglish ? "About" : "Giới thiệu"}</a>
             <a href="/services">{isEnglish ? "Services" : "Dịch vụ"}</a>
             <a href="/gallery">{isEnglish ? "Gallery" : "Thư viện"}</a>
+            <a href="/booking">{isEnglish ? "Booking" : "Đặt lịch"}</a>
             <a href="/contact">{isEnglish ? "Contact" : "Liên hệ"}</a>
           </nav>
         </div>

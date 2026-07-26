@@ -17,6 +17,8 @@ export const routes = [
   { path: "/shop", label: "Shop", priority: 0.72 },
   { path: "/news", label: "Tin tức", priority: 0.68 },
   { path: "/booking", label: "Đặt lịch", priority: 0.95 },
+  { path: "/branches/an-thuong", label: "WINDREAD An Thượng", priority: 0.8 },
+  { path: "/branches/chuong-duong", label: "WINDREAD Chương Dương", priority: 0.8 },
   { path: "/contact", label: "Liên hệ", priority: 0.8 }
 ] as const;
 

@@ -23,8 +23,16 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# local env files
-.env*.local
+# local environment files - keep the safe template in Git
+.env
+.env.*
+!.env.example
+
+# local visual checks and agent workspace files
+/visual-checks/
+/.agent/
+/.agents/
+/.codex/
 
 # vercel
 .vercel
@@ -32,7 +40,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 
-# agent / ide / temp
-.agent/
+# local IDE and log files
 .gemini/
 *.log
