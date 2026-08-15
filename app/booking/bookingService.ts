@@ -43,8 +43,8 @@ export const bookingService = {
     return branches;
   },
 
-  getServices() {
-    return services;
+  getServices(branchId?: string) {
+    return branchId ? services.filter((service) => service.branchId === branchId) : services;
   },
 
   getBarbers(branchId?: string, serviceId?: string) {
@@ -67,11 +67,13 @@ export const bookingService = {
     }
   },
 
-  async fetchServices() {
+  async fetchServices(branchId?: string) {
+    const params = new URLSearchParams();
+    if (branchId) params.set("branchId", branchId);
     try {
-      return await fetchJson<typeof services>("/api/services");
+      return await fetchJson<typeof services>(`/api/services?${params.toString()}`);
     } catch {
-      return services;
+      return this.getServices(branchId);
     }
   },
 

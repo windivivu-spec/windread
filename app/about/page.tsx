@@ -5,21 +5,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 
-const DESKTOP_ABOUT_PAGES = [
-  "/images/about/about_1_hor_left.webp",
-  "/images/about/about_1_hor_right.webp",
-  "/images/about/about_2.webp",
-  "/images/about/about_3.webp",
-  "/images/about/about_4.webp",
-  "/images/about/about_5.webp"
-];
-
-const MOBILE_ABOUT_PAGES = [
-  "/images/about/about_1.webp",
-  "/images/about/about_2.webp",
-  "/images/about/about_3.webp",
-  "/images/about/about_4.webp",
-  "/images/about/about_5.webp"
+const ABOUT_PAGES = [
+  "/images/about/windread-origin.webp",
+  "/images/about/windread-inspiration.webp",
+  "/images/about/windread-community.webp",
+  "/images/about/windread-growth.webp"
 ];
 
 const ABOUT_NAV_ITEMS = [
@@ -91,11 +81,10 @@ export default function AboutPage() {
   const [page, setPage] = useState(0);
   const [ready, setReady] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
   const [mediaReady, setMediaReady] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
-  const activePages = isMobile ? MOBILE_ABOUT_PAGES : DESKTOP_ABOUT_PAGES;
+  const activePages = ABOUT_PAGES;
 
   const pageLabel = useMemo(() => {
     const current = Math.min(page + 1, activePages.length);
@@ -104,10 +93,8 @@ export default function AboutPage() {
 
   useEffect(() => {
     const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const mobileQuery = window.matchMedia("(max-width: 760px)");
     const syncMotion = () => setReducedMotion(motionQuery.matches);
     syncMotion();
-    setIsMobile(mobileQuery.matches);
     setMediaReady(true);
     motionQuery.addEventListener("change", syncMotion);
     return () => {

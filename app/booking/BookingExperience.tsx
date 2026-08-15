@@ -20,8 +20,8 @@ type StoredBooking = {
 };
 
 const initialDraft: BookingDraft = {
-  branchId: "an-thuong",
-  serviceId: "haircut",
+  branchId: "chuong-duong",
+  serviceId: "cd-haircut",
   barberId: "any",
   date: getUpcomingDays(1)[0]?.value ?? "",
   slot: "",
@@ -41,8 +41,8 @@ const LAST_BOOKING_STORAGE_KEY = "windread-last-booking-confirmation";
 const LAST_BOOKING_TTL_MS = 60 * 60 * 1000;
 
 export function BookingExperience({ isEnglish }: { isEnglish: boolean }) {
-  const [branches, setBranches] = useState<Branch[]>(() => bookingService.getBranches());
-  const [services, setServices] = useState<Service[]>(() => bookingService.getServices());
+  const [branches, setBranches] = useState<Branch[]>(() => [...bookingService.getBranches()].sort((a, b) => a.name.localeCompare(b.name)));
+  const [services, setServices] = useState<Service[]>(() => bookingService.getServices(initialDraft.branchId));
   const [barbers, setBarbers] = useState<Barber[]>(() => bookingService.getBarbers(initialDraft.branchId, initialDraft.serviceId));
   const [slots, setSlots] = useState<TimeSlot[]>(() =>
     bookingService.getAvailableSlots(initialDraft.branchId, initialDraft.serviceId, initialDraft.barberId, initialDraft.date, false)
@@ -112,7 +112,7 @@ export function BookingExperience({ isEnglish }: { isEnglish: boolean }) {
       ...current,
       branchId: barber?.branchId ?? branch?.id ?? current.branchId,
       barberId: barber?.id ?? "any",
-      serviceId: barber ? "haircut" : current.serviceId,
+      serviceId: barber ? barber.serviceIds[0] ?? current.serviceId : current.serviceId,
       guestCount: barber ? 1 : current.guestCount,
       slot: ""
     }));
@@ -167,16 +167,39 @@ export function BookingExperience({ isEnglish }: { isEnglish: boolean }) {
     if (!clientReady) return;
     let active = true;
 
-    Promise.all([bookingService.fetchBranches(), bookingService.fetchServices()]).then(([nextBranches, nextServices]) => {
+    bookingService.fetchBranches().then((nextBranches) => {
       if (!active) return;
       setBranches(nextBranches);
-      setServices(nextServices);
     });
 
     return () => {
       active = false;
     };
   }, [clientReady]);
+
+  useEffect(() => {
+    if (!clientReady) return;
+    let active = true;
+
+    bookingService.fetchServices(draft.branchId).then((nextServices) => {
+      if (!active) return;
+      setServices(nextServices);
+      setDraft((current) => {
+        if (current.branchId !== draft.branchId) return current;
+        const serviceStillValid = nextServices.some((service) => service.id === current.serviceId);
+        return {
+          ...current,
+          serviceId: serviceStillValid ? current.serviceId : nextServices[0]?.id ?? "",
+          barberId: serviceStillValid ? current.barberId : "any",
+          slot: ""
+        };
+      });
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [clientReady, draft.branchId]);
 
   useEffect(() => {
     setDraft((current) => {
@@ -373,7 +396,7 @@ export function BookingExperience({ isEnglish }: { isEnglish: boolean }) {
               <BranchSelector
                 branches={branches}
                 selectedBranchId={draft.branchId}
-                onSelect={(branchId) => updateDraft({ branchId, barberId: "any", slot: "" })}
+                onSelect={(branchId) => updateDraft({ branchId, serviceId: "", barberId: "any", slot: "" })}
                 error={errors.branchId}
                 isEnglish={isEnglish}
               />

@@ -1,5 +1,5 @@
 import { after, NextRequest, NextResponse } from "next/server";
-import { generateMessengerReply } from "../../../chatbot/vertex";
+import { generateMessengerReply } from "../../../chatbot/provider";
 import { sendMessengerText, sendMessengerTyping, verifyMetaSignature } from "../../../chatbot/messenger";
 import { claimMessengerEvent, saveChatMessage } from "../../../chatbot/store";
 
@@ -127,4 +127,3 @@ export async function POST(request: NextRequest) {
 
   return new NextResponse("EVENT_RECEIVED", { status: 200, headers: { "content-type": "text/plain" } });
 }
-

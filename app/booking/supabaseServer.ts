@@ -13,6 +13,7 @@ type SupabaseBranchRow = {
 
 type SupabaseServiceRow = {
   id: string;
+  branch_id: string;
   name: string;
   description: string;
   price: number;
@@ -54,6 +55,35 @@ type SupabaseBookingRow = {
 
 const phonePattern = /^(0|\+84)(\d[\s.-]?){8,10}$/;
 
+type SupabaseErrorBody = {
+  code?: string;
+  details?: string | null;
+  hint?: string | null;
+  message?: string;
+};
+
+class SupabaseRestError extends Error {
+  status: number;
+  code?: string;
+
+  constructor(status: number, body: SupabaseErrorBody, fallback: string) {
+    super(body.message || fallback);
+    this.name = "SupabaseRestError";
+    this.status = status;
+    this.code = body.code;
+  }
+}
+
+function isBookingConflictError(error: unknown) {
+  if (!(error instanceof SupabaseRestError)) return false;
+  return error.code === "23505" || error.message.includes("Booking overlaps an existing appointment");
+}
+
+function isMissingGroupMetadataError(error: unknown) {
+  if (!(error instanceof SupabaseRestError) || error.code !== "PGRST204") return false;
+  return error.message.includes("group_id") || error.message.includes("guest_count");
+}
+
 function supabaseConfig() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -85,7 +115,17 @@ async function restFetch<T>(path: string, init: RequestInit = {}) {
 
   if (!response.ok) {
     const detail = await response.text();
-    throw new Error(detail || `Supabase request failed with ${response.status}`);
+    let body: SupabaseErrorBody = {};
+    try {
+      body = JSON.parse(detail) as SupabaseErrorBody;
+    } catch {
+      body = { message: detail };
+    }
+    throw new SupabaseRestError(
+      response.status,
+      body,
+      `Supabase request failed with ${response.status}`
+    );
   }
 
   if (response.status === 204) return null as T;
@@ -95,6 +135,7 @@ async function restFetch<T>(path: string, init: RequestInit = {}) {
 function mapService(row: SupabaseServiceRow): Service {
   return {
     id: row.id,
+    branchId: row.branch_id,
     name: row.name,
     description: row.description,
     price: row.price,
@@ -135,6 +176,23 @@ function mapBooking(row: SupabaseBookingRow): Booking {
   };
 }
 
+function normalizedIsoDateTime(value: string) {
+  const milliseconds = Date.parse(value);
+  return Number.isFinite(milliseconds) ? new Date(milliseconds).toISOString() : value;
+}
+
+function findRequestedSlot(slots: TimeSlot[], requestedValue: string) {
+  const requestedMilliseconds = Date.parse(requestedValue);
+  if (Number.isFinite(requestedMilliseconds)) {
+    return slots.find((slot) => Date.parse(slot.startTime) === requestedMilliseconds);
+  }
+
+  const timeLabel = requestedValue.trim().match(/^(\d{1,2}):(\d{2})$/);
+  if (!timeLabel) return undefined;
+  const normalizedLabel = `${timeLabel[1].padStart(2, "0")}:${timeLabel[2]}`;
+  return slots.find((slot) => slot.label === normalizedLabel);
+}
+
 export function validateBookingDraft(draft: BookingDraft) {
   const errors: Partial<Record<keyof BookingDraft, string>> = {};
   if (!draft.branchId) errors.branchId = "Chọn cơ sở trước khi giữ ghế.";
@@ -170,9 +228,12 @@ export async function getBranches(): Promise<Branch[]> {
   );
 }
 
-export async function getServices(): Promise<Service[]> {
-  if (!isSupabaseConfigured()) return mockServices;
-  return restFetch<SupabaseServiceRow[]>("services?select=*&order=price.asc").then((rows) => rows.map(mapService));
+export async function getServices(branchId?: string): Promise<Service[]> {
+  if (!isSupabaseConfigured()) {
+    return branchId ? mockServices.filter((service) => service.branchId === branchId) : mockServices;
+  }
+  const branchFilter = branchId ? `&branch_id=eq.${encodeURIComponent(branchId)}` : "";
+  return restFetch<SupabaseServiceRow[]>(`services?select=*&branch_id=not.is.null${branchFilter}&order=price.asc`).then((rows) => rows.map(mapService));
 }
 
 export async function getBarbers(branchId?: string, serviceId?: string): Promise<Barber[]> {
@@ -213,6 +274,26 @@ export async function getBooking(id: string): Promise<Booking | null> {
   return rows[0] ? mapBooking(rows[0]) : null;
 }
 
+async function findMatchingBooking(draft: BookingDraft): Promise<Booking | null> {
+  if (!isSupabaseConfigured()) return null;
+
+  const filters = [
+    "select=*",
+    `branch_id=eq.${encodeURIComponent(draft.branchId)}`,
+    `service_id=eq.${encodeURIComponent(draft.serviceId)}`,
+    `customer_phone=eq.${encodeURIComponent(draft.customerPhone.trim())}`,
+    `start_time=eq.${encodeURIComponent(normalizedIsoDateTime(draft.slot))}`,
+    "status=neq.cancelled",
+    "limit=1"
+  ];
+  if (draft.barberId !== "any") {
+    filters.push(`barber_id=eq.${encodeURIComponent(draft.barberId)}`);
+  }
+
+  const rows = await restFetch<SupabaseBookingRow[]>(`bookings?${filters.join("&")}`);
+  return rows[0] ? mapBooking(rows[0]) : null;
+}
+
 export async function getSlots(branchId: string, serviceId: string, barberId: string, date: string): Promise<TimeSlot[]> {
   const [services, barbers, bookings] = await Promise.all([getServices(), getBarbers(branchId), getBookings()]);
   const service = services.find((item) => item.id === serviceId);
@@ -241,8 +322,18 @@ export async function createBooking(draft: BookingDraft) {
   const selectedBranch = branches.find((branch) => branch.id === draft.branchId);
 
   const availableSlots = await getSlots(draft.branchId, draft.serviceId, draft.barberId, draft.date);
-  const selectedSlot = availableSlots.find((slot) => slot.startTime === draft.slot);
+  // Conversational models may preserve the instant but change the ISO format
+  // (for example 04:00Z vs 11:00+07:00). Compare timestamps, not raw strings.
+  const selectedSlot = findRequestedSlot(availableSlots, draft.slot);
   if (!selectedSlot) {
+    const existingBooking = await findMatchingBooking(draft);
+    if (existingBooking) {
+      return {
+        booking: existingBooking,
+        errors: {},
+        message: "Lịch này đã được tạo thành công trước đó."
+      };
+    }
     return {
       booking: null,
       errors: { slot: "Slot này vừa được đặt hoặc không còn khả dụng." },
@@ -318,10 +409,7 @@ export async function createBooking(draft: BookingDraft) {
   }
 
   try {
-    const rows = await restFetch<SupabaseBookingRow[]>("bookings", {
-      method: "POST",
-      headers: { Prefer: "return=representation" },
-      body: JSON.stringify(bookings.map((booking) => ({
+    const bookingRows = bookings.map((booking) => ({
         id: booking.id,
         branch_id: booking.branchId,
         service_id: booking.serviceId,
@@ -335,8 +423,26 @@ export async function createBooking(draft: BookingDraft) {
         status: booking.status,
         guest_count: booking.guestCount,
         group_id: booking.groupId ?? null
-      })))
-    });
+      }));
+    const insertRows = (body: object[]) =>
+      restFetch<SupabaseBookingRow[]>("bookings", {
+        method: "POST",
+        headers: { Prefer: "return=representation" },
+        body: JSON.stringify(body)
+      });
+
+    let rows: SupabaseBookingRow[];
+    try {
+      rows = await insertRows(bookingRows);
+    } catch (error) {
+      if (!isMissingGroupMetadataError(error)) throw error;
+
+      // Older WINDREAD databases predate group booking metadata. A single-customer
+      // chatbot booking can safely use the original schema until its migration runs.
+      rows = await insertRows(
+        bookingRows.map(({ guest_count: _guestCount, group_id: _groupId, ...row }) => row)
+      );
+    }
     const createdBooking = mapBooking(rows[0]);
     const createdBookings = rows.map(mapBooking);
     await Promise.all(createdBookings.flatMap((booking) => [
@@ -348,11 +454,28 @@ export async function createBooking(draft: BookingDraft) {
       errors: {},
       message: draft.guestCount > 1 ? "Đã giữ ghế cho cả nhóm." : "Đặt lịch thành công."
     };
-  } catch {
+  } catch (error) {
+    if (isBookingConflictError(error)) {
+      const existingBooking = await findMatchingBooking(draft);
+      if (existingBooking) {
+        return {
+          booking: existingBooking,
+          errors: {},
+          message: "Lịch này đã được tạo thành công trước đó."
+        };
+      }
+      return {
+        booking: null,
+        errors: { slot: "Slot này vừa được đặt hoặc không còn khả dụng." },
+        message: "Slot không còn trống. Chọn khung giờ khác nhé."
+      };
+    }
+
+    console.error("Supabase booking insert failed:", error);
     return {
       booking: null,
-      errors: { slot: "Slot này vừa được đặt hoặc không còn khả dụng." },
-      message: "Slot không còn trống. Chọn khung giờ khác nhé."
+      errors: {},
+      message: "Hệ thống chưa thể ghi booking. Vui lòng thử lại hoặc gọi/Zalo 0393549656."
     };
   }
 }

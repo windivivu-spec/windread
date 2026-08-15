@@ -2,6 +2,8 @@ import type { Barber, Booking, Service, TimeSlot, Weekday } from "./types";
 
 export const BOOKING_BUFFER_MINUTES = 10;
 export const SLOT_STEP_MINUTES = 30;
+const VIETNAM_TIME_ZONE = "Asia/Ho_Chi_Minh";
+const VIETNAM_UTC_OFFSET = "+07:00";
 
 const weekdays: Weekday[] = [
   "sunday",
@@ -15,25 +17,38 @@ const weekdays: Weekday[] = [
 
 const weekdayLabels = ["CN", "Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7"];
 
-function twoDigit(value: number) {
-  return `${value}`.padStart(2, "0");
+function vietnamDateParts(date: Date) {
+  const parts = new Intl.DateTimeFormat("en", {
+    timeZone: VIETNAM_TIME_ZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23"
+  }).formatToParts(date);
+  return Object.fromEntries(parts.map((part) => [part.type, part.value]));
+}
+
+function weekdayIndex(dateValue: string) {
+  const [year, month, day] = dateValue.split("-").map(Number);
+  return new Date(Date.UTC(year, month - 1, day, 12)).getUTCDay();
 }
 
 export function toDateInputValue(date: Date) {
-  const year = date.getFullYear();
-  const month = twoDigit(date.getMonth() + 1);
-  const day = twoDigit(date.getDate());
-  return `${year}-${month}-${day}`;
+  const parts = vietnamDateParts(date);
+  return `${parts.year}-${parts.month}-${parts.day}`;
 }
 
 export function getUpcomingDays(count = 7, now = new Date()) {
+  const [year, month, day] = toDateInputValue(now).split("-").map(Number);
   return Array.from({ length: count }, (_, index) => {
-    const date = new Date(now);
-    date.setHours(0, 0, 0, 0);
-    date.setDate(date.getDate() + index);
+    const date = new Date(Date.UTC(year, month - 1, day + index, 12));
+    const value = date.toISOString().slice(0, 10);
+    const [, valueMonth, valueDay] = value.split("-");
     return {
-      value: toDateInputValue(date),
-      label: `${weekdayLabels[date.getDay()]}, ${twoDigit(date.getDate())}/${twoDigit(date.getMonth() + 1)}`
+      value,
+      label: `${weekdayLabels[weekdayIndex(value)]}, ${valueDay}/${valueMonth}`
     };
   });
 }
@@ -44,9 +59,9 @@ export function formatCurrency(value: number) {
 
 export function formatBookingTime(iso: string) {
   const date = new Date(iso);
-  return `${weekdayLabels[date.getDay()]}, ${twoDigit(date.getDate())}/${twoDigit(
-    date.getMonth() + 1
-  )} ${twoDigit(date.getHours())}:${twoDigit(date.getMinutes())}`;
+  const parts = vietnamDateParts(date);
+  const dateValue = `${parts.year}-${parts.month}-${parts.day}`;
+  return `${weekdayLabels[weekdayIndex(dateValue)]}, ${parts.day}/${parts.month} ${parts.hour}:${parts.minute}`;
 }
 
 export function addMinutes(date: Date, minutes: number) {
@@ -54,10 +69,9 @@ export function addMinutes(date: Date, minutes: number) {
 }
 
 export function buildLocalDateTime(date: string, time: string) {
-  const [hour, minute] = time.split(":").map(Number);
-  const value = new Date(`${date}T00:00:00`);
-  value.setHours(hour, minute, 0, 0);
-  return value;
+  // Vietnam does not observe DST, so using its fixed UTC+07 offset makes slot
+  // generation identical on local machines and UTC runtimes such as Vercel.
+  return new Date(`${date}T${time}:00${VIETNAM_UTC_OFFSET}`);
 }
 
 export function getBookingEnd(startTime: string, durationMinutes: number) {
@@ -74,11 +88,11 @@ export function isBarberAvailable(
   if (start.getTime() <= now.getTime()) return false;
   if (!barber.serviceIds.includes(service.id)) return false;
 
-  const weekday = weekdays[start.getDay()];
+  const dateValue = toDateInputValue(start);
+  const weekday = weekdays[weekdayIndex(dateValue)];
   const hours = barber.workingHours[weekday];
   if (!hours) return false;
 
-  const dateValue = toDateInputValue(start);
   const shiftStart = buildLocalDateTime(dateValue, hours.start);
   const shiftEnd = buildLocalDateTime(dateValue, hours.end);
   const end = addMinutes(start, service.durationMinutes);
@@ -131,7 +145,8 @@ export function getAvailableSlots({
 
     if (availableBarberIds.length === 0) continue;
 
-    const label = `${twoDigit(start.getHours())}:${twoDigit(start.getMinutes())}`;
+    const timeParts = vietnamDateParts(start);
+    const label = `${timeParts.hour}:${timeParts.minute}`;
     slots.push({
       startTime: start.toISOString(),
       endTime: end.toISOString(),

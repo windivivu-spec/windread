@@ -7,6 +7,8 @@ import { useEffect, useMemo, useState } from "react";
 import { branchProfiles } from "./branches/branchData";
 import { BookingExperience } from "./booking/BookingExperience";
 
+const orderedBranchProfiles = [...branchProfiles].sort((a, b) => a.label.vi.localeCompare(b.label.vi));
+
 const navItems = [
   { key: "home", href: "/", vi: "Trang chủ", en: "Home" },
   { key: "about", href: "/about", vi: "Giới thiệu", en: "About" },
@@ -24,7 +26,14 @@ type PageKey =
   | "booking"
   | "contact";
 type Lang = "vi" | "en";
-type HomeGalleryTab = "DREAD LOCK" | "Braid" | "Other" | "BARBER";
+type HomeGalleryTab =
+  | "Dreadlocks for men"
+  | "Dreadlocks for women"
+  | "Cornrows for men"
+  | "Barrel twist for men"
+  | "Twist for men"
+  | "Box braids for men"
+  | "Braids for women";
 type ServiceExplorerKey = "barber" | "dread" | "braid";
 
 const socialLinks = [
@@ -65,11 +74,11 @@ const serviceExplorerGroups = [
     enDesc: "Clean fades, sharp line ups and precise classic cuts.",
     image: "/images/thumb1.webp",
     services: [
-      { vi: "Clean Fade", en: "Clean Fade", desc: "Low, mid hoặc high fade blend mượt.", image: "/images/barber/barber1.png" },
-      { vi: "Classic Cut", en: "Classic Cut", desc: "Scissor cut và form gọn mỗi ngày.", image: "/images/barber/barber2.png" },
-      { vi: "Beard & Shave", en: "Beard & Shave", desc: "Khăn nóng, tạo form râu, finish sạch.", image: "/images/barber/barber3.png" },
-      { vi: "Texture Cut", en: "Texture Cut", desc: "Layer nhẹ, crop và texture tự nhiên.", image: "/images/barber/barber5.png" },
-      { vi: "Color & Treatment", en: "Color & Treatment", desc: "Màu, uốn và treatment theo nền tóc.", image: "/images/barber/barber4.png" }
+      { vi: "Clean Fade", en: "Clean Fade", desc: "Low, mid hoặc high fade blend mượt.", image: "/images/barber/barber1.webp" },
+      { vi: "Classic Cut", en: "Classic Cut", desc: "Scissor cut và form gọn mỗi ngày.", image: "/images/barber/barber2.webp" },
+      { vi: "Beard & Shave", en: "Beard & Shave", desc: "Khăn nóng, tạo form râu, finish sạch.", image: "/images/barber/barber3.webp" },
+      { vi: "Texture Cut", en: "Texture Cut", desc: "Layer nhẹ, crop và texture tự nhiên.", image: "/images/barber/barber5.webp" },
+      { vi: "Color & Treatment", en: "Color & Treatment", desc: "Màu, uốn và treatment theo nền tóc.", image: "/images/barber/barber4.webp" }
     ]
   },
   {
@@ -79,11 +88,11 @@ const serviceExplorerGroups = [
     enDesc: "Starter locs, retwist and maintenance that keep real texture.",
     image: "/images/thumb2.webp",
     services: [
-      { vi: "Starter Locs", en: "Starter Locs", desc: "Tư vấn nền tóc và chia section sạch.", image: "/images/gallery/dreadlock1.png" },
-      { vi: "Retwist", en: "Retwist", desc: "Làm gọn chân locs và giảm frizz.", image: "/images/gallery/dreadlock2.png" },
-      { vi: "Locs Repair", en: "Locs Repair", desc: "Sửa section yếu và locs bung form.", image: "/images/gallery/dreadlock3.png" },
-      { vi: "Locs Styling", en: "Locs Styling", desc: "Barrel, two-strand và rope twist.", image: "/images/gallery/dreadlock4.png" },
-      { vi: "Locs Detox", en: "Locs Detox", desc: "Deep clean buildup cho da đầu nhẹ hơn.", image: "/images/gallery/dreadlock5.png" }
+      { vi: "Starter Locs", en: "Starter Locs", desc: "Tư vấn nền tóc và chia section sạch.", image: "/images/collection / Dreadlocks for Men/collection1.webp" },
+      { vi: "Retwist", en: "Retwist", desc: "Làm gọn chân locs và giảm frizz.", image: "/images/collection / Dreadlocks for Men/collection6.webp" },
+      { vi: "Locs Repair", en: "Locs Repair", desc: "Sửa section yếu và locs bung form.", image: "/images/collection / Dreadlocks for Men/collection10.webp" },
+      { vi: "Locs Styling", en: "Locs Styling", desc: "Barrel, two-strand và rope twist.", image: "/images/collection / Dreadlocks for Men/collection11.webp" },
+      { vi: "Locs Detox", en: "Locs Detox", desc: "Deep clean buildup cho da đầu nhẹ hơn.", image: "/images/collection / Dreadlocks for Men/collection7.webp" }
     ]
   },
   {
@@ -93,13 +102,13 @@ const serviceExplorerGroups = [
     enDesc: "Cornrow, box braid and street patterns that hold their shape.",
     image: "/images/thumb3.webp",
     services: [
-      { vi: "Cornrow", en: "Cornrow", desc: "Đường tết sát da đầu, form gọn.", image: "/images/gallery/braided1.png" },
-      { vi: "Box Braid", en: "Box Braid", desc: "Tết box braid đều section và bền nếp.", image: "/images/gallery/braided2.png" },
-      { vi: "Knotless Braid", en: "Knotless Braid", desc: "Nền tết nhẹ, tự nhiên và thoải mái.", image: "/images/gallery/braided3.png" },
-      { vi: "Pattern Braid", en: "Pattern Braid", desc: "Pattern theo ý tưởng streetwear cá nhân.", image: "/images/gallery/braided4.png" },
-      { vi: "Braid Refresh", en: "Braid Refresh", desc: "Làm mới chân tết và chỉnh lại form.", image: "/images/gallery/braided5.png" }
+      { vi: "Cornrow", en: "Cornrow", desc: "Đường tết sát da đầu, form gọn.", image: "/images/collection /Cornrows for Men/collection1.webp" },
+      { vi: "Box Braid", en: "Box Braid", desc: "Tết box braid đều section và bền nếp.", image: "/images/collection /Boxbraids for Men/collection1.webp" },
+      { vi: "Knotless Braid", en: "Knotless Braid", desc: "Nền tết nhẹ, tự nhiên và thoải mái.", image: "/images/collection /Braids for Women/collection1.webp" },
+      { vi: "Pattern Braid", en: "Pattern Braid", desc: "Pattern theo ý tưởng streetwear cá nhân.", image: "/images/collection /Cornrows for Men/collection4.webp" },
+      { vi: "Braid Refresh", en: "Braid Refresh", desc: "Làm mới chân tết và chỉnh lại form.", image: "/images/collection /Braids for Women/collection5.webp" }
     ]
-  }
+  },
 ] as const;
 
 const momentImages = [
@@ -123,96 +132,166 @@ const momentImages = [
 
 const locServices = [
   {
-    name: "Starter Locs",
-    desc: "Tư vấn form locs hợp chất tóc, chia section sạch và khóa nền tự nhiên.",
-    time: "120-240 phút",
-    price: "từ 900,000đ"
+    name: "Dreadlock",
+    desc: "Tạo dreadlock theo độ dài, mật độ và nền tóc; cần tư vấn trước khi làm.",
+    time: "240 phút+",
+    price: "từ 2,000,000đ"
   },
   {
-    name: "Retwist & Palm Roll",
-    desc: "Làm gọn chân locs, giữ texture thật, không ép tóc quá tay.",
-    time: "90-150 phút",
-    price: "từ 450,000đ"
+    name: "Maintenance Locs",
+    desc: "Bảo dưỡng chân dread, siết form và xử lý tóc bung; tính theo thời gian làm.",
+    time: "60 phút+",
+    price: "từ 400,000đ"
   },
   {
-    name: "Locs Styling",
-    desc: "Two-strand, barrel twist, high pony, street-ready finish.",
-    time: "45-90 phút",
-    price: "từ 350,000đ"
+    name: "Cornrow & Braids",
+    desc: "Cornrow theo số line, box braids và pattern theo nền tóc.",
+    time: "90 phút+",
+    price: "từ 300,000đ"
   },
   {
-    name: "Color Locs",
-    desc: "Nhuộm highlight, muted red, blonde tips và treatment bảo vệ sợi tóc.",
-    time: "180-300 phút",
-    price: "từ 1,200,000đ"
+    name: "Styling Locs / Braids",
+    desc: "Thiết kế twist, cornrow hoặc braids tính theo giờ.",
+    time: "60 phút+",
+    price: "400,000đ / giờ"
   }
 ];
 
 const barberServices = [
   {
-    name: "Clean Fade",
-    desc: "Low, mid, high fade với line up sắc và blend mượt.",
-    time: "45-60 phút",
-    price: "từ 220,000đ"
-  },
-  {
-    name: "Classic Cut",
-    desc: "Scissor cut, crop, textured top, shape theo style cá nhân.",
+    name: "Cắt tóc & tạo kiểu",
+    desc: "Cắt tóc và tạo kiểu với pomade.",
     time: "45 phút",
-    price: "từ 200,000đ"
+    price: "120,000đ"
   },
   {
-    name: "Beard Trim",
-    desc: "Tạo form râu, clean cheek line, finish bằng balm ấm.",
-    time: "25 phút",
-    price: "từ 120,000đ"
+    name: "Fade hai bên & gáy",
+    desc: "Làm gọn side và gáy cho form tóc đang có.",
+    time: "30 phút",
+    price: "90,000đ"
   },
   {
-    name: "Hot Towel Shave",
-    desc: "Khăn nóng, dao cạo classic, calm finish cho da mặt.",
-    time: "35 phút",
-    price: "từ 180,000đ"
+    name: "Uốn & xử lý texture",
+    desc: "Ép side, uốn cơ bản, uốn xoăn hoặc PremLock theo chất tóc.",
+    time: "60 phút+",
+    price: "từ 250,000đ"
+  },
+  {
+    name: "Beard & Shave",
+    desc: "Tỉa râu, chỉnh viền và cạo với khăn nóng/lạnh.",
+    time: "30 phút",
+    price: "từ 60,000đ"
   }
 ];
 
-const priceGroups = [
+const priceBoards = [
   {
-    title: "Locs Services",
-    rows: [
-      ["Starter Locs", "Sectioning, crochet/palm roll, tư vấn chăm sóc", "từ 900,000đ"],
-      ["Locs Maintenance", "Làm sạch chân, tighten, sửa locs yếu", "từ 500,000đ"],
-      ["Retwist", "Palm roll, gel nhẹ, finish gọn", "từ 450,000đ"],
-      ["Locs Styling", "Two-strand, barrel, bun, rope twist", "từ 350,000đ"]
+    branch: "Cơ sở 2 · An Thượng",
+    address: "35–37 An Thượng 29 · Locs, dreadlock & braids",
+    groups: [
+      {
+        title: "Dreadlock & Maintenance",
+        rows: [
+          ["Dreadlock", "Theo độ dài, mật độ và nền tóc", "2,000,000–8,000,000đ"],
+          ["Single Dread", "1 dread, dài 20–30cm", "150,000đ / dread"],
+          ["Pair of Dreads", "1 cặp dread, dài 30–40cm", "300,000đ / cặp"],
+          ["Maintenance · 1 thợ", "Giờ đầu 400,000đ; từ giờ thứ hai", "300,000đ / giờ"],
+          ["Maintenance · 2 thợ", "Giờ đầu 600,000đ; giờ 2 / từ giờ 3", "500,000đ / 400,000đ mỗi giờ"]
+        ]
+      },
+      {
+        title: "Cornrow, Braids & Styling",
+        rows: [
+          ["Cornrow 2–8 line", "Tết theo số line", "150,000đ / line"],
+          ["Cornrow 10–16 line", "Tết theo số line", "130,000đ / line"],
+          ["Braids nam", "Box braids / pattern", "1,000,000–3,000,000đ"],
+          ["Braids nữ", "Box braids theo độ dài & mật độ", "3,000,000–4,000,000đ"],
+          ["Styling design", "Twist, cornrow hoặc braids", "400,000đ / giờ"]
+        ]
+      },
+      {
+        title: "Add-on xử lý tóc",
+        rows: [
+          ["Uốn basic", "Uốn cơ bản", "300,000–400,000đ"],
+          ["Uốn xoăn", "Curly perm", "350,000–450,000đ"],
+          ["Uốn Ruffled", "Ruffled perm", "400,000–450,000đ"],
+          ["Uốn sâu", "Texture perm", "400,000–450,000đ"],
+          ["Uốn PremLock", "Theo độ dài tóc", "800,000–1,300,000đ"],
+          ["Uốn Afro", "Theo độ dài tóc", "1,000,000–1,500,000đ"],
+          ["Tẩy tóc", "Tính theo lần tẩy", "250,000đ / lần"],
+          ["Tẩy nối chân", "Theo nền tóc", "400,000–600,000đ"],
+          ["Ép side", "Hair pressed down", "250,000đ"],
+          ["Phục hồi tóc", "Hair restore", "300,000–400,000đ"],
+          ["Nhuộm râu", "Beard dye", "150,000–250,000đ"],
+          ["Nhuộm đen", "Black dye", "150,000–250,000đ"]
+        ]
+      },
+      {
+        title: "Barber, Combo & VIP",
+        rows: [
+          ["Cắt tóc & tạo kiểu", "Với Uppercut · 45 phút", "150,000đ"],
+          ["Cạo khăn nóng & lạnh", "Hot & cold towel shave · 30 phút", "120,000đ"],
+          ["Tỉa râu cơ bản / cắt side", "Chọn một dịch vụ · 25 phút", "100,000đ"],
+          ["Sấy & tạo kiểu tóc", "Hair styling", "100,000đ"],
+          ["Gội đầu thường", "Hair washing", "50,000đ"],
+          ["Gội & làm sạch Dreads / Locs", "Tùy độ dài", "50,000–150,000đ"],
+          ["Gội & sấy tóc Afro", "Afro hair wash & blow-dry", "100,000–200,000đ"],
+          ["Tattoo tóc cơ bản", "Theo thiết kế", "50,000–150,000đ"],
+          ["Gentleman's Set I", "Cắt + cạo khăn nóng/lạnh + Uppercut", "250,000đ"],
+          ["Gentleman's Set II", "Cắt + gội + cạo khăn nóng/lạnh + Uppercut", "290,000đ"],
+          ["VIP Gentleman's Combo", "Chỉ nhận đặt lịch trước", "390,000đ"]
+        ]
+      }
     ]
   },
   {
-    title: "Haircut & Fades",
-    rows: [
-      ["Clean Fade", "Low/mid/high fade, line up", "từ 220,000đ"],
-      ["Classic Cut", "Crop, taper, texture cut", "từ 200,000đ"],
-      ["Line Up", "Viền tóc, mai, gáy", "từ 90,000đ"]
-    ]
-  },
-  {
-    title: "Beard & Shaving",
-    rows: [
-      ["Beard Trim", "Shape râu, balm finish", "từ 120,000đ"],
-      ["Hot Towel Shave", "Khăn nóng, dao cạo classic", "từ 180,000đ"]
-    ]
-  },
-  {
-    title: "Color & Treatment",
-    rows: [
-      ["Color Locs", "Highlight, tone, treatment bảo vệ locs", "từ 1,200,000đ"],
-      ["Detox Locs", "Deep clean buildup, rinse và dry", "từ 650,000đ"],
-      ["Scalp Treatment", "Làm dịu da đầu, cân bằng dầu", "từ 250,000đ"]
-    ]
-  },
-  {
-    title: "Combo Packages",
-    rows: [
-      ["Dread & Fade Combo", "Retwist + clean fade + line up", "từ 650,000đ"],
-      ["Full Street Reset", "Detox + retwist + style + fade", "từ 1,350,000đ"]
+    branch: "Cơ sở 1 · Chương Dương",
+    address: "223 Chương Dương · Barber, uốn, nhuộm & chăm sóc tóc",
+    groups: [
+      {
+        title: "Haircut & Styling",
+        rows: [
+          ["Cắt tóc & tạo kiểu", "Với pomade", "120,000đ"],
+          ["Fade hai bên & gáy", "Làm gọn side và gáy", "90,000đ"],
+          ["Cắt tóc nam dài", "Chỉnh form tóc nam dài", "200,000đ"],
+          ["Tattoo tóc cơ bản", "Theo thiết kế", "50,000–150,000đ"],
+          ["Gội đầu thư giãn", "Hair washing", "40,000đ"],
+          ["Cắt tóc bởi chuyên gia", "Chỉ nhận lịch hẹn trước", "160,000đ"]
+        ]
+      },
+      {
+        title: "Chăm sóc & uốn tóc",
+        rows: [
+          ["Gội & sấy tạo kiểu", "Với pomade", "70,000đ"],
+          ["Phục hồi Keratin", "Cho tóc khô xơ", "200,000–400,000đ"],
+          ["Ép side", "Down perm", "250,000đ"],
+          ["Uốn basic", "Theo độ dài và nền tóc", "300,000–400,000đ"],
+          ["Uốn xoăn", "Curly perm", "350,000–450,000đ"],
+          ["Uốn Ruffled", "Tạo texture", "400,000–500,000đ"],
+          ["Uốn PremLock", "Theo độ dài và nền tóc", "800,000–1,200,000đ"],
+          ["Uốn Afro", "Theo độ dài và nền tóc", "1,000,000–1,500,000đ"]
+        ]
+      },
+      {
+        title: "Tẩy & nhuộm tóc",
+        rows: [
+          ["Tẩy tóc", "Tính theo mỗi lần tẩy", "250,000đ / session"],
+          ["Tẩy nối chân tóc", "Bleach root touch-up", "500,000–900,000đ"],
+          ["Nhuộm tóc thời trang", "Theo nền tóc", "250,000–350,000đ"],
+          ["Nhuộm đen", "Hair blackening", "150,000–250,000đ"],
+          ["Nhuộm râu", "Beard coloring", "150,000–250,000đ"],
+          ["Nhuộm râu cơ bản", "Basic beard coloring", "100,000đ"]
+        ]
+      },
+      {
+        title: "Beard & Facial Care",
+        rows: [
+          ["Tỉa râu", "Tạo form râu", "80,000đ"],
+          ["Tỉa râu cơ bản / cạo viền", "Làm gọn đường viền", "70,000đ"],
+          ["Cạo đầu / cạo mặt", "Dịch vụ cạo cơ bản", "70,000đ"],
+          ["Cạo khăn nóng & lạnh", "Hot & cold towel shave", "60,000đ"]
+        ]
+      }
     ]
   }
 ];
@@ -226,7 +305,7 @@ const barbers = [
     years: "6 năm",
     bio: "Fade mượt, line up sắc và form cắt hợp phong cách streetwear.",
     style: "Low fade, burst fade, sharp line up",
-    image: "/images/barber/barber1.png",
+    image: "/images/barber/barber1.webp",
     instagram: "https://instagram.com/kailoc"
   },
   {
@@ -237,7 +316,7 @@ const barbers = [
     years: "6 năm",
     bio: "Tay kéo gọn, fade mượt, hợp streetwear và form mặt châu Á.",
     style: "Low fade, burst fade, sharp line up",
-    image: "/images/barber/barber2.png",
+    image: "/images/barber/barber2.webp",
     instagram: "https://instagram.com/minhfade"
   },
   {
@@ -248,7 +327,7 @@ const barbers = [
     years: "7 năm",
     bio: "Classic barber rituals, hot towel, beard shape và finish premium.",
     style: "Tapered beard, calm shave, old-school finish",
-    image: "/images/barber/barber3.png",
+    image: "/images/barber/barber3.webp",
     instagram: "https://instagram.com/ryobeard"
   },
   {
@@ -259,7 +338,7 @@ const barbers = [
     years: "4 năm",
     bio: "Tư vấn màu, texture và treatment phù hợp với nền tóc hiện tại.",
     style: "Color, texture, treatment",
-    image: "/images/barber/barber4.png",
+    image: "/images/barber/barber4.webp",
     instagram: "https://instagram.com/linhcolor"
   },
   {
@@ -270,7 +349,7 @@ const barbers = [
     years: "5 năm",
     bio: "Xử lý layer và texture tự nhiên cho các form tóc có độ chuyển động.",
     style: "Textured crop, layered cut, natural volume",
-    image: "/images/barber/barber5.png",
+    image: "/images/barber/barber5.webp",
     instagram: "https://instagram.com/baocrop"
   },
   {
@@ -281,7 +360,7 @@ const barbers = [
     years: "4 năm",
     bio: "Tập trung vào đường viền tóc, taper và finish sạch từ mọi góc nhìn.",
     style: "Line up, taper, clean finish",
-    image: "/images/barber/barber6.png",
+    image: "/images/barber/barber6.webp",
     instagram: "https://instagram.com/sonline"
   },
   {
@@ -292,8 +371,19 @@ const barbers = [
     years: "4 năm",
     bio: "Tư vấn texture, màu trầm và treatment để giữ tóc khỏe sau xử lý.",
     style: "Wave, color, treatment",
-    image: "/images/barber/barber7.png",
+    image: "/images/barber/barber7.webp",
     instagram: "https://instagram.com/hieuwave"
+  },
+  {
+    bookingId: "khoa-blend",
+    name: "Khoa Blend",
+    role: "Texture & Color Artist",
+    specialties: ["Classic"],
+    years: "5 năm",
+    bio: "Xử lý texture, màu trầm và những form tóc cần độ chuyển tự nhiên.",
+    style: "Texture crop, soft color, natural finish",
+    image: "/images/barber/barber8.webp",
+    instagram: "https://instagram.com/khoablend"
   }
 ];
 
@@ -309,38 +399,77 @@ const galleryItems = [
 ];
 
 const homeGalleryImages: Record<HomeGalleryTab, string[]> = {
-  "DREAD LOCK": [
-    "/images/gallery/dreadlock1.png",
-    "/images/gallery/dreadlock2.png",
-    "/images/gallery/dreadlock3.png",
-    "/images/gallery/dreadlock4.png",
-    "/images/gallery/dreadlock5.png",
-    "/images/gallery/dreadlock6.png"
+  "Dreadlocks for men": [
+    "/images/collection / Dreadlocks for Men/collection1.webp",
+    "/images/collection / Dreadlocks for Men/collection2.webp",
+    "/images/collection / Dreadlocks for Men/collection3.webp",
+    "/images/collection / Dreadlocks for Men/collection4.webp",
+    "/images/collection / Dreadlocks for Men/collection5.webp",
+    "/images/collection / Dreadlocks for Men/collection6.webp",
+    "/images/collection / Dreadlocks for Men/collection7.webp",
+    "/images/collection / Dreadlocks for Men/collection8.webp",
+    "/images/collection / Dreadlocks for Men/collection10.webp",
+    "/images/collection / Dreadlocks for Men/collection11.webp",
+    "/images/collection / Dreadlocks for Men/collection12.webp",
+    "/images/collection / Dreadlocks for Men/collection14.webp",
+    "/images/collection / Dreadlocks for Men/collection15.webp"
   ],
-  Braid: [
-    "/images/gallery/braided1.png",
-    "/images/gallery/braided2.png",
-    "/images/gallery/braided3.png",
-    "/images/gallery/braided4.png",
-    "/images/gallery/braided5.png",
-    "/images/gallery/braided6.png"
+  "Dreadlocks for women": [
+    "/images/collection /Dreadlocks for Women/collection1.webp",
+    "/images/collection /Dreadlocks for Women/collection2.webp",
+    "/images/collection /Dreadlocks for Women/collection3.webp",
+    "/images/collection /Dreadlocks for Women/collection4.webp",
+    "/images/collection /Dreadlocks for Women/collection5.webp",
+    "/images/collection /Dreadlocks for Women/collection6.webp",
+    "/images/collection /Dreadlocks for Women/collection7.webp",
+    "/images/collection /Dreadlocks for Women/collection8.webp"
   ],
-  Other: [
-    "/images/gallery/dreadlock2.png",
-    "/images/gallery/braided1.png",
-    "/images/gallery/dreadlock4.png",
-    "/images/gallery/braided4.png",
-    "/images/gallery/dreadlock6.png",
-    "/images/gallery/braided6.png"
+  "Cornrows for men": [
+    "/images/collection /Cornrows for Men/collection1.webp",
+    "/images/collection /Cornrows for Men/collection2.webp",
+    "/images/collection /Cornrows for Men/collection3.webp",
+    "/images/collection /Cornrows for Men/collection4.webp",
+    "/images/collection /Cornrows for Men/collection5.webp",
+    "/images/collection /Cornrows for Men/collection6.webp",
+    "/images/collection /Cornrows for Men/collection7.webp",
+    "/images/collection /Cornrows for Men/collection8.webp"
   ],
-  BARBER: [
-    "/images/barber/barber1.png",
-    "/images/barber/barber2.png",
-    "/images/barber/barber3.png",
-    "/images/barber/barber4.png",
-    "/images/barber/barber5.png",
-    "/images/barber/barber6.png",
-    "/images/barber/barber7.png"
+  "Barrel twist for men": [
+    "/images/collection /Barrel Twist for Men/collection1.webp",
+    "/images/collection /Barrel Twist for Men/collection2.webp",
+    "/images/collection /Barrel Twist for Men/collection3.webp",
+    "/images/collection /Barrel Twist for Men/collection4.webp",
+    "/images/collection /Barrel Twist for Men/collection5.webp",
+    "/images/collection /Barrel Twist for Men/collection6.webp"
+  ],
+  "Twist for men": [
+    "/images/collection /Twist for Men/collection1.webp",
+    "/images/collection /Twist for Men/collection2.webp",
+    "/images/collection /Twist for Men/collection3.webp",
+    "/images/collection /Twist for Men/collection4.webp",
+    "/images/collection /Twist for Men/collection5.webp",
+    "/images/collection /Twist for Men/collection6.webp",
+    "/images/collection /Twist for Men/collection7.webp",
+    "/images/collection /Twist for Men/collection8.webp"
+  ],
+  "Box braids for men": [
+    "/images/collection /Boxbraids for Men/collection1.webp",
+    "/images/collection /Boxbraids for Men/collection2.webp",
+    "/images/collection /Boxbraids for Men/collection3.webp",
+    "/images/collection /Boxbraids for Men/collection4.webp",
+    "/images/collection /Boxbraids for Men/collection5.webp",
+    "/images/collection /Boxbraids for Men/collection6.webp",
+    "/images/collection /Boxbraids for Men/collection7.webp",
+    "/images/collection /Boxbraids for Men/collection8.webp"
+  ],
+  "Braids for women": [
+    "/images/collection /Braids for Women/collection1.webp",
+    "/images/collection /Braids for Women/collection2.webp",
+    "/images/collection /Braids for Women/collection3.webp",
+    "/images/collection /Braids for Women/collection5.webp",
+    "/images/collection /Braids for Women/collection6.webp",
+    "/images/collection /Braids for Women/collection7.webp",
+    "/images/collection /Braids for Women/collection8.webp"
   ]
 };
 
@@ -432,10 +561,9 @@ export function SitePage({ page }: { page?: PageKey }) {
   const [selectedProduct, setSelectedProduct] = useState(products[0]);
   const [cartCount, setCartCount] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [homeGalleryTab, setHomeGalleryTab] = useState<HomeGalleryTab>("DREAD LOCK");
-  const [homeGalleryVisibleTab, setHomeGalleryVisibleTab] = useState<HomeGalleryTab>("DREAD LOCK");
-  const [homeGalleryChanging, setHomeGalleryChanging] = useState(false);
-  const [activeServiceExplorer, setActiveServiceExplorer] = useState<ServiceExplorerKey>("barber");
+  const [homeGalleryTab, setHomeGalleryTab] = useState<HomeGalleryTab>("Dreadlocks for men");
+  const [homeGalleryVisibleTab, setHomeGalleryVisibleTab] = useState<HomeGalleryTab>("Dreadlocks for men");
+  const [activeServiceExplorer, setActiveServiceExplorer] = useState<ServiceExplorerKey>("dread");
   const [isServiceExplorerOpen, setIsServiceExplorerOpen] = useState(false);
   const isEnglish = language === "en";
 
@@ -447,13 +575,12 @@ export function SitePage({ page }: { page?: PageKey }) {
     [galleryFilter]
   );
 
-  const visibleBarbers = useMemo(
-    () =>
-      barberFilter === "All"
-        ? barbers
-        : barbers.filter((barber) => barber.specialties.includes(barberFilter)),
-    [barberFilter]
-  );
+  const visibleBarbersForBranch = (barberIds: string[]) =>
+    barbers.filter(
+      (barber) =>
+        barberIds.includes(barber.bookingId) &&
+        (barberFilter === "All" || barber.specialties.includes(barberFilter))
+    );
 
   useEffect(() => {
     document.documentElement.classList.add("reveal-ready");
@@ -482,6 +609,7 @@ export function SitePage({ page }: { page?: PageKey }) {
   useEffect(() => {
     document.documentElement.lang = language;
     window.localStorage.setItem("windread-language", language);
+    window.dispatchEvent(new CustomEvent("windread-language-change", { detail: language }));
   }, [language]);
 
   useEffect(() => {
@@ -516,18 +644,13 @@ export function SitePage({ page }: { page?: PageKey }) {
   }
 
   function changeHomeGalleryTab(tab: HomeGalleryTab) {
-    if (tab === homeGalleryTab || homeGalleryChanging) return;
+    if (tab === homeGalleryVisibleTab) return;
     setHomeGalleryTab(tab);
-    setHomeGalleryChanging(true);
-    window.setTimeout(() => {
-      setHomeGalleryVisibleTab(tab);
-      window.setTimeout(() => setHomeGalleryChanging(false), 90);
-    }, 130);
+    setHomeGalleryVisibleTab(tab);
   }
 
   const currentLightboxItem = visibleGallery[selectedImage] ?? visibleGallery[0];
   const activeHomeGallery = homeGalleryImages[homeGalleryVisibleTab];
-  const isHomeBarberTab = homeGalleryVisibleTab === "BARBER";
   const activeServiceGroup = serviceExplorerGroups.find((group) => group.key === activeServiceExplorer) ?? serviceExplorerGroups[0];
   const displayedLocServices = isEnglish
     ? [
@@ -689,7 +812,7 @@ export function SitePage({ page }: { page?: PageKey }) {
             </div>
             <div className="hero-visual reveal">
               <Image
-                src="/images/hero.webp"
+                src="/images/hero2.png"
                 alt="Không gian WINDREAD old-school street barber"
                 priority
                 fill
@@ -761,13 +884,13 @@ export function SitePage({ page }: { page?: PageKey }) {
               </nav>
             </div>
           ) : (
-            <div className="feature-strip reveal" aria-label={isEnglish ? "Featured service groups" : "Nhóm dịch vụ nổi bật"}>
+            <div className="feature-strip reveal is-visible" aria-label={isEnglish ? "Featured service groups" : "Nhóm dịch vụ nổi bật"}>
               {serviceExplorerGroups.map((group) => (
                 <button
                   className="feature-strip-tile"
                   type="button"
                   key={group.key}
-                  style={{ "--tile-image": `url(${group.image})` } as CSSProperties}
+                  style={{ "--tile-image": `url("${group.image}")` } as CSSProperties}
                   onClick={() => {
                     setActiveServiceExplorer(group.key);
                     setIsServiceExplorerOpen(true);
@@ -806,42 +929,17 @@ export function SitePage({ page }: { page?: PageKey }) {
               </button>
             ))}
           </div>
-          <div className={`home-gallery-grid ${isHomeBarberTab ? "is-barber-grid" : ""} ${homeGalleryChanging ? "is-changing" : ""}`}>
-            {isHomeBarberTab
-              ? barbers.map((barber) => (
-                <article className="home-barber-card" key={barber.name}>
-                  <div className="home-barber-photo">
-                    <Image
-                      src={barber.image}
-                      alt={`${barber.name}, ${barber.role}`}
-                      fill
-                      sizes="(max-width: 700px) 100vw, (max-width: 980px) 50vw, 33vw"
-                    />
-                  </div>
-    <div className="home-barber-info">
-                    <div>
-                      <h3>{barber.name}</h3>
-                      <p>{barber.role}</p>
-                    </div>
-                    <div className="home-barber-actions">
-                      <a href={`/booking?barber=${barber.bookingId}`}>{isEnglish ? "Book" : "Đặt lịch"}</a>
-                      <a href={barber.instagram} target="_blank" rel="noreferrer" aria-label={`${barber.name} Instagram`}>
-                        Instagram
-                      </a>
-                    </div>
-                  </div>
-                </article>
-              ))
-              : activeHomeGallery.map((src, index) => (
-                <figure className="home-gallery-tile" key={`${homeGalleryVisibleTab}-${src}-${index}`}>
-                  <Image
-                    src={src}
-                    alt={`${homeGalleryVisibleTab} ${index + 1}`}
-                    fill
-                    sizes="(max-width: 700px) 100vw, (max-width: 980px) 50vw, 33vw"
-                  />
-                </figure>
-              ))}
+          <div className="home-gallery-grid" key={homeGalleryVisibleTab}>
+            {activeHomeGallery.map((src, index) => (
+              <figure className="home-gallery-tile" key={`${homeGalleryVisibleTab}-${src}-${index}`}>
+                <Image
+                  src={src}
+                  alt={`${homeGalleryVisibleTab} ${index + 1}`}
+                  fill
+                  sizes="(max-width: 700px) 100vw, (max-width: 980px) 50vw, 33vw"
+                />
+              </figure>
+            ))}
           </div>
         </section>
       )}
@@ -891,8 +989,8 @@ export function SitePage({ page }: { page?: PageKey }) {
             <span>{isEnglish ? "First-timer consultation available. Book ahead so the crew can check texture and timing." : "Có tư vấn cho khách làm locs lần đầu. Đặt trước để crew check chất tóc và thời gian phù hợp."}</span>
           </div>
           <div className="services-grid">
-            <ServiceColumn title="Dread" items={displayedLocServices} />
-            <ServiceColumn title="Barber" items={displayedBarberServices} />
+            <ServiceColumn title="Cơ sở 2 · An Thượng · Locs & Braids" items={displayedLocServices} />
+            <ServiceColumn title="Cơ sở 1 · Chương Dương · Barber & Texture" items={displayedBarberServices} />
           </div>
         </section>
       )}
@@ -973,49 +1071,94 @@ export function SitePage({ page }: { page?: PageKey }) {
 
       {showBarbers && (
         <section id="barbers" className="barbers section-shell page-view">
-          <div className="section-heading reveal">
-            <p className="eyebrow">{pageEyebrows.barbers[language]}</p>
-            <h2>{isEnglish ? "The hands that hold the shape." : "Những bàn tay giữ form."}</h2>
+          <div className="barbers-filter-row reveal">
+            <div>
+              <p className="eyebrow">{pageEyebrows.barbers[language]}</p>
+              <h1>{isEnglish ? "The hands that hold the shape." : "Những bàn tay giữ form."}</h1>
+            </div>
+            <FilterChips items={["All", "Locs", "Fade", "Classic", "Beard"]} active={barberFilter} onChange={setBarberFilter} />
           </div>
-          <FilterChips
-            items={["All", "Locs", "Fade", "Classic", "Beard"]}
-            active={barberFilter}
-            onChange={setBarberFilter}
-          />
-          <div className="barber-grid">
-            {visibleBarbers.map((barber) => (
-              <article className="barber-card" key={barber.name}>
-                <div className="barber-card-photo">
-                  <Image
-                    src={barber.image}
-                    alt={`${barber.name}, ${barber.role}`}
-                    fill
-                    sizes="(max-width: 780px) 50vw, 25vw"
-                  />
-                </div>
-                <div className="barber-card-content">
-                  <p>{barber.role} / {barber.years}</p>
-                  <h3>{barber.name}</h3>
-                  <span>{barber.style}</span>
-                  <p className="barber-card-bio">{barber.bio}</p>
-                  <div className="barber-card-actions">
-                    <a className="barber-book-link" href={`/booking?barber=${barber.bookingId}`}>{isEnglish ? "Book" : "Đặt lịch"}</a>
-                    <a href={barber.instagram} target="_blank" rel="noreferrer" aria-label={`${barber.name} Instagram`}>
-                      Instagram
+
+          {orderedBranchProfiles.map((branch) => {
+            const branchBarbers = visibleBarbersForBranch(branch.barberIds);
+
+            return (
+              <section className="barbers-layout" key={branch.id} aria-labelledby={`barbers-${branch.id}`}>
+                <aside className="barbers-branch-panel reveal is-visible" aria-label={isEnglish ? `${branch.name} information` : `Thông tin ${branch.name}`}>
+                  <p className="eyebrow">{isEnglish ? branch.label.en : branch.label.vi}</p>
+                  <h2 id={`barbers-${branch.id}`}>{branch.name}</h2>
+                  <p className="barbers-branch-description">{isEnglish ? branch.description.en : branch.description.vi}</p>
+                  <dl className="barbers-branch-details">
+                    <div>
+                      <dt>{isEnglish ? "Address" : "Địa chỉ"}</dt>
+                      <dd>{branch.address}</dd>
+                    </div>
+                    <div>
+                      <dt>{isEnglish ? "Contact" : "Liên hệ"}</dt>
+                      <dd><a href={`tel:${branch.phone}`}>{branch.phone}</a></dd>
+                    </div>
+                    <div>
+                      <dt>{isEnglish ? "Focus" : "Thế mạnh"}</dt>
+                      <dd>{(isEnglish ? branch.specialties.en : branch.specialties.vi).join(" · ")}</dd>
+                    </div>
+                  </dl>
+                  <div className="barbers-branch-actions">
+                    <a className="book-button" href={`/booking?branch=${branch.id}`}>{isEnglish ? "Book this branch" : "Đặt lịch chi nhánh"}</a>
+                    <a className="barbers-map-link" href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(branch.mapQuery)}`} target="_blank" rel="noreferrer">
+                      {isEnglish ? "Open map" : "Mở bản đồ"} <span aria-hidden="true">↗</span>
                     </a>
                   </div>
+                </aside>
+
+                <div className="barbers-crew-area">
+                  <div className="barbers-crew-heading reveal">
+                    <p>{isEnglish ? `${branchBarbers.length} barbers at this branch.` : `${branchBarbers.length} barber đang làm việc tại chi nhánh này.`}</p>
+                  </div>
+                  <div className="barbers-carousel-shell">
+                    <div className="barber-grid">
+                      {branchBarbers.map((barber) => (
+                        <article className="barber-card" key={barber.name}>
+                          <div className="barber-card-photo">
+                            <Image
+                              src={barber.image}
+                              alt={`${barber.name}, ${barber.role}`}
+                              fill
+                              sizes="(max-width: 780px) 50vw, (max-width: 1180px) 33vw, 24vw"
+                            />
+                          </div>
+                          <div className="barber-card-content">
+                            <p>{barber.role} / {barber.years}</p>
+                            <h3>{barber.name}</h3>
+                            <span>{barber.style}</span>
+                            <p className="barber-card-bio">{barber.bio}</p>
+                            <div className="barber-card-actions">
+                              <a className="barber-book-link" href={`/booking?branch=${branch.id}&barber=${barber.bookingId}`}>{isEnglish ? "Book" : "Đặt lịch"}</a>
+                              <a href={barber.instagram} target="_blank" rel="noreferrer" aria-label={`${barber.name} Instagram`}>
+                                Instagram
+                              </a>
+                            </div>
+                          </div>
+                        </article>
+                      ))}
+                    </div>
+                    <button
+                      className="barbers-scroll-button"
+                      type="button"
+                      aria-label={isEnglish ? "Show more barbers" : "Xem thêm barber"}
+                      onClick={(event) => {
+                        const list = event.currentTarget.parentElement?.querySelector<HTMLElement>(".barber-grid");
+                        list?.scrollBy({ left: list.clientWidth * 0.84, behavior: "smooth" });
+                      }}
+                    >
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M4 12h15M13 6l6 6-6 6" />
+                      </svg>
+                    </button>
+                  </div>
                 </div>
-              </article>
-            ))}
-          </div>
-          <div className="crew-code reveal">
-            <h3>The Crew Code</h3>
-            <ul>
-              <li>{isEnglish ? "Check hair texture first, never oversell what you do not need." : "Check chất tóc trước khi làm, không bán dịch vụ quá mức cần thiết."}</li>
-              <li>{isEnglish ? "Clean tools between clients and keep every station controlled." : "Làm sạch dụng cụ giữa mỗi khách, giữ station gọn và yên tâm."}</li>
-              <li>{isEnglish ? "Clear aftercare so locs stay strong and clean longer." : "Tư vấn aftercare rõ ràng để locs sống lâu, đẹp lâu."}</li>
-            </ul>
-          </div>
+              </section>
+            );
+          })}
         </section>
       )}
 
@@ -1026,24 +1169,32 @@ export function SitePage({ page }: { page?: PageKey }) {
             <h2>{isEnglish ? "WINDREAD pricing board" : "Bảng giá WINDREAD"}</h2>
           </div>
           <div className="pricing-board reveal">
-            {priceGroups.map((group) => (
-              <section key={group.title} aria-labelledby={group.title.replaceAll(" ", "-")}>
-                <h3 id={group.title.replaceAll(" ", "-")}>{group.title}</h3>
-                <div className="price-table">
-                  {group.rows.map(([name, desc, price]) => (
-                    <div className="price-row" key={name}>
-                      <strong>{name}</strong>
-                      <span>{desc}</span>
-                      <b>{price}</b>
-                    </div>
-                  ))}
+            {priceBoards.map((board) => (
+              <section className="pricing-branch" key={board.branch} aria-labelledby={board.branch.replaceAll(" ", "-")}>
+                <div className="pricing-branch-heading">
+                  <h3 id={board.branch.replaceAll(" ", "-")}>{board.branch}</h3>
+                  <p>{board.address}</p>
                 </div>
+                {board.groups.map((group) => (
+                  <section key={`${board.branch}-${group.title}`} aria-labelledby={`${board.branch}-${group.title}`.replaceAll(" ", "-")}>
+                    <h4 id={`${board.branch}-${group.title}`.replaceAll(" ", "-")}>{group.title}</h4>
+                    <div className="price-table">
+                      {group.rows.map(([name, desc, price]) => (
+                        <div className="price-row" key={name}>
+                          <strong>{name}</strong>
+                          <span>{desc}</span>
+                          <b>{price}</b>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+                ))}
               </section>
             ))}
             <p className="pricing-note">
               {isEnglish
-                ? "Note: Very long/thick hair, heavy loc repair, after-hours service or house calls may include an extra fee. The crew confirms pricing before starting."
-                : "Lưu ý: Tóc quá dài/dày, locs cần repair nhiều, dịch vụ sau giờ hoặc house call có thể phụ thu. Crew sẽ báo giá rõ trước khi làm."}
+                ? "Note: Prices shown as a range depend on hair length, thickness and the requested design. The crew confirms the final price before starting."
+                : "Lưu ý: Các giá dạng khoảng sẽ phụ thuộc độ dài, mật độ tóc và thiết kế thực tế. Crew sẽ xác nhận giá cuối cùng trước khi làm."}
             </p>
           </div>
         </section>
@@ -1133,7 +1284,7 @@ export function SitePage({ page }: { page?: PageKey }) {
             <p>{isEnglish ? "See the space, meet the crew and book at the branch that fits your style." : "Xem không gian, gặp crew và đặt lịch đúng nơi hợp với style của bạn."}</p>
           </div>
           <div className="branch-directory-grid">
-            {branchProfiles.map((branch) => (
+            {orderedBranchProfiles.map((branch) => (
               <a className="branch-directory-card reveal" href={`/branches/${branch.id}`} key={branch.id}>
                 <span className="branch-directory-image">
                   <Image src={branch.image} alt={`Không gian ${branch.name}`} fill sizes="(max-width: 760px) 100vw, 50vw" />

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { pageSeo, siteName, siteUrl } from "./seo";
+import { ChatWidget } from "./chatbot/ChatWidget";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -65,6 +66,7 @@ export default function RootLayout({
           Bỏ qua điều hướng
         </a>
         {children}
+        <ChatWidget />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessJsonLd) }}

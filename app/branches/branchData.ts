@@ -15,7 +15,7 @@ export type BranchProfile = {
 export const branchProfiles: BranchProfile[] = [
   {
     id: "an-thuong",
-    label: { vi: "Cơ sở 1", en: "Branch 01" },
+    label: { vi: "Cơ sở 2", en: "Branch 02" },
     name: "WINDREAD An Thượng",
     address: "35 - 37 An Thượng 29, Ngũ Hành Sơn, Đà Nẵng",
     phone: "0393549656",
@@ -30,11 +30,11 @@ export const branchProfiles: BranchProfile[] = [
       vi: "Không gian chính cho locs, braid và những buổi tư vấn texture kỹ hơn.",
       en: "Our main space for locs, braids and deeper texture consultations."
     },
-    barberIds: ["kai-loc", "linh-color", "son-line"]
+    barberIds: ["kai-loc", "linh-color", "son-line", "khoa-blend"]
   },
   {
     id: "chuong-duong",
-    label: { vi: "Cơ sở 2", en: "Branch 02" },
+    label: { vi: "Cơ sở 1", en: "Branch 01" },
     name: "WINDREAD Chương Dương",
     address: "223 Chương Dương, Ngũ Hành Sơn, Đà Nẵng",
     phone: "0393549656",

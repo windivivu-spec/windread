@@ -33,6 +33,12 @@ function supabaseConfig() {
   return { url: url.replace(/\/$/, ""), serviceRoleKey };
 }
 
+function isChatTableUnavailable(error: unknown) {
+  if (!(error instanceof Error)) return false;
+  const typed = error as Error & { status?: number };
+  return typed.status === 404 || typed.message?.includes("PGRST205");
+}
+
 async function chatbotRestFetch<T>(path: string, init: RequestInit = {}) {
   const config = supabaseConfig();
   if (!config) throw new Error("Supabase env is not configured.");
@@ -75,6 +81,12 @@ export async function claimMessengerEvent(messageId: string, senderId: string) {
     return true;
   } catch (error) {
     if ((error as Error & { status?: number }).status === 409) return false;
+    if (isChatTableUnavailable(error)) {
+      const memory = memoryStore();
+      if (memory.eventIds.has(messageId)) return false;
+      memory.eventIds.add(messageId);
+      return true;
+    }
     throw error;
   }
 }
@@ -90,11 +102,18 @@ export async function saveChatMessage(senderId: string, message: StoredChatMessa
     return;
   }
 
-  await chatbotRestFetch("messenger_messages", {
-    method: "POST",
-    headers: { Prefer: "return=minimal" },
-    body: JSON.stringify({ sender_id: senderId, role: message.role, content })
-  });
+  try {
+    await chatbotRestFetch("messenger_messages", {
+      method: "POST",
+      headers: { Prefer: "return=minimal" },
+      body: JSON.stringify({ sender_id: senderId, role: message.role, content })
+    });
+  } catch (error) {
+    if (!isChatTableUnavailable(error)) throw error;
+    const memory = memoryStore();
+    const history = memory.messages.get(senderId) ?? [];
+    memory.messages.set(senderId, [...history, { ...message, content }].slice(-20));
+  }
 }
 
 export async function getChatHistory(senderId: string, limit = 18): Promise<StoredChatMessage[]> {
@@ -102,10 +121,31 @@ export async function getChatHistory(senderId: string, limit = 18): Promise<Stor
     return (memoryStore().messages.get(senderId) ?? []).slice(-limit);
   }
 
-  const rows = await chatbotRestFetch<MessengerMessageRow[]>(
-    `messenger_messages?select=role,content,created_at&sender_id=eq.${encodeURIComponent(senderId)}` +
-      `&order=created_at.desc&limit=${Math.min(Math.max(limit, 1), 30)}`
-  );
-  return rows.reverse().map(({ role, content }) => ({ role, content }));
+  try {
+    const rows = await chatbotRestFetch<MessengerMessageRow[]>(
+      `messenger_messages?select=role,content,created_at&sender_id=eq.${encodeURIComponent(senderId)}` +
+        `&order=created_at.desc&limit=${Math.min(Math.max(limit, 1), 30)}`
+    );
+    return rows.reverse().map(({ role, content }) => ({ role, content }));
+  } catch (error) {
+    if (!isChatTableUnavailable(error)) throw error;
+    return (memoryStore().messages.get(senderId) ?? []).slice(-limit);
+  }
 }
 
+export async function deleteChatHistory(senderId: string) {
+  if (!supabaseConfig()) {
+    memoryStore().messages.delete(senderId);
+    return;
+  }
+
+  try {
+    await chatbotRestFetch(
+      `messenger_messages?sender_id=eq.${encodeURIComponent(senderId)}`,
+      { method: "DELETE" }
+    );
+  } catch (error) {
+    if (!isChatTableUnavailable(error)) throw error;
+    memoryStore().messages.delete(senderId);
+  }
+}

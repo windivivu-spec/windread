@@ -12,11 +12,11 @@ export const shopKnowledge = {
   locations: [
     {
       name: "Cơ sở 1",
-      address: "35 - 37 An Thượng 29, Ngũ Hành Sơn, Đà Nẵng"
+      address: "223 Chương Dương, Ngũ Hành Sơn, Đà Nẵng"
     },
     {
       name: "Cơ sở 2",
-      address: "223 Chương Dương, Ngũ Hành Sơn, Đà Nẵng"
+      address: "35 - 37 An Thượng 29, Ngũ Hành Sơn, Đà Nẵng"
     }
   ],
   contact: {
@@ -78,4 +78,3 @@ export const shopKnowledge = {
     "Khách nên lưu mã booking để đối chiếu"
   ]
 } as const;
-

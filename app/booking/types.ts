@@ -24,6 +24,7 @@ export type Branch = {
 
 export type Service = {
   id: string;
+  branchId: string;
   name: string;
   description: string;
   price: number;

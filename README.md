@@ -47,7 +47,7 @@ GOOGLE_CALENDAR_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE 
 
 Restart `npm run dev` after changing env vars.
 
-## Facebook Messenger AI assistant (Vertex AI)
+## Facebook Messenger AI assistant
 
 The Facebook Page chatbot webhook is available at:
 
@@ -56,15 +56,31 @@ The Facebook Page chatbot webhook is available at:
 
 It answers from WINDREAD's official address, expertise, hours, policies and price board. For booking, Gemini uses server-side tools to read the live Supabase catalog, check real availability and call the same `createBooking` flow as the website. Booking overlap protection, Google Calendar sync and barber email notifications therefore remain shared with the website.
 
+The website also renders a floating WIND assistant on every public page and exposes `GET`, `POST` and `DELETE /api/chat` for its private browser session. Website and Messenger conversations share the same server-side personality and booking tools, while their histories remain separated by sender ID.
+
 ### 1. Apply the chatbot migration
 
-Apply `supabase/migrations/20260720070433_messenger_ai_chat.sql`. It adds private, RLS-enabled tables for conversation history and Messenger webhook de-duplication. Only the server-side `service_role` has table access.
+Apply `supabase/migrations/20260720070433_messenger_ai_chat.sql`. It adds private, RLS-enabled tables for website/Messenger conversation history and Messenger webhook de-duplication. Only the server-side `service_role` has table access. Without this migration the assistant temporarily falls back to process memory, which is suitable for local UI testing but not persistent serverless history.
 
-### 2. Configure Google Cloud Vertex AI
+### 2. Configure Google Cloud AI
 
-For the simplest Vercel setup, create a Vertex AI Express Mode API key and add these server-only environment variables:
+To use the **Trial for Gen App Builder** credit, use a Conversational Agents Playbook. The application calls the Dialogflow CX `detectIntent` API and executes the catalog, availability and booking function tools on the server:
 
 ```env
+GOOGLE_CHAT_PROVIDER=conversational_agents
+GOOGLE_CLOUD_PROJECT=your-project-id
+GOOGLE_CONVERSATIONAL_AGENT_ID=your-agent-uuid
+GOOGLE_CONVERSATIONAL_AGENT_LOCATION=global
+GOOGLE_CONVERSATIONAL_AGENT_ENVIRONMENT_ID=
+GOOGLE_VERTEX_SERVICE_ACCOUNT_JSON={"type":"service_account","project_id":"...","private_key":"-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n","client_email":"..."}
+```
+
+Leave `GOOGLE_CONVERSATIONAL_AGENT_ENVIRONMENT_ID` empty while testing the Draft agent. Follow [docs/google-conversational-agent-setup.md](docs/google-conversational-agent-setup.md) to create the Playbook and its three function tools. The service account needs the **Dialogflow API Client** role.
+
+Direct Gemini on Vertex AI remains available as an explicit fallback, but it is billed under Vertex AI generative AI SKUs rather than the restricted Gen App Builder trial:
+
+```env
+GOOGLE_CHAT_PROVIDER=vertex_gemini
 GOOGLE_VERTEX_API_KEY=your-express-mode-api-key
 GOOGLE_VERTEX_MODEL=gemini-3.5-flash
 ```
@@ -74,6 +90,7 @@ Do not prefix the key with `NEXT_PUBLIC_`. With Express Mode, `GOOGLE_CLOUD_PROJ
 Standard Vertex AI authentication is also supported. Enable the Vertex AI API, grant a service account permission to call Vertex AI models (for example, `Vertex AI User`), then configure:
 
 ```env
+GOOGLE_CHAT_PROVIDER=vertex_gemini
 GOOGLE_CLOUD_PROJECT=your-project-id
 GOOGLE_CLOUD_LOCATION=asia-southeast1
 GOOGLE_VERTEX_MODEL=gemini-3.5-flash
