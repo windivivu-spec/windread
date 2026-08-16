@@ -20,7 +20,7 @@ export const branchProfiles: BranchProfile[] = [
     address: "35 - 37 An Thượng 29, Ngũ Hành Sơn, Đà Nẵng",
     phone: "0393549656",
     image: "/images/thumb1.webp",
-    gallery: ["/images/thumb1.webp", "/images/moment/moment6.webp", "/images/moment/moment15.webp"],
+    gallery: ["/images/thumb1.webp", "/images/moment/moment6.webp", "/images/moment/DSC09798.webp"],
     mapQuery: "35-37 An Thuong 29, Ngu Hanh Son, Da Nang",
     specialties: {
       vi: ["Starter Locs", "Retwist & chăm locs", "Braids"],
@@ -38,8 +38,8 @@ export const branchProfiles: BranchProfile[] = [
     name: "WINDREAD Chương Dương",
     address: "223 Chương Dương, Ngũ Hành Sơn, Đà Nẵng",
     phone: "0393549656",
-    image: "/images/branch2.jpg",
-    gallery: ["/images/branch2.jpg", "/images/moment/moment17.webp", "/images/moment/moment20.webp"],
+    image: "/images/branch chuong duong.webp",
+    gallery: ["/images/branch chuong duong.webp", "/images/moment/DSC09946.webp", "/images/moment/moment20.webp"],
     mapQuery: "223 Chuong Duong, Ngu Hanh Son, Da Nang",
     specialties: {
       vi: ["Clean Fade", "Cắt & tạo texture", "Beard & shave"],

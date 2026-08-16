@@ -5,11 +5,21 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 
-const ABOUT_PAGES = [
-  "/images/about/windread-origin.webp",
-  "/images/about/windread-inspiration.webp",
-  "/images/about/windread-community.webp",
-  "/images/about/windread-growth.webp"
+const DESKTOP_ABOUT_PAGES = [
+  "/images/about/about-hor-left.png",
+  "/images/about/about-hor-right.png",
+  "/images/about/about1.png",
+  "/images/about/about2.png",
+  "/images/about/about3.png",
+  "/images/about/about4.png"
+];
+
+const MOBILE_ABOUT_PAGES = [
+  "/images/about/about.png",
+  "/images/about/about1.png",
+  "/images/about/about2.png",
+  "/images/about/about3.png",
+  "/images/about/about4.png"
 ];
 
 const ABOUT_NAV_ITEMS = [
@@ -81,24 +91,35 @@ export default function AboutPage() {
   const [page, setPage] = useState(0);
   const [ready, setReady] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const [mediaReady, setMediaReady] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
-  const activePages = ABOUT_PAGES;
+  const activePages = isMobile ? MOBILE_ABOUT_PAGES : DESKTOP_ABOUT_PAGES;
 
   const pageLabel = useMemo(() => {
-    const current = Math.min(page + 1, activePages.length);
-    return `${String(current).padStart(2, "0")} / ${String(activePages.length).padStart(2, "0")}`;
-  }, [activePages.length, page]);
+    if (isMobile) {
+      const current = Math.min(page + 1, activePages.length);
+      return `${String(current).padStart(2, "0")} / ${String(activePages.length).padStart(2, "0")}`;
+    }
+    const currentSpread = Math.floor(page / 2) + 1;
+    const totalSpreads = Math.ceil(activePages.length / 2);
+    return `${String(currentSpread).padStart(2, "0")} / ${String(totalSpreads).padStart(2, "0")}`;
+  }, [activePages.length, isMobile, page]);
 
   useEffect(() => {
     const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const mobileQuery = window.matchMedia("(max-width: 760px)");
     const syncMotion = () => setReducedMotion(motionQuery.matches);
+    const syncMobile = () => setIsMobile(mobileQuery.matches);
     syncMotion();
+    syncMobile();
     setMediaReady(true);
     motionQuery.addEventListener("change", syncMotion);
+    mobileQuery.addEventListener("change", syncMobile);
     return () => {
       motionQuery.removeEventListener("change", syncMotion);
+      mobileQuery.removeEventListener("change", syncMobile);
     };
   }, []);
 
@@ -134,7 +155,7 @@ export default function AboutPage() {
       maxHeight: 827,
       drawShadow: true,
       flippingTime: 900,
-      usePortrait: true,
+      usePortrait: isMobile,
       startZIndex: 2,
       autoSize: true,
       maxShadowOpacity: 0.72,
@@ -182,7 +203,7 @@ export default function AboutPage() {
       if (loaded) pageFlip.destroy();
       if (bookHostRef.current) bookHostRef.current.replaceChildren();
     };
-  }, [activePages, mediaReady, reducedMotion]);
+  }, [activePages, isMobile, mediaReady, reducedMotion]);
 
   useEffect(() => {
     if (!menuOpen) return;

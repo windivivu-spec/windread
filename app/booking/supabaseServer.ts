@@ -229,11 +229,11 @@ export async function getBranches(): Promise<Branch[]> {
 }
 
 export async function getServices(branchId?: string): Promise<Service[]> {
-  if (!isSupabaseConfigured()) {
-    return branchId ? mockServices.filter((service) => service.branchId === branchId) : mockServices;
-  }
-  const branchFilter = branchId ? `&branch_id=eq.${encodeURIComponent(branchId)}` : "";
-  return restFetch<SupabaseServiceRow[]>(`services?select=*&branch_id=not.is.null${branchFilter}&order=price.asc`).then((rows) => rows.map(mapService));
+  // Prices are shared across both branches. Keep the optional parameter for
+  // existing callers, but do not filter the common catalogue by branch.
+  void branchId;
+  if (!isSupabaseConfigured()) return mockServices;
+  return restFetch<SupabaseServiceRow[]>("services?select=*&is_bookable=eq.true&order=price.asc").then((rows) => rows.map(mapService));
 }
 
 export async function getBarbers(branchId?: string, serviceId?: string): Promise<Barber[]> {

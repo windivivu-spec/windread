@@ -43,8 +43,9 @@ export const bookingService = {
     return branches;
   },
 
-  getServices(branchId?: string) {
-    return branchId ? services.filter((service) => service.branchId === branchId) : services;
+  getServices(_branchId?: string) {
+    // WINDREAD now uses the An Thuong catalogue as one shared price list.
+    return services;
   },
 
   getBarbers(branchId?: string, serviceId?: string) {
@@ -73,7 +74,7 @@ export const bookingService = {
     try {
       return await fetchJson<typeof services>(`/api/services?${params.toString()}`);
     } catch {
-      return this.getServices(branchId);
+      return this.getServices();
     }
   },
 

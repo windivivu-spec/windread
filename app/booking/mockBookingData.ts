@@ -13,11 +13,11 @@ export const branches: Branch[] = [
     name: "Cơ sở 1",
     address: "223 Chương Dương, Ngũ Hành Sơn, Đà Nẵng",
     phone: "0393549656",
-    image: "/images/branch2.jpg"
+    image: "/images/branch chuong duong.webp"
   }
 ];
 
-export const services: Service[] = [
+const allServices: Service[] = [
   {
     id: "an-dreadlock",
     branchId: "an-thuong",
@@ -500,6 +500,11 @@ export const services: Service[] = [
   }
 ];
 
+// The An Thuong price list is the single shared catalogue for every branch.
+// Keep the old Chương Dương entries above only as source-history until they
+// can be removed in a later data-retention migration.
+export const services = allServices.filter((service) => service.branchId === "an-thuong");
+
 const weekdayHours = {
   monday: { start: "10:00", end: "21:00" },
   tuesday: { start: "10:00", end: "21:00" },
@@ -535,7 +540,7 @@ export const barbers: Barber[] = [
     avatar: "/images/barber/barber2.webp",
     title: "Fade Specialist",
     specialties: ["Clean fade", "Classic cut", "Line up"],
-    serviceIds: ["cd-haircut", "cd-sides-back-fade", "cd-long-haircut", "cd-wash-blowdry", "cd-basic-hair-tattoo", "cd-hair-washing", "cd-haircut-expert"],
+    serviceIds: ["an-haircut-styling", "an-hair-styling", "an-basic-hair-tattoo", "an-hair-washing"],
     workingHours: weekdayHours
   },
   {
@@ -546,7 +551,7 @@ export const barbers: Barber[] = [
     avatar: "/images/barber/barber3.webp",
     title: "Beard & Shave",
     specialties: ["Hot towel", "Cạo mặt", "Beard shape"],
-    serviceIds: ["cd-haircut", "cd-beard-trim", "cd-basic-beard-trim-line-up", "cd-full-head-face-shave", "cd-hot-towel-shave", "cd-beard-coloring", "cd-basic-beard-coloring"],
+    serviceIds: ["an-haircut-styling", "an-basic-beard-trim-side", "an-hot-cold-towel-shave", "an-beard-dye"],
     workingHours: weekdayHours
   },
   {
@@ -572,7 +577,7 @@ export const barbers: Barber[] = [
     avatar: "/images/barber/barber5.webp",
     title: "Crop & Texture",
     specialties: ["Textured crop", "Layer gọn", "Wash finish"],
-    serviceIds: ["cd-haircut", "cd-sides-back-fade", "cd-long-haircut", "cd-wash-blowdry", "cd-basic-hair-tattoo", "cd-hair-washing", "cd-haircut-expert", "cd-down-perm", "cd-basic-perm"],
+    serviceIds: ["an-haircut-styling", "an-hair-styling", "an-basic-hair-tattoo", "an-hair-washing", "an-hair-pressed-down", "an-basic-perm"],
     workingHours: weekdayHours
   },
   {
@@ -600,7 +605,7 @@ export const barbers: Barber[] = [
     avatar: "/images/barber/barber7.webp",
     title: "Wave Stylist",
     specialties: ["Uốn tóc", "Nhuộm tone trầm", "Treatment"],
-    serviceIds: ["cd-keratin-therapy", "cd-down-perm", "cd-basic-perm", "cd-curly-perm", "cd-ruffled-perm", "cd-premlock-perm", "cd-afro-perm", "cd-hair-bleaching", "cd-bleach-root-touch-up", "cd-hair-color", "cd-hair-blackening"],
+    serviceIds: ["an-hair-restore", "an-hair-pressed-down", "an-basic-perm", "an-curly-perm", "an-ruffled-perm", "an-premlock-perm", "an-afro-perm", "an-hair-bleach", "an-root-bleaching", "an-black-dye"],
     workingHours: weekdayHours
   },
   {
@@ -637,7 +642,7 @@ export const seedBookings: Booking[] = [
   {
     id: "WD-260706-1600",
     branchId: "chuong-duong",
-    serviceId: "cd-hair-color",
+    serviceId: "an-black-dye",
     barberId: "hieu-wave",
     customerName: "Khách đã đặt",
     customerPhone: "0900000000",

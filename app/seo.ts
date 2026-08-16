@@ -72,7 +72,7 @@ export const pageSeo = {
     title: "Giới thiệu WINDREAD | The Book of Windread",
     description: "Câu chuyện Windread, văn hóa dreadlocks, barber club và tinh thần street-first.",
     path: "/about",
-    image: "/images/about/about_1_hor.webp"
+    image: "/images/about/about-hor.png"
   }),
   services: buildMetadata({
     title: "Dịch vụ dreadlocks, braid & barber | WINDREAD",

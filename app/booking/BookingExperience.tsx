@@ -21,7 +21,7 @@ type StoredBooking = {
 
 const initialDraft: BookingDraft = {
   branchId: "chuong-duong",
-  serviceId: "cd-haircut",
+  serviceId: "an-haircut-styling",
   barberId: "any",
   date: getUpcomingDays(1)[0]?.value ?? "",
   slot: "",
@@ -34,7 +34,7 @@ const initialDraft: BookingDraft = {
 
 const branchImages: Record<string, string> = {
   "an-thuong": "/images/thumb1.webp",
-  "chuong-duong": "/images/branch2.jpg"
+  "chuong-duong": "/images/branch chuong duong.webp"
 };
 
 const LAST_BOOKING_STORAGE_KEY = "windread-last-booking-confirmation";

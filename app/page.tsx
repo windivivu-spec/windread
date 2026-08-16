@@ -112,22 +112,29 @@ const serviceExplorerGroups = [
 ] as const;
 
 const momentImages = [
-  { src: "/images/moment/moment1.webp", orientation: "portrait" },
+  { src: "/images/moment/DSC09798.webp", orientation: "portrait" },
+  { src: "/images/moment/DSC09788.webp", orientation: "landscape" },
+  { src: "/images/moment/DSC09870.webp", orientation: "portrait" },
+  { src: "/images/moment/DSC09923.webp", orientation: "landscape" },
+  { src: "/images/moment/DSC09889.webp", orientation: "portrait" },
+  { src: "/images/moment/Unknown-7.webp", orientation: "landscape" },
+  { src: "/images/moment/DSC09946.webp", orientation: "portrait" },
+  { src: "/images/moment/Unknown-4.webp", orientation: "landscape" },
+  { src: "/images/moment/DSC09957.webp", orientation: "portrait" },
+  { src: "/images/moment/Unknown-5.webp", orientation: "landscape" },
+  { src: "/images/moment/DSC09979.webp", orientation: "portrait" },
   { src: "/images/moment/moment6.webp", orientation: "landscape" },
-  { src: "/images/moment/moment7.webp", orientation: "portrait" },
+  { src: "/images/moment/moment1.webp", orientation: "portrait" },
   { src: "/images/moment/moment8.webp", orientation: "landscape" },
+  { src: "/images/moment/moment5.webp", orientation: "portrait" },
   { src: "/images/moment/moment10.webp", orientation: "landscape" },
+  { src: "/images/moment/moment7.webp", orientation: "portrait" },
   { src: "/images/moment/moment11.webp", orientation: "landscape" },
   { src: "/images/moment/moment12.webp", orientation: "portrait" },
   { src: "/images/moment/moment13.webp", orientation: "landscape" },
   { src: "/images/moment/moment14.webp", orientation: "landscape" },
-  { src: "/images/moment/moment15.webp", orientation: "portrait" },
-  { src: "/images/moment/moment16.webp", orientation: "landscape" },
-  { src: "/images/moment/moment17.webp", orientation: "portrait" },
-  { src: "/images/moment/moment18.webp", orientation: "portrait" },
   { src: "/images/moment/moment19.webp", orientation: "landscape" },
-  { src: "/images/moment/moment20.webp", orientation: "landscape" },
-  { src: "/images/moment/moment5.webp", orientation: "portrait" }
+  { src: "/images/moment/moment20.webp", orientation: "landscape" }
 ] as const;
 
 const locServices = [
@@ -794,11 +801,17 @@ export function SitePage({ page }: { page?: PageKey }) {
                       </div>
                     ))}
                   </div>
-                  <p className="hero-desc">
-                    {isEnglish
-                      ? "A minimalist, sharp, and disciplined space. Where raw hair texture is elevated by premium services and a street soul."
-                      : "Một không gian tối giản, gọn gàng và đầy tính kỷ luật. Nơi tôn vinh chất tóc thật bằng dịch vụ cao cấp và linh hồn đường phố"}
-                  </p>
+                  {isEnglish ? (
+                    <p className="hero-desc">
+                      A minimalist, sharp, and disciplined space. Where raw hair texture is elevated by premium services and a street soul.
+                    </p>
+                  ) : (
+                    <ul className="hero-desc hero-desc-list">
+                      <li>Không gian đậm chất Street vibes - Old School 90’s.</li>
+                      <li>Thánh địa của tóc nam, Afro, Dreadlocks &amp; Braids.</li>
+                      <li>Tôn vinh kiểu tóc đẹp qua đôi tay thợ tóc từ đường phố.</li>
+                    </ul>
+                  )}
                   <div className="hero-actions">
                     <a className="book-button large" href="/booking">
                       {isEnglish ? "Book Now" : "Đặt lịch"} <span aria-hidden="true">{"->"}</span>
