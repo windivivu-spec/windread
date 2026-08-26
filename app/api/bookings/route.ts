@@ -19,7 +19,22 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ message: "Payload đặt lịch không hợp lệ." }, { status: 400 });
   }
 
-  const result = await createBooking(draft);
-  if (!result.booking) return NextResponse.json(result, { status: 409 });
-  return NextResponse.json(result, { status: 201 });
+  try {
+    const result = await createBooking(draft);
+    if (!result.booking) return NextResponse.json(result, { status: 409 });
+    return NextResponse.json(result, { status: 201 });
+  } catch (error) {
+    // Keep the provider response in server logs for Vercel debugging, while
+    // returning a safe JSON response that the client will not turn into a mock
+    // confirmation.
+    console.error("Booking persistence failed:", error);
+    return NextResponse.json(
+      {
+        booking: null,
+        errors: {},
+        message: "Không thể lưu lịch trên hệ thống. Lịch chưa được tạo; vui lòng thử lại sau."
+      },
+      { status: 503 }
+    );
+  }
 }

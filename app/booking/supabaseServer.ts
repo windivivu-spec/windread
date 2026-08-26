@@ -99,6 +99,13 @@ export function isSupabaseConfigured() {
   return Boolean(supabaseConfig());
 }
 
+function canCreateMockBookings() {
+  // A live site must never acknowledge a booking that only exists in memory.
+  // Mock creation exists strictly for local development when no Supabase project
+  // has been configured.
+  return process.env.NODE_ENV === "development";
+}
+
 async function restFetch<T>(path: string, init: RequestInit = {}) {
   const config = supabaseConfig();
   if (!config) throw new Error("Supabase env is not configured.");
@@ -402,6 +409,14 @@ export async function createBooking(draft: BookingDraft) {
   };
 
   if (!isSupabaseConfigured()) {
+    if (!canCreateMockBookings()) {
+      return {
+        booking: null,
+        errors: {},
+        message: "Hệ thống đặt lịch đang tạm thời không kết nối được. Vui lòng thử lại sau hoặc gọi shop để được hỗ trợ."
+      };
+    }
+
     await Promise.all(bookings.flatMap((booking) => [
       syncCreatedBookingToCalendar(booking),
       notifySelectedBarber(booking)

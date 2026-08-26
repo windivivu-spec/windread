@@ -1,6 +1,5 @@
 import { barbers, branches, seedBookings, services } from "./mockBookingData";
-import { getAvailableSlots, getBookingEnd } from "./availabilityUtils";
-import { syncBookingToCalendar } from "./calendar";
+import { getAvailableSlots } from "./availabilityUtils";
 import type { Booking, BookingDraft, BookingStatus } from "./types";
 
 const STORAGE_KEY = "windread-bookings";
@@ -176,60 +175,15 @@ export const bookingService = {
           message: apiError.message ?? "Không tạo được booking."
         };
       }
-    }
 
-    const service = services.find((item) => item.id === draft.serviceId);
-    if (!service) return { booking: null, errors, message: "Dịch vụ không tồn tại." };
-
-    const availableSlots = this.getAvailableSlots(draft.branchId, draft.serviceId, draft.barberId, draft.date);
-    const selectedSlot = availableSlots.find((slot) => slot.startTime === draft.slot);
-    if (!selectedSlot) {
+      // Do not manufacture a browser-only booking after an API failure. The
+      // confirmation screen is reserved for records returned by the server.
       return {
         booking: null,
-        errors: { slot: "Slot này vừa được đặt hoặc không còn khả dụng." },
-        message: "Slot không còn trống. Chọn khung giờ khác nhé."
+        errors: {},
+        message: "Không kết nối được hệ thống đặt lịch. Lịch chưa được tạo; vui lòng thử lại sau."
       };
     }
-
-    const selectedBarberIds = draft.barberId === "any"
-      ? selectedSlot.barberIds.slice(0, draft.guestCount)
-      : [draft.barberId];
-    if (selectedBarberIds.length < draft.guestCount) {
-      return {
-        booking: null,
-        errors: { slot: "Khung giờ này không còn đủ thợ cho cả nhóm." },
-        message: "Khung giờ này không còn đủ ghế. Hãy chọn giờ khác nhé."
-      };
-    }
-    const createdAt = new Date().toISOString();
-    const groupId = draft.guestCount > 1 ? `GRP-${Date.now().toString(36).toUpperCase()}` : undefined;
-    const bookings = selectedBarberIds.map((barberId, index): Booking => ({
-      id: `WD-${Date.now().toString(36).toUpperCase()}${index + 1}`,
-      branchId: draft.branchId,
-      serviceId: draft.serviceId,
-      barberId,
-      customerName: draft.customerName.trim(),
-      customerPhone: draft.customerPhone.trim(),
-      customerEmail: draft.customerEmail.trim() || undefined,
-      note: draft.note.trim() || undefined,
-      startTime: selectedSlot.startTime,
-      endTime: getBookingEnd(selectedSlot.startTime, service.durationMinutes),
-      status: "pending",
-      guestCount: draft.guestCount,
-      groupId,
-      createdAt
-    }));
-
-    writeStoredBookings([...readStoredBookings(), ...bookings]);
-    await Promise.all(bookings.map((booking) =>
-      syncBookingToCalendar(booking, { barberEmail: barbers.find((barber) => barber.id === booking.barberId)?.email })
-    ));
-
-    return {
-      booking: bookings[0],
-      errors: {},
-      message: draft.guestCount > 1 ? "Đã giữ ghế cho cả nhóm." : "Đặt lịch thành công."
-    };
   },
 
   async updateBookingStatus(bookingId: string, status: BookingStatus) {
