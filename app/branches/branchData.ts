@@ -30,7 +30,7 @@ export const branchProfiles: BranchProfile[] = [
       vi: "Không gian chính cho locs, braid và những buổi tư vấn texture kỹ hơn.",
       en: "Our main space for locs, braids and deeper texture consultations."
     },
-    barberIds: ["kai-loc", "linh-color", "son-line", "khoa-blend"]
+    barberIds: ["duy", "thuan", "phuc", "win-dread"]
   },
   {
     id: "chuong-duong",
@@ -49,7 +49,7 @@ export const branchProfiles: BranchProfile[] = [
       vi: "Điểm hẹn cho barber cổ điển, fade sắc và những form cắt gọn hàng ngày.",
       en: "A home for classic barbering, sharp fades and precise everyday cuts."
     },
-    barberIds: ["minh-fade", "ryo-beard", "bao-crop", "hieu-wave"]
+    barberIds: ["huy", "van-huy", "tinh", "kien"]
   }
 ];
 

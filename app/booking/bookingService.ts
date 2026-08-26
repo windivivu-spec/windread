@@ -43,9 +43,8 @@ export const bookingService = {
     return branches;
   },
 
-  getServices(_branchId?: string) {
-    // WINDREAD now uses the An Thuong catalogue as one shared price list.
-    return services;
+  getServices(branchId?: string) {
+    return branchId ? services.filter((service) => service.branchId === branchId) : services;
   },
 
   getBarbers(branchId?: string, serviceId?: string) {

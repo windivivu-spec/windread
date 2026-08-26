@@ -51,7 +51,10 @@ const localBusinessJsonLd = {
   servesCuisine: undefined,
   serviceType: ["Starter Locs", "Retwist", "Locs Styling", "Braid", "Clean Fade", "Classic Cut"],
   areaServed: "Viet Nam",
-  sameAs: ["https://instagram.com", "https://facebook.com", "https://tiktok.com"]
+  sameAs: [
+    "https://www.instagram.com/windread.locs_barber.club",
+    "https://www.facebook.com/profile.php?id=61583308184992"
+  ]
 };
 
 export default function RootLayout({

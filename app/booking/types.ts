@@ -28,6 +28,7 @@ export type Service = {
   name: string;
   description: string;
   price: number;
+  priceLabel?: string;
   durationMinutes: number;
 };
 

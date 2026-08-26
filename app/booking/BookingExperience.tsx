@@ -21,7 +21,7 @@ type StoredBooking = {
 
 const initialDraft: BookingDraft = {
   branchId: "chuong-duong",
-  serviceId: "an-haircut-styling",
+  serviceId: "cd-haircut",
   barberId: "any",
   date: getUpcomingDays(1)[0]?.value ?? "",
   slot: "",
@@ -635,7 +635,7 @@ function ServiceSelector({
           >
             <strong>{service.name}</strong>
             <span>{service.durationMinutes} phút</span>
-            <small>{formatCurrency(service.price)}</small>
+            <small>{service.priceLabel ?? formatCurrency(service.price)}</small>
           </button>
         ))}
       </div>

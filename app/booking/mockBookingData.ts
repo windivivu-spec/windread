@@ -20,7 +20,7 @@ export const branches: Branch[] = [
 const allServices: Service[] = [
   {
     id: "an-dreadlock",
-    branchId: "an-thuong",
+    branchId: "chuong-duong",
     name: "Dreadlock",
     description: "Tạo dreadlock theo độ dài, mật độ và nền tóc; crew tư vấn trước khi làm.",
     price: 2000000,
@@ -500,10 +500,13 @@ const allServices: Service[] = [
   }
 ];
 
-// The An Thuong price list is the single shared catalogue for every branch.
-// Keep the old Chương Dương entries above only as source-history until they
-// can be removed in a later data-retention migration.
-export const services = allServices.filter((service) => service.branchId === "an-thuong");
+// Keep both current branch catalogues available when Supabase is not configured.
+export const services = allServices;
+
+const serviceIdsByBranch = {
+  "an-thuong": services.filter((service) => service.branchId === "an-thuong").map((service) => service.id),
+  "chuong-duong": services.filter((service) => service.branchId === "chuong-duong").map((service) => service.id)
+};
 
 const weekdayHours = {
   monday: { start: "10:00", end: "21:00" },
@@ -517,110 +520,91 @@ const weekdayHours = {
 
 export const barbers: Barber[] = [
   {
-    id: "kai-loc",
-    branchId: "an-thuong",
-    name: "Kai Loc",
+    id: "huy",
+    branchId: "chuong-duong",
+    name: "HUY",
     email: "kai.loc@windread.vn",
     avatar: "/images/barber/barber1.webp",
-    title: "Locs Expert",
+    title: "BARBER",
     specialties: ["Locs", "Uốn texture", "Combo street reset"],
-    serviceIds: [
-      "an-dreadlock", "an-single-dread", "an-pair-dreads", "an-cornrow", "an-cornrow-10-16",
-      "an-braids-men", "an-braids-women", "an-locs-styling", "an-locs-washing",
-      "an-maintenance-1-worker-first-hour", "an-maintenance-1-worker-additional-hour",
-      "an-maintenance-2-workers-first-hour", "an-maintenance-2-workers-second-hour", "an-maintenance-2-workers-additional-hour"
-    ],
+    serviceIds: serviceIdsByBranch["chuong-duong"],
     workingHours: weekdayHours
   },
   {
-    id: "minh-fade",
+    id: "van-huy",
     branchId: "chuong-duong",
-    name: "Minh Fade",
+    name: "VĂN HUY",
     email: "minh.fade@windread.vn",
     avatar: "/images/barber/barber2.webp",
-    title: "Fade Specialist",
+    title: "BARBER",
     specialties: ["Clean fade", "Classic cut", "Line up"],
-    serviceIds: ["an-haircut-styling", "an-hair-styling", "an-basic-hair-tattoo", "an-hair-washing"],
+    serviceIds: serviceIdsByBranch["chuong-duong"],
     workingHours: weekdayHours
   },
   {
-    id: "ryo-beard",
+    id: "tinh",
     branchId: "chuong-duong",
-    name: "Ryo Beard",
+    name: "TÌNH",
     email: "ryo.beard@windread.vn",
     avatar: "/images/barber/barber3.webp",
-    title: "Beard & Shave",
+    title: "BARBER",
     specialties: ["Hot towel", "Cạo mặt", "Beard shape"],
-    serviceIds: ["an-haircut-styling", "an-basic-beard-trim-side", "an-hot-cold-towel-shave", "an-beard-dye"],
+    serviceIds: serviceIdsByBranch["chuong-duong"],
     workingHours: weekdayHours
   },
   {
-    id: "linh-color",
+    id: "phuc",
     branchId: "an-thuong",
-    name: "Linh Color",
+    name: "PHÚC",
     email: "linh.color@windread.vn",
     avatar: "/images/barber/barber4.webp",
-    title: "Color Artist",
+    title: "BARBER",
     specialties: ["Nhuộm tóc", "Uốn tóc", "Treatment"],
-    serviceIds: [
-      "an-basic-perm", "an-curly-perm", "an-ruffled-perm", "an-texture-perm", "an-premlock-perm", "an-afro-perm",
-      "an-hair-bleach", "an-root-bleaching", "an-hair-pressed-down", "an-hair-restore", "an-black-dye",
-      "an-locs-styling", "an-braids-men", "an-braids-women"
-    ],
+    serviceIds: serviceIdsByBranch["an-thuong"],
     workingHours: weekdayHours
   },
   {
-    id: "bao-crop",
-    branchId: "chuong-duong",
-    name: "Bao Crop",
+    id: "thuan",
+    branchId: "an-thuong",
+    name: "THUẬN",
     email: "bao.crop@windread.vn",
     avatar: "/images/barber/barber5.webp",
-    title: "Crop & Texture",
+    title: "BARBER",
     specialties: ["Textured crop", "Layer gọn", "Wash finish"],
-    serviceIds: ["an-haircut-styling", "an-hair-styling", "an-basic-hair-tattoo", "an-hair-washing", "an-hair-pressed-down", "an-basic-perm"],
+    serviceIds: serviceIdsByBranch["an-thuong"],
     workingHours: weekdayHours
   },
   {
-    id: "son-line",
-    branchId: "an-thuong",
-    name: "Son Line",
+    id: "kien",
+    branchId: "chuong-duong",
+    name: "KIÊN",
     email: "son.line@windread.vn",
     avatar: "/images/barber/barber6.webp",
-    title: "Line-up Artist",
+    title: "BARBER",
     specialties: ["Line up", "Skin fade", "Cạo mặt"],
-    serviceIds: [
-      "an-haircut-styling", "an-hot-cold-towel-shave", "an-basic-beard-trim-side", "an-hair-styling",
-      "an-hair-washing", "an-afro-wash-blowdry", "an-basic-hair-tattoo", "an-beard-dye",
-      "an-gentlemans-set-1", "an-gentlemans-set-2", "an-vip-gentlemans-combo",
-      "an-locs-styling", "an-cornrow", "an-single-dread",
-      "an-maintenance-2-workers-first-hour", "an-maintenance-2-workers-second-hour", "an-maintenance-2-workers-additional-hour"
-    ],
+    serviceIds: serviceIdsByBranch["chuong-duong"],
     workingHours: weekdayHours
   },
   {
-    id: "hieu-wave",
-    branchId: "chuong-duong",
-    name: "Hieu Wave",
+    id: "duy",
+    branchId: "an-thuong",
+    name: "DUY",
     email: "hieu.wave@windread.vn",
     avatar: "/images/barber/barber7.webp",
-    title: "Wave Stylist",
+    title: "BARBER",
     specialties: ["Uốn tóc", "Nhuộm tone trầm", "Treatment"],
-    serviceIds: ["an-hair-restore", "an-hair-pressed-down", "an-basic-perm", "an-curly-perm", "an-ruffled-perm", "an-premlock-perm", "an-afro-perm", "an-hair-bleach", "an-root-bleaching", "an-black-dye"],
+    serviceIds: serviceIdsByBranch["an-thuong"],
     workingHours: weekdayHours
   },
   {
-    id: "khoa-blend",
+    id: "win-dread",
     branchId: "an-thuong",
-    name: "Khoa Blend",
+    name: "WIN DREAD",
     email: "khoa.blend@windread.vn",
     avatar: "/images/barber/barber8.webp",
-    title: "Texture & Color Artist",
+    title: "FOUNDER",
     specialties: ["Texture", "Nhuộm tone trầm", "Treatment"],
-    serviceIds: [
-      "an-basic-perm", "an-curly-perm", "an-ruffled-perm", "an-texture-perm", "an-premlock-perm", "an-afro-perm",
-      "an-hair-bleach", "an-root-bleaching", "an-hair-pressed-down", "an-hair-restore", "an-black-dye",
-      "an-locs-styling", "an-braids-men", "an-braids-women"
-    ],
+    serviceIds: serviceIdsByBranch["an-thuong"],
     workingHours: weekdayHours
   }
 ];
@@ -628,9 +612,9 @@ export const barbers: Barber[] = [
 export const seedBookings: Booking[] = [
   {
     id: "WD-260706-1015",
-    branchId: "an-thuong",
-    serviceId: "an-maintenance-1-worker-first-hour",
-    barberId: "son-line",
+    branchId: "chuong-duong",
+    serviceId: "cd-haircut",
+    barberId: "kien",
     customerName: "Khách đã đặt",
     customerPhone: "0393549656",
     startTime: "2026-07-06T10:30:00+07:00",
@@ -641,9 +625,9 @@ export const seedBookings: Booking[] = [
   },
   {
     id: "WD-260706-1600",
-    branchId: "chuong-duong",
+    branchId: "an-thuong",
     serviceId: "an-black-dye",
-    barberId: "hieu-wave",
+    barberId: "duy",
     customerName: "Khách đã đặt",
     customerPhone: "0900000000",
     startTime: "2026-07-06T15:00:00+07:00",

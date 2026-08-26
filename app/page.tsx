@@ -37,9 +37,8 @@ type HomeGalleryTab =
 type ServiceExplorerKey = "barber" | "dread" | "braid";
 
 const socialLinks = [
-  { label: "Instagram", icon: "IG", href: "https://instagram.com" },
-  { label: "Facebook", icon: "FB", href: "https://facebook.com" },
-  { label: "TikTok", icon: "TT", href: "https://tiktok.com" }
+  { label: "Instagram", icon: "IG", href: "https://www.instagram.com/windread.locs_barber.club" },
+  { label: "Facebook", icon: "FB", href: "https://www.facebook.com/profile.php?id=61583308184992" }
 ];
 
 const heroHighlights = [
@@ -193,110 +192,102 @@ const barberServices = [
 
 const priceBoards = [
   {
-    branch: "Cơ sở 2 · An Thượng",
-    address: "35–37 An Thượng 29 · Locs, dreadlock & braids",
+    id: "an-thuong",
+    branch: "Cơ sở 1 · An Thượng",
+    address: "35–37 An Thượng 29 · Locs, dreadlock, braids & grooming",
     groups: [
       {
-        title: "Dreadlock & Maintenance",
+        title: "Barber, Combo & VIP",
         rows: [
-          ["Dreadlock", "Theo độ dài, mật độ và nền tóc", "2,000,000–8,000,000đ"],
-          ["Single Dread", "1 dread, dài 20–30cm", "150,000đ / dread"],
-          ["Pair of Dreads", "1 cặp dread, dài 30–40cm", "300,000đ / cặp"],
-          ["Maintenance · 1 thợ", "Giờ đầu 400,000đ; từ giờ thứ hai", "300,000đ / giờ"],
-          ["Maintenance · 2 thợ", "Giờ đầu 600,000đ; giờ 2 / từ giờ 3", "500,000đ / 400,000đ mỗi giờ"]
+          ["Cắt tóc & tạo kiểu", "Với Uppercut · 45 phút", "150.000đ"],
+          ["Cạo khăn nóng & lạnh", "Hot & cold towel shave · 30 phút", "120.000đ"],
+          ["Tỉa râu cơ bản / cắt side", "Chọn một dịch vụ · 25 phút", "100.000đ"],
+          ["Sấy & tạo kiểu tóc", "Hair styling", "100.000đ"],
+          ["Gội đầu thường", "Hair washing", "50.000đ"],
+          ["Gội & làm sạch Dreads / Locs", "Tùy độ dài", "50.000–150.000đ"],
+          ["Gội & sấy tóc Afro", "Afro hair wash & blow-dry", "100.000–200.000đ"],
+          ["Tattoo tóc cơ bản", "Theo thiết kế", "50.000–150.000đ"],
+          ["Gentleman's Set I", "Cắt + cạo khăn nóng/lạnh + Uppercut", "250.000đ"],
+          ["Gentleman's Set II", "Cắt + gội + cạo khăn nóng/lạnh + Uppercut", "290.000đ"],
+          ["VIP Gentleman's Combo", "Chỉ nhận đặt lịch trước", "390.000đ"]
         ]
       },
       {
-        title: "Cornrow, Braids & Styling",
+        title: "Dreadlock, Braids & Maintenance",
         rows: [
-          ["Cornrow 2–8 line", "Tết theo số line", "150,000đ / line"],
-          ["Cornrow 10–16 line", "Tết theo số line", "130,000đ / line"],
-          ["Braids nam", "Box braids / pattern", "1,000,000–3,000,000đ"],
-          ["Braids nữ", "Box braids theo độ dài & mật độ", "3,000,000–4,000,000đ"],
-          ["Styling design", "Twist, cornrow hoặc braids", "400,000đ / giờ"]
+          ["Dreadlock", "Theo độ dài, mật độ và nền tóc", "2.000.000–8.000.000đ"],
+          ["Single Dread", "1 dread, dài 20–30cm", "150.000đ / dread"],
+          ["Pair of Dreads", "1 cặp dread, dài 30–40cm", "300.000đ / cặp"],
+          ["Cornrow 2–8 line", "Tết theo số line", "150.000đ / line"],
+          ["Cornrow 10–16 line", "Tết theo số line", "130.000đ / line"],
+          ["Braids nam", "Box braids / pattern", "1.000.000–3.000.000đ"],
+          ["Braids nữ", "Box braids theo độ dài & mật độ", "3.000.000–4.000.000đ"],
+          ["Styling design", "Twist, cornrow hoặc braids", "400.000đ / giờ"],
+          ["Maintenance · 1 thợ", "Giờ đầu 400.000đ; từ giờ thứ hai", "300.000đ / giờ"],
+          ["Maintenance · 2 thợ", "Giờ đầu 600.000đ; giờ 2 / từ giờ 3", "500.000đ / 400.000đ mỗi giờ"]
         ]
       },
       {
         title: "Add-on xử lý tóc",
         rows: [
-          ["Uốn basic", "Uốn cơ bản", "300,000–400,000đ"],
-          ["Uốn xoăn", "Curly perm", "350,000–450,000đ"],
-          ["Uốn Ruffled", "Ruffled perm", "400,000–450,000đ"],
-          ["Uốn sâu", "Texture perm", "400,000–450,000đ"],
-          ["Uốn PremLock", "Theo độ dài tóc", "800,000–1,300,000đ"],
-          ["Uốn Afro", "Theo độ dài tóc", "1,000,000–1,500,000đ"],
-          ["Tẩy tóc", "Tính theo lần tẩy", "250,000đ / lần"],
-          ["Tẩy nối chân", "Theo nền tóc", "400,000–600,000đ"],
-          ["Ép side", "Hair pressed down", "250,000đ"],
-          ["Phục hồi tóc", "Hair restore", "300,000–400,000đ"],
-          ["Nhuộm râu", "Beard dye", "150,000–250,000đ"],
-          ["Nhuộm đen", "Black dye", "150,000–250,000đ"]
-        ]
-      },
-      {
-        title: "Barber, Combo & VIP",
-        rows: [
-          ["Cắt tóc & tạo kiểu", "Với Uppercut · 45 phút", "150,000đ"],
-          ["Cạo khăn nóng & lạnh", "Hot & cold towel shave · 30 phút", "120,000đ"],
-          ["Tỉa râu cơ bản / cắt side", "Chọn một dịch vụ · 25 phút", "100,000đ"],
-          ["Sấy & tạo kiểu tóc", "Hair styling", "100,000đ"],
-          ["Gội đầu thường", "Hair washing", "50,000đ"],
-          ["Gội & làm sạch Dreads / Locs", "Tùy độ dài", "50,000–150,000đ"],
-          ["Gội & sấy tóc Afro", "Afro hair wash & blow-dry", "100,000–200,000đ"],
-          ["Tattoo tóc cơ bản", "Theo thiết kế", "50,000–150,000đ"],
-          ["Gentleman's Set I", "Cắt + cạo khăn nóng/lạnh + Uppercut", "250,000đ"],
-          ["Gentleman's Set II", "Cắt + gội + cạo khăn nóng/lạnh + Uppercut", "290,000đ"],
-          ["VIP Gentleman's Combo", "Chỉ nhận đặt lịch trước", "390,000đ"]
+          ["Uốn basic", "Uốn cơ bản", "300.000–400.000đ"],
+          ["Uốn xoăn", "Curly perm", "350.000–450.000đ"],
+          ["Uốn Ruffled", "Ruffled perm", "400.000–450.000đ"],
+          ["Uốn sâu", "Texture perm", "400.000–450.000đ"],
+          ["Uốn PremLock", "Theo độ dài tóc", "800.000–1.300.000đ"],
+          ["Uốn Afro", "Theo độ dài tóc", "1.000.000–1.500.000đ"],
+          ["Tẩy tóc", "Tính theo lần tẩy", "250.000đ / lần"],
+          ["Tẩy nối chân", "Theo nền tóc", "400.000–600.000đ"],
+          ["Ép side", "Hair pressed down", "250.000đ"],
+          ["Phục hồi tóc", "Hair restore", "300.000–400.000đ"],
+          ["Nhuộm râu", "Beard dye", "150.000–250.000đ"],
+          ["Nhuộm đen", "Black dye", "150.000–250.000đ"]
         ]
       }
     ]
   },
   {
-    branch: "Cơ sở 1 · Chương Dương",
+    id: "chuong-duong",
+    branch: "Cơ sở 2 · Chương Dương",
     address: "223 Chương Dương · Barber, uốn, nhuộm & chăm sóc tóc",
     groups: [
       {
-        title: "Haircut & Styling",
+        title: "Haircut, Beard & Facial Care",
         rows: [
-          ["Cắt tóc & tạo kiểu", "Với pomade", "120,000đ"],
-          ["Fade hai bên & gáy", "Làm gọn side và gáy", "90,000đ"],
-          ["Cắt tóc nam dài", "Chỉnh form tóc nam dài", "200,000đ"],
-          ["Tattoo tóc cơ bản", "Theo thiết kế", "50,000–150,000đ"],
-          ["Gội đầu thư giãn", "Hair washing", "40,000đ"],
-          ["Cắt tóc bởi chuyên gia", "Chỉ nhận lịch hẹn trước", "160,000đ"]
+          ["Cắt tóc & tạo kiểu", "Với pomade", "120.000đ"],
+          ["Fade hai bên & gáy", "Làm gọn side và gáy", "90.000đ"],
+          ["Cắt tóc nam dài", "Chỉnh form tóc nam dài", "200.000đ"],
+          ["Tattoo tóc cơ bản", "Theo thiết kế", "50.000–150.000đ"],
+          ["Gội đầu thư giãn", "Hair washing", "40.000đ"],
+          ["Cắt tóc bởi chuyên gia", "Chỉ nhận lịch hẹn trước", "160.000đ"],
+          ["Tỉa râu", "Tạo form râu", "80.000đ"],
+          ["Tỉa râu cơ bản / cạo viền", "Làm gọn đường viền", "70.000đ"],
+          ["Cạo đầu / cạo mặt", "Dịch vụ cạo cơ bản", "70.000đ"],
+          ["Cạo khăn nóng & lạnh", "Hot & cold towel shave", "60.000đ"]
         ]
       },
       {
-        title: "Chăm sóc & uốn tóc",
+        title: "Hair Care & Perming",
         rows: [
-          ["Gội & sấy tạo kiểu", "Với pomade", "70,000đ"],
-          ["Phục hồi Keratin", "Cho tóc khô xơ", "200,000–400,000đ"],
-          ["Ép side", "Down perm", "250,000đ"],
-          ["Uốn basic", "Theo độ dài và nền tóc", "300,000–400,000đ"],
-          ["Uốn xoăn", "Curly perm", "350,000–450,000đ"],
-          ["Uốn Ruffled", "Tạo texture", "400,000–500,000đ"],
-          ["Uốn PremLock", "Theo độ dài và nền tóc", "800,000–1,200,000đ"],
-          ["Uốn Afro", "Theo độ dài và nền tóc", "1,000,000–1,500,000đ"]
+          ["Gội & sấy tạo kiểu", "Với pomade", "70.000đ"],
+          ["Phục hồi Keratin", "Cho tóc khô xơ", "200.000–400.000đ"],
+          ["Ép side", "Down perm", "250.000đ"],
+          ["Uốn basic", "Theo độ dài và nền tóc", "300.000–400.000đ"],
+          ["Uốn xoăn", "Curly perm", "350.000–450.000đ"],
+          ["Uốn Ruffled", "Tạo texture", "400.000–500.000đ"],
+          ["Uốn PremLock", "Theo độ dài và nền tóc", "800.000–1.200.000đ"],
+          ["Uốn Afro", "Theo độ dài và nền tóc", "1.000.000–1.500.000đ"]
         ]
       },
       {
-        title: "Tẩy & nhuộm tóc",
+        title: "Bleaching & Coloring",
         rows: [
-          ["Tẩy tóc", "Tính theo mỗi lần tẩy", "250,000đ / session"],
-          ["Tẩy nối chân tóc", "Bleach root touch-up", "500,000–900,000đ"],
-          ["Nhuộm tóc thời trang", "Theo nền tóc", "250,000–350,000đ"],
-          ["Nhuộm đen", "Hair blackening", "150,000–250,000đ"],
-          ["Nhuộm râu", "Beard coloring", "150,000–250,000đ"],
-          ["Nhuộm râu cơ bản", "Basic beard coloring", "100,000đ"]
-        ]
-      },
-      {
-        title: "Beard & Facial Care",
-        rows: [
-          ["Tỉa râu", "Tạo form râu", "80,000đ"],
-          ["Tỉa râu cơ bản / cạo viền", "Làm gọn đường viền", "70,000đ"],
-          ["Cạo đầu / cạo mặt", "Dịch vụ cạo cơ bản", "70,000đ"],
-          ["Cạo khăn nóng & lạnh", "Hot & cold towel shave", "60,000đ"]
+          ["Tẩy tóc", "Tính theo mỗi lần tẩy", "250.000đ / lần"],
+          ["Tẩy nối chân tóc", "Bleach root touch-up", "500.000–900.000đ"],
+          ["Nhuộm tóc thời trang", "Theo nền tóc", "250.000–350.000đ"],
+          ["Nhuộm đen", "Hair blackening", "150.000–250.000đ"],
+          ["Nhuộm râu", "Beard coloring", "150.000–250.000đ"],
+          ["Nhuộm râu cơ bản", "Basic beard coloring", "100.000đ"]
         ]
       }
     ]
@@ -305,92 +296,84 @@ const priceBoards = [
 
 const barbers = [
   {
-    bookingId: "kai-loc",
-    name: "Kai Loc",
-    role: "Locs Expert",
+    bookingId: "huy",
+    name: "HUY",
+    role: "BARBER",
     specialties: ["Locs", "Fade"],
     years: "6 năm",
     bio: "Fade mượt, line up sắc và form cắt hợp phong cách streetwear.",
     style: "Low fade, burst fade, sharp line up",
-    image: "/images/barber/barber1.webp",
-    instagram: "https://instagram.com/kailoc"
+    image: "/images/barber/barber1.webp"
   },
   {
-    bookingId: "minh-fade",
-    name: "Minh Fade",
-    role: "Fade Specialist",
+    bookingId: "van-huy",
+    name: "VĂN HUY",
+    role: "BARBER",
     specialties: ["Fade"],
     years: "6 năm",
     bio: "Tay kéo gọn, fade mượt, hợp streetwear và form mặt châu Á.",
     style: "Low fade, burst fade, sharp line up",
-    image: "/images/barber/barber2.webp",
-    instagram: "https://instagram.com/minhfade"
+    image: "/images/barber/barber2.webp"
   },
   {
-    bookingId: "ryo-beard",
-    name: "Ryo Beard",
-    role: "Beard & Shave",
+    bookingId: "tinh",
+    name: "TÌNH",
+    role: "BARBER",
     specialties: ["Beard"],
     years: "7 năm",
     bio: "Classic barber rituals, hot towel, beard shape và finish premium.",
     style: "Tapered beard, calm shave, old-school finish",
-    image: "/images/barber/barber3.webp",
-    instagram: "https://instagram.com/ryobeard"
+    image: "/images/barber/barber3.webp"
   },
   {
-    bookingId: "linh-color",
-    name: "Linh Color",
-    role: "Color Artist",
+    bookingId: "phuc",
+    name: "PHÚC",
+    role: "BARBER",
     specialties: ["Classic"],
     years: "4 năm",
     bio: "Tư vấn màu, texture và treatment phù hợp với nền tóc hiện tại.",
     style: "Color, texture, treatment",
-    image: "/images/barber/barber4.webp",
-    instagram: "https://instagram.com/linhcolor"
+    image: "/images/barber/barber4.webp"
   },
   {
-    bookingId: "bao-crop",
-    name: "Bao Crop",
-    role: "Crop & Texture",
+    bookingId: "thuan",
+    name: "THUẬN",
+    role: "BARBER",
     specialties: ["Classic"],
     years: "5 năm",
     bio: "Xử lý layer và texture tự nhiên cho các form tóc có độ chuyển động.",
     style: "Textured crop, layered cut, natural volume",
-    image: "/images/barber/barber5.webp",
-    instagram: "https://instagram.com/baocrop"
+    image: "/images/barber/barber5.webp"
   },
   {
-    bookingId: "son-line",
-    name: "Son Line",
-    role: "Line-up Artist",
+    bookingId: "kien",
+    name: "KIÊN",
+    role: "BARBER",
     specialties: ["Fade"],
     years: "4 năm",
     bio: "Tập trung vào đường viền tóc, taper và finish sạch từ mọi góc nhìn.",
     style: "Line up, taper, clean finish",
-    image: "/images/barber/barber6.webp",
-    instagram: "https://instagram.com/sonline"
+    image: "/images/barber/barber6.webp"
   },
   {
-    bookingId: "hieu-wave",
-    name: "Hieu Wave",
-    role: "Wave Stylist",
+    bookingId: "duy",
+    name: "DUY",
+    role: "BARBER",
     specialties: ["Classic"],
     years: "4 năm",
     bio: "Tư vấn texture, màu trầm và treatment để giữ tóc khỏe sau xử lý.",
     style: "Wave, color, treatment",
-    image: "/images/barber/barber7.webp",
-    instagram: "https://instagram.com/hieuwave"
+    image: "/images/barber/barber7.webp"
   },
   {
-    bookingId: "khoa-blend",
-    name: "Khoa Blend",
-    role: "Texture & Color Artist",
+    bookingId: "win-dread",
+    name: "WIN DREAD",
+    role: "FOUNDER",
     specialties: ["Classic"],
     years: "5 năm",
     bio: "Xử lý texture, màu trầm và những form tóc cần độ chuyển tự nhiên.",
     style: "Texture crop, soft color, natural finish",
-    image: "/images/barber/barber8.webp",
-    instagram: "https://instagram.com/khoablend"
+    image: "/images/barber/barber8.webp"
   }
 ];
 
@@ -1002,8 +985,8 @@ export function SitePage({ page }: { page?: PageKey }) {
             <span>{isEnglish ? "First-timer consultation available. Book ahead so the crew can check texture and timing." : "Có tư vấn cho khách làm locs lần đầu. Đặt trước để crew check chất tóc và thời gian phù hợp."}</span>
           </div>
           <div className="services-grid">
-            <ServiceColumn title="Cơ sở 2 · An Thượng · Locs & Braids" items={displayedLocServices} />
-            <ServiceColumn title="Cơ sở 1 · Chương Dương · Barber & Texture" items={displayedBarberServices} />
+            <ServiceColumn title="Cơ sở 2 - An Thượng - Locs & Braids" items={displayedLocServices} />
+            <ServiceColumn title="Cơ sở 1 - Chương Dương - Barber & Texture" items={displayedBarberServices} />
           </div>
         </section>
       )}
@@ -1112,7 +1095,7 @@ export function SitePage({ page }: { page?: PageKey }) {
                     </div>
                     <div>
                       <dt>{isEnglish ? "Focus" : "Thế mạnh"}</dt>
-                      <dd>{(isEnglish ? branch.specialties.en : branch.specialties.vi).join(" · ")}</dd>
+                      <dd>{(isEnglish ? branch.specialties.en : branch.specialties.vi).join(" - ")}</dd>
                     </div>
                   </dl>
                   <div className="barbers-branch-actions">
@@ -1140,15 +1123,10 @@ export function SitePage({ page }: { page?: PageKey }) {
                             />
                           </div>
                           <div className="barber-card-content">
-                            <p>{barber.role} / {barber.years}</p>
                             <h3>{barber.name}</h3>
-                            <span>{barber.style}</span>
-                            <p className="barber-card-bio">{barber.bio}</p>
+                            <p className="barber-card-title">{barber.role}</p>
                             <div className="barber-card-actions">
                               <a className="barber-book-link" href={`/booking?branch=${branch.id}&barber=${barber.bookingId}`}>{isEnglish ? "Book" : "Đặt lịch"}</a>
-                              <a href={barber.instagram} target="_blank" rel="noreferrer" aria-label={`${barber.name} Instagram`}>
-                                Instagram
-                              </a>
                             </div>
                           </div>
                         </article>
@@ -1179,31 +1157,70 @@ export function SitePage({ page }: { page?: PageKey }) {
         <section id="pricing" className="pricing section-shell page-view">
           <div className="section-heading reveal">
             <p className="eyebrow">{pageEyebrows.pricing[language]}</p>
-            <h2>{isEnglish ? "WINDREAD pricing board" : "Bảng giá WINDREAD"}</h2>
+            <h2>{isEnglish ? "WINDREAD price menu" : "Bảng giá WINDREAD"}</h2>
           </div>
           <div className="pricing-board reveal">
-            {priceBoards.map((board) => (
-              <section className="pricing-branch" key={board.branch} aria-labelledby={board.branch.replaceAll(" ", "-")}>
-                <div className="pricing-branch-heading">
-                  <h3 id={board.branch.replaceAll(" ", "-")}>{board.branch}</h3>
-                  <p>{board.address}</p>
-                </div>
-                {board.groups.map((group) => (
-                  <section key={`${board.branch}-${group.title}`} aria-labelledby={`${board.branch}-${group.title}`.replaceAll(" ", "-")}>
-                    <h4 id={`${board.branch}-${group.title}`.replaceAll(" ", "-")}>{group.title}</h4>
-                    <div className="price-table">
-                      {group.rows.map(([name, desc, price]) => (
-                        <div className="price-row" key={name}>
-                          <strong>{name}</strong>
-                          <span>{desc}</span>
-                          <b>{price}</b>
+            <p className="pricing-intro">
+              {isEnglish
+                ? "Choose your location first. Each branch has its own bookable menu and crew."
+                : "Chọn đúng cơ sở trước khi đặt lịch. Mỗi chi nhánh có bảng giá và đội ngũ phục vụ riêng."}
+            </p>
+            <div className="pricing-branches">
+              {priceBoards.map((board) => (
+                <section className="pricing-branch" key={board.id} aria-labelledby={`price-${board.id}`}>
+                  <div className="pricing-branch-heading">
+                    <h3 id={`price-${board.id}`}>{board.branch}</h3>
+                    <p>{board.address}</p>
+                  </div>
+                  <div className="pricing-groups">
+                    {board.groups.map((group) => (
+                      <section className="pricing-group" key={`${board.id}-${group.title}`}>
+                        <h4>{group.title}</h4>
+                        <div className="price-table">
+                          {group.rows.map(([name, desc, price]) => (
+                            <div className="price-row" key={name}>
+                              <div>
+                                <strong>
+                                  {name}
+                                  {name === "Gentleman's Set I" && <em className="best-seller">Bestseller</em>}
+                                </strong>
+                                <span>{desc}</span>
+                              </div>
+                              <b>{price}</b>
+                            </div>
+                          ))}
                         </div>
-                      ))}
+                      </section>
+                    ))}
+                  </div>
+                  {board.id === "an-thuong" && (
+                    <div className="pricing-extras">
+                      <section className="free-utilities" aria-labelledby="free-utilities-title">
+                        <h4 id="free-utilities-title">{isEnglish ? "Free utilities" : "Tiện ích miễn phí"}</h4>
+                        <p>{isEnglish ? "Enjoy the space while you wait." : "Thư giãn trong không gian tiệm khi chờ đến lượt."}</p>
+                        <ul>
+                          <li>{isEnglish ? "Billiards" : "Bàn bi-a"}</li>
+                          <li>{isEnglish ? "Foosball table" : "Bàn bi lắc"}</li>
+                          <li>{isEnglish ? "Board games" : "Trò chơi bàn cờ"}</li>
+                          <li>{isEnglish ? "Complimentary drink" : "Nước uống miễn phí"}</li>
+                        </ul>
+                      </section>
+                      <section className="vip-experience" aria-labelledby="vip-experience-title">
+                        <h4 id="vip-experience-title">{isEnglish ? "Signature VIP experience" : "Trải nghiệm VIP đặc biệt"}</h4>
+                        <p>{isEnglish ? "VIP Gentleman's Combo includes:" : "VIP Gentleman's Combo bao gồm:"}</p>
+                        <ul>
+                          <li>{isEnglish ? "Personal styling consultation" : "Tư vấn kiểu tóc cá nhân"}</li>
+                          <li>{isEnglish ? "Haircut or shave on request" : "Cắt tóc hoặc cạo theo yêu cầu"}</li>
+                          <li>{isEnglish ? "Hot and cold towel grooming" : "Chăm sóc với khăn nóng và lạnh"}</li>
+                          <li>{isEnglish ? "Priority appointment, no waiting" : "Ưu tiên lịch hẹn, hạn chế chờ đợi"}</li>
+                          <li>{isEnglish ? "Special gift for VIP guests" : "Quà tặng dành cho khách VIP"}</li>
+                        </ul>
+                      </section>
                     </div>
-                  </section>
-                ))}
-              </section>
-            ))}
+                  )}
+                </section>
+              ))}
+            </div>
             <p className="pricing-note">
               {isEnglish
                 ? "Note: Prices shown as a range depend on hair length, thickness and the requested design. The crew confirms the final price before starting."

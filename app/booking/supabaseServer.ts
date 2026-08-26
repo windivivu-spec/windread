@@ -17,6 +17,7 @@ type SupabaseServiceRow = {
   name: string;
   description: string;
   price: number;
+  price_label?: string | null;
   duration_minutes: number;
 };
 
@@ -139,6 +140,7 @@ function mapService(row: SupabaseServiceRow): Service {
     name: row.name,
     description: row.description,
     price: row.price,
+    priceLabel: row.price_label ?? undefined,
     durationMinutes: row.duration_minutes
   };
 }
@@ -229,11 +231,14 @@ export async function getBranches(): Promise<Branch[]> {
 }
 
 export async function getServices(branchId?: string): Promise<Service[]> {
-  // Prices are shared across both branches. Keep the optional parameter for
-  // existing callers, but do not filter the common catalogue by branch.
-  void branchId;
-  if (!isSupabaseConfigured()) return mockServices;
-  return restFetch<SupabaseServiceRow[]>("services?select=*&is_bookable=eq.true&order=price.asc").then((rows) => rows.map(mapService));
+  if (!isSupabaseConfigured()) {
+    return branchId ? mockServices.filter((service) => service.branchId === branchId) : mockServices;
+  }
+
+  const branchFilter = branchId ? `&branch_id=eq.${encodeURIComponent(branchId)}` : "";
+  return restFetch<SupabaseServiceRow[]>(
+    `services?select=*&is_bookable=eq.true${branchFilter}&order=price.asc`
+  ).then((rows) => rows.map(mapService));
 }
 
 export async function getBarbers(branchId?: string, serviceId?: string): Promise<Barber[]> {
@@ -295,7 +300,7 @@ async function findMatchingBooking(draft: BookingDraft): Promise<Booking | null>
 }
 
 export async function getSlots(branchId: string, serviceId: string, barberId: string, date: string): Promise<TimeSlot[]> {
-  const [services, barbers, bookings] = await Promise.all([getServices(), getBarbers(branchId), getBookings()]);
+  const [services, barbers, bookings] = await Promise.all([getServices(branchId), getBarbers(branchId), getBookings()]);
   const service = services.find((item) => item.id === serviceId);
   if (!service) return [];
 
@@ -315,7 +320,7 @@ export async function createBooking(draft: BookingDraft) {
     return { booking: null, errors, message: "Thông tin đặt lịch chưa đầy đủ." };
   }
 
-  const services = await getServices();
+  const services = await getServices(draft.branchId);
   const service = services.find((item) => item.id === draft.serviceId);
   if (!service) return { booking: null, errors: {}, message: "Dịch vụ không tồn tại." };
   const branches = await getBranches();
