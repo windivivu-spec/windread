@@ -1040,6 +1040,23 @@ textarea:focus-visible {
   border-bottom: 1px solid rgba(163, 22, 38, 0.72);
 }
 
+.service-image-preloads,
+.catalog-image-preloads {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  pointer-events: none;
+}
+
+.service-image-preload,
+.catalog-image-preload {
+  position: relative;
+  width: 1px;
+  height: 1px;
+}
+
 .service-explorer-panel {
   position: relative;
   display: grid;
@@ -1065,6 +1082,12 @@ textarea:focus-visible {
 .service-explorer-panel-image {
   object-fit: cover;
   filter: saturate(0.78) contrast(1.08) brightness(0.7);
+  opacity: 0;
+  transition: opacity 240ms ease-out;
+}
+
+.service-explorer-panel.is-loaded .service-explorer-panel-image {
+  opacity: 1;
 }
 
 .service-explorer-panel-copy {
@@ -1135,7 +1158,7 @@ textarea:focus-visible {
   aspect-ratio: 3 / 4;
   overflow: hidden;
   border: 1px solid rgba(244, 238, 232, 0.16);
-  background: #0b0507;
+  background: linear-gradient(145deg, #25070d, #0b0507 74%);
   transition: border-color 180ms ease, transform 180ms ease, filter 180ms ease;
 }
 
@@ -1146,7 +1169,12 @@ textarea:focus-visible {
 .service-explorer-service img {
   object-fit: cover;
   filter: none;
-  transition: transform 300ms ease;
+  opacity: 0;
+  transition: opacity 180ms ease-out, transform 300ms ease;
+}
+
+.service-explorer-service.is-loaded img {
+  opacity: 1;
 }
 
 .service-explorer-service div {
@@ -1225,8 +1253,13 @@ textarea:focus-visible {
 .service-explorer-tabs button img {
   z-index: -2;
   object-fit: cover;
+  opacity: 0;
   filter: grayscale(0.58) contrast(1.1) brightness(0.62);
-  transition: transform 300ms ease, filter 300ms ease;
+  transition: opacity 180ms ease-out, transform 300ms ease, filter 300ms ease;
+}
+
+.service-explorer-tabs button.is-loaded img {
+  opacity: 1;
 }
 
 .service-explorer-tabs button span {
@@ -1597,14 +1630,19 @@ textarea:focus-visible {
   aspect-ratio: 2 / 3;
   overflow: hidden;
   border: 1px solid rgba(244, 238, 232, 0.17);
-  background: #0b0708;
+  background: linear-gradient(145deg, #1e0a0e, #0b0708 72%);
   box-shadow: 0 18px 34px rgba(0, 0, 0, 0.2);
   transition: border-color 220ms ease, transform 220ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 220ms ease;
 }
 
 .hairstyle-catalog-cover img {
   object-fit: cover;
-  transition: transform 440ms cubic-bezier(0.16, 1, 0.3, 1), filter 220ms ease;
+  opacity: 0;
+  transition: opacity 220ms ease-out, transform 440ms cubic-bezier(0.16, 1, 0.3, 1), filter 220ms ease;
+}
+
+.hairstyle-catalog-cover.is-loaded img {
+  opacity: 1;
 }
 
 .hairstyle-catalog-cover::after {
@@ -1738,7 +1776,7 @@ textarea:focus-visible {
   margin: 0;
   overflow: hidden;
   border: 1px solid rgba(244, 238, 232, 0.14);
-  background: #0b0708;
+  background: linear-gradient(145deg, #1e0a0e, #0b0708 72%);
   opacity: 0;
   transform: translateY(18px) scale(0.985);
   animation: catalog-inline-tile-in 420ms cubic-bezier(0.16, 1, 0.3, 1) var(--catalog-delay) both;
@@ -1747,6 +1785,12 @@ textarea:focus-visible {
 .catalog-inline-tile img {
   object-fit: cover;
   object-position: center;
+  opacity: 0;
+  transition: opacity 180ms ease-out;
+}
+
+.catalog-inline-tile.is-loaded img {
+  opacity: 1;
 }
 
 @keyframes catalog-inline-panel-in {

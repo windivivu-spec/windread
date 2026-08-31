@@ -625,6 +625,8 @@ export function SitePage({
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeServiceExplorer, setActiveServiceExplorer] = useState<ServiceExplorerKey>("dread");
   const [isServiceExplorerOpen, setIsServiceExplorerOpen] = useState(false);
+  const [preloadedServiceGroups, setPreloadedServiceGroups] = useState<ServiceExplorerKey[]>([]);
+  const [preloadedCatalogs, setPreloadedCatalogs] = useState<HairstyleCatalog["id"][]>([]);
   const [recoveredPricingServices, setRecoveredPricingServices] = useState<Service[]>([]);
   const [pricingRecoveryFailed, setPricingRecoveryFailed] = useState(false);
   const isEnglish = language === "en";
@@ -636,6 +638,14 @@ export function SitePage({
         barberIds.includes(barber.bookingId) &&
         (barberFilter === "All" || barber.specialties.includes(barberFilter))
     );
+
+  function warmServiceGroup(groupKey: ServiceExplorerKey) {
+    setPreloadedServiceGroups((current) => (current.includes(groupKey) ? current : [...current, groupKey]));
+  }
+
+  function warmCatalog(catalogId: HairstyleCatalog["id"]) {
+    setPreloadedCatalogs((current) => (current.includes(catalogId) ? current : [...current, catalogId]));
+  }
 
   const selectedCatalog = hairstyleCatalog.find((catalog) => catalog.id === selectedCatalogId) ?? hairstyleCatalog[0];
   const selectedCatalogCollection =
@@ -715,6 +725,7 @@ export function SitePage({
   }, [catalogOpen, menuOpen]);
 
   function openCatalog(catalog: HairstyleCatalog) {
+    warmCatalog(catalog.id);
     if (catalogOpen && selectedCatalogId === catalog.id) {
       setCatalogOpen(false);
       return;
@@ -727,12 +738,38 @@ export function SitePage({
   function renderHairstyleCatalog() {
     return (
       <>
+        <div className="catalog-image-preloads" aria-hidden="true">
+          {preloadedCatalogs.map((catalogId) => {
+            const catalog = hairstyleCatalog.find((item) => item.id === catalogId);
+            if (!catalog) return null;
+
+            return (
+              <div className="catalog-image-preload" key={catalog.id}>
+                {catalog.collections.flatMap((collection) => collection.images).map((image) => (
+                  <Image
+                    key={image}
+                    src={image}
+                    alt=""
+                    fill
+                    sizes="(max-width: 780px) 33vw, (max-width: 1080px) 33vw, 20vw"
+                    loading="eager"
+                    decoding="async"
+                    quality={70}
+                  />
+                ))}
+              </div>
+            );
+          })}
+        </div>
         <div className="hairstyle-catalog-grid" aria-label={isEnglish ? "Hairstyle catalogs" : "Các catalog kiểu tóc"}>
-          {hairstyleCatalog.map((catalog, index) => (
+          {hairstyleCatalog.map((catalog) => (
             <button
               className="hairstyle-catalog-card reveal"
               type="button"
               key={catalog.id}
+              onPointerEnter={() => warmCatalog(catalog.id)}
+              onFocus={() => warmCatalog(catalog.id)}
+              onTouchStart={() => warmCatalog(catalog.id)}
               onClick={() => openCatalog(catalog)}
               aria-expanded={catalogOpen && selectedCatalogId === catalog.id}
             >
@@ -742,7 +779,10 @@ export function SitePage({
                   alt={`${catalog.title} ${isEnglish ? "catalog cover" : "ảnh bìa catalog"}`}
                   fill
                   sizes="(max-width: 1080px) 33vw, 20vw"
-                  loading={index === 0 ? "eager" : "lazy"}
+                  loading="eager"
+                  decoding="async"
+                  quality={70}
+                  onLoad={(event) => event.currentTarget.closest(".hairstyle-catalog-cover")?.classList.add("is-loaded")}
                 />
                 <span className="hairstyle-catalog-overlay">
                   <small>{catalog.collections.map((collection) => collection.gender).join(" / ")}</small>
@@ -790,6 +830,10 @@ export function SitePage({
                     alt={`${selectedCatalog.title} ${selectedCatalogGender} ${index + 1}`}
                     fill
                     sizes="(max-width: 1080px) 33vw, 20vw"
+                    loading={index < 5 ? "eager" : "lazy"}
+                    decoding="async"
+                    quality={70}
+                    onLoad={(event) => event.currentTarget.closest(".catalog-inline-tile")?.classList.add("is-loaded")}
                   />
                 </figure>
               ))}
@@ -1037,6 +1081,20 @@ export function SitePage({
               ))}
             </div>
           </section>
+          <div className="service-image-preloads" aria-hidden="true">
+            {preloadedServiceGroups.map((groupKey) => {
+              const group = serviceExplorerGroups.find((item) => item.key === groupKey);
+              if (!group) return null;
+              return (
+                <div className="service-image-preload" key={group.key}>
+                  <Image src={group.image} alt="" fill sizes="(max-width: 780px) 100vw, 76vw" loading="eager" decoding="async" quality={70} />
+                  {group.services.map((service) => (
+                    <Image key={service.en} src={service.image} alt="" fill sizes="(max-width: 780px) 50vw, 18vw" loading="eager" decoding="async" quality={70} />
+                  ))}
+                </div>
+              );
+            })}
+          </div>
           {isServiceExplorerOpen ? (
             <div className="service-explorer" aria-label={isEnglish ? "Service explorer" : "Khám phá dịch vụ"}>
               <article className="service-explorer-panel" key={activeServiceGroup.key}>
@@ -1046,6 +1104,10 @@ export function SitePage({
                   alt=""
                   fill
                   sizes="(max-width: 780px) 100vw, 76vw"
+                  loading="eager"
+                  decoding="async"
+                  quality={70}
+                  onLoad={(event) => event.currentTarget.closest(".service-explorer-panel")?.classList.add("is-loaded")}
                 />
                 <div className="service-explorer-panel-copy">
                   <button className="service-explorer-back" type="button" onClick={() => setIsServiceExplorerOpen(false)}>
@@ -1055,9 +1117,18 @@ export function SitePage({
                   <h2>{isEnglish ? activeServiceGroup.enDesc : activeServiceGroup.viDesc}</h2>
                 </div>
                 <div className="service-explorer-service-grid">
-                  {activeServiceGroup.services.map((service) => (
+                  {activeServiceGroup.services.map((service, index) => (
                     <a className="service-explorer-service" href="/booking" key={service.en}>
-                      <Image src={service.image} alt="" fill sizes="(max-width: 780px) 50vw, 18vw" />
+                      <Image
+                        src={service.image}
+                        alt=""
+                        fill
+                        sizes="(max-width: 780px) 50vw, 18vw"
+                        loading={index < 3 ? "eager" : "lazy"}
+                        decoding="async"
+                        quality={70}
+                        onLoad={(event) => event.currentTarget.closest(".service-explorer-service")?.classList.add("is-loaded")}
+                      />
                       <div>
                         <h3>{isEnglish ? service.en : service.vi}</h3>
                         <p>{service.desc}</p>
@@ -1072,10 +1143,26 @@ export function SitePage({
                   .map((group) => (
                     <button
                       type="button"
+                      className="service-explorer-tab"
                       key={group.key}
-                      onClick={() => setActiveServiceExplorer(group.key)}
+                      onPointerEnter={() => warmServiceGroup(group.key)}
+                      onFocus={() => warmServiceGroup(group.key)}
+                      onTouchStart={() => warmServiceGroup(group.key)}
+                      onClick={() => {
+                        warmServiceGroup(group.key);
+                        setActiveServiceExplorer(group.key);
+                      }}
                     >
-                      <Image src={group.image} alt="" fill sizes="(max-width: 780px) 50vw, 20vw" />
+                      <Image
+                        src={group.image}
+                        alt=""
+                        fill
+                        sizes="(max-width: 780px) 50vw, 20vw"
+                        loading="eager"
+                        decoding="async"
+                        quality={70}
+                        onLoad={(event) => event.currentTarget.closest(".service-explorer-tab")?.classList.add("is-loaded")}
+                      />
                       <span>{group.title}</span>
                     </button>
                   ))}
@@ -1089,7 +1176,11 @@ export function SitePage({
                   type="button"
                   key={group.key}
                   style={{ "--tile-image": `url("${group.image}")` } as CSSProperties}
+                  onPointerEnter={() => warmServiceGroup(group.key)}
+                  onFocus={() => warmServiceGroup(group.key)}
+                  onTouchStart={() => warmServiceGroup(group.key)}
                   onClick={() => {
+                    warmServiceGroup(group.key);
                     setActiveServiceExplorer(group.key);
                     setIsServiceExplorerOpen(true);
                   }}
