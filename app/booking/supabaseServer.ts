@@ -55,7 +55,7 @@ type SupabaseBookingRow = {
   created_at: string;
 };
 
-const phonePattern = /^(0|\+84)(\d[\s.-]?){8,10}$/;
+const phonePattern = /^\+?[0-9][0-9\s().-]{6,18}$/;
 
 type SupabaseErrorBody = {
   code?: string;
@@ -219,7 +219,7 @@ export function validateBookingDraft(draft: BookingDraft) {
   if (!draft.slot) errors.slot = "Chọn khung giờ còn trống.";
   if (!draft.customerName.trim()) errors.customerName = "Nhập họ tên để crew xác nhận lịch.";
   if (!phonePattern.test(draft.customerPhone.trim())) {
-    errors.customerPhone = "Số điện thoại chưa đúng định dạng Việt Nam.";
+    errors.customerPhone = "Nhập số điện thoại hoặc WhatsApp hợp lệ, kèm mã quốc gia nếu cần.";
   }
   if (draft.customerEmail && !/^\S+@\S+\.\S+$/.test(draft.customerEmail)) {
     errors.customerEmail = "Email chưa đúng định dạng.";

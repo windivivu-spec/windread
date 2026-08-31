@@ -15,7 +15,6 @@ import type { Barber, Booking, BookingDraft, Branch, Service, TimeSlot } from ".
 
 type BookingErrors = Partial<Record<keyof BookingDraft, string>>;
 type BookingStepKey = "info" | "branch" | "service" | "barber" | "time";
-type CopyTarget = "code" | "details" | "";
 type BookingHistoryState = {
   windreadBookingStep?: BookingStepKey;
 };
@@ -611,18 +610,18 @@ function SavedBookingHint({
   return (
     <div className="saved-booking-hint">
       <div>
-        <span>{isEnglish ? "Saved on this device" : "Mã đã lưu trên máy này"}</span>
-        <strong>{booking.id}</strong>
+        <span>{isEnglish ? "Booking request saved on this device" : "Yêu cầu đặt lịch đã lưu trên máy này"}</span>
+        <strong>{isEnglish ? "Waiting for staff confirmation" : "Đang chờ nhân viên xác minh"}</strong>
         <small>
           {formatBookingTime(booking.startTime, isEnglish)} / {isEnglish ? `${minutesLeft} min left` : `còn ${minutesLeft} phút`}
         </small>
       </div>
       <div className="saved-booking-actions">
         <button className="ghost-button" type="button" onClick={onView}>
-          {isEnglish ? "View code" : "Xem mã"}
+          {isEnglish ? "View request" : "Xem lịch đã gửi"}
         </button>
         <button className="ghost-button" type="button" onClick={onClear}>
-          {isEnglish ? "Clear" : "Xoá mã"}
+          {isEnglish ? "Dismiss" : "Ẩn thông báo"}
         </button>
       </div>
     </div>
@@ -945,12 +944,14 @@ function CustomerInfoForm({
           {errors.customerName && <small className="field-error">{errors.customerName}</small>}
         </label>
         <label>
-          <span>{isEnglish ? "Phone" : "Số điện thoại"}</span>
+          <span>{isEnglish ? "Phone / WhatsApp" : "Số điện thoại / WhatsApp"}</span>
           <input
             type="tel"
             value={draft.customerPhone}
             onChange={(event) => onChange({ customerPhone: event.target.value })}
             autoComplete="tel"
+            placeholder={isEnglish ? "090… / +1 or your country code" : "090… / +1 hoặc mã quốc gia của bạn"}
+            title={isEnglish ? "Use your country code if you do not have a Vietnamese number." : "Nếu không dùng số Việt Nam, hãy nhập kèm mã quốc gia."}
           />
           {errors.customerPhone && <small className="field-error">{errors.customerPhone}</small>}
         </label>
@@ -971,7 +972,9 @@ function CustomerInfoForm({
           rows={4}
           value={draft.note}
           onChange={(event) => onChange({ note: event.target.value })}
+          placeholder={isEnglish ? "E.g. WhatsApp only, text only / please do not call, or anything the crew should know before your visit." : "VD: Liên hệ qua WhatsApp, chỉ nhắn tin / không gọi điện, hoặc điều crew cần biết trước khi bạn đến."}
         />
+        <small className="field-hint">{isEnglish ? "We will follow your preferred contact method when confirming the appointment." : "Crew sẽ ưu tiên cách liên hệ bạn ghi ở đây khi xác nhận lịch."}</small>
       </label>
     </div>
   );
@@ -1060,78 +1063,26 @@ function BookingSuccess({
   onReset: () => void;
   resultRef: RefObject<HTMLElement | null>;
 }) {
-  const [copiedTarget, setCopiedTarget] = useState<CopyTarget>("");
   const branch = branches.find((item) => item.id === booking.branchId);
   const service = services.find((item) => item.id === booking.serviceId);
   const barber = barbers.find((item) => item.id === booking.barberId);
-  const confirmationText = isEnglish
-    ? [
-        `Booking code: ${booking.id}`,
-        `Guests: ${booking.guestCount}`,
-        `Service: ${service ? getLocalizedService(service, true).name : "-"}`,
-        `Barber: ${barber?.name ?? "-"}`,
-        `Branch: ${branch?.address ?? "-"}`,
-        `Time: ${formatBookingTime(booking.startTime, true)}`,
-        `Phone: ${booking.customerPhone}`,
-        "Status: Slot held, waiting for staff confirmation"
-      ].join("\n")
-    : [
-        `Mã đặt lịch: ${booking.id}`,
-        `Số khách: ${booking.guestCount}`,
-        `Dịch vụ: ${service?.name ?? "-"}`,
-        `Thợ: ${barber?.name ?? "-"}`,
-        `Cơ sở: ${branch?.address ?? "-"}`,
-        `Ngày giờ: ${formatBookingTime(booking.startTime)}`,
-        `Số điện thoại: ${booking.customerPhone}`,
-        "Trạng thái: Đã giữ chỗ, chờ nhân viên gọi xác nhận"
-      ].join("\n");
-
-  async function copyConfirmation(text: string, target: CopyTarget) {
-    if (navigator.clipboard) {
-      await navigator.clipboard.writeText(text);
-    } else {
-      const textarea = document.createElement("textarea");
-      textarea.value = text;
-      textarea.setAttribute("readonly", "true");
-      textarea.style.position = "fixed";
-      textarea.style.opacity = "0";
-      document.body.appendChild(textarea);
-      textarea.select();
-      document.execCommand("copy");
-      document.body.removeChild(textarea);
-    }
-    setCopiedTarget(target);
-    window.setTimeout(() => setCopiedTarget(""), 1800);
-  }
 
   return (
     <section className="booking-success inline-visible" ref={resultRef} aria-live="polite">
       <div className="booking-success-top">
-        <span className="success-mark">WD</span>
+        <span className="success-mark"><Image src="/images/windread-mark.png" alt="" width={1420} height={1414} /></span>
       </div>
-      <h3>{booking.guestCount > 1 ? (isEnglish ? "Your group seats are being held." : "Đã giữ ghế cho cả nhóm.") : (isEnglish ? "Your slot is being held." : "Đã giữ chỗ cho bạn.")}</h3>
+      <h3>{isEnglish ? "Your booking request has been received." : "Đã nhận yêu cầu đặt lịch của bạn."}</h3>
       <p className="booking-success-note">
         {isEnglish
-          ? "Please wait for our staff to call and confirm your appointment."
-          : "Vui lòng đợi nhân viên gọi để xác nhận lịch hẹn."}
+          ? "Our staff will contact you at the phone number or WhatsApp you provided to verify the appointment. The time is only confirmed after the crew replies."
+          : "Nhân viên sẽ liên hệ qua số điện thoại hoặc WhatsApp bạn đã cung cấp để xác minh lịch. Lịch chỉ được xác nhận sau khi crew phản hồi."}
       </p>
-      <div className="booking-code-card">
-        <span>{isEnglish ? "Booking code" : "Mã đặt lịch"}</span>
-        <strong>{booking.id}</strong>
-        <div className="booking-code-actions">
-          <button className="ghost-button" type="button" onClick={() => copyConfirmation(booking.id, "code")}>
-            {copiedTarget === "code" ? (isEnglish ? "Copied" : "Đã copy") : isEnglish ? "Copy code" : "Copy mã"}
-          </button>
-          <button className="ghost-button" type="button" onClick={() => copyConfirmation(confirmationText, "details")}>
-            {copiedTarget === "details" ? (isEnglish ? "Copied" : "Đã copy") : isEnglish ? "Copy details" : "Copy thông tin"}
-          </button>
-        </div>
+      <div className="booking-contact-card">
+        <span>{isEnglish ? "Confirmation contact" : "Thông tin xác minh"}</span>
+        <strong>{isEnglish ? `We will contact ${booking.customerPhone}` : `Crew sẽ liên hệ ${booking.customerPhone}`}</strong>
+        <p>{booking.note ? (isEnglish ? `Your note: ${booking.note}` : `Ghi chú của bạn: ${booking.note}`) : (isEnglish ? "No contact preference was added. We will use the phone number above." : "Bạn chưa để lại cách liên hệ riêng. Crew sẽ dùng số điện thoại bên trên.")}</p>
       </div>
-      <p className="booking-save-reminder">
-        {isEnglish
-          ? "Save this code or take a screenshot. You can use it to compare with the shop if needed."
-          : "Hãy lưu mã này hoặc chụp màn hình lại. Bạn có thể dùng để đối chiếu với shop nếu cần."}
-      </p>
       <dl>
         <dt>{isEnglish ? "Service" : "Dịch vụ"}</dt>
         <dd>{service ? getLocalizedService(service, isEnglish).name : "-"}</dd>
