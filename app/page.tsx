@@ -3,9 +3,13 @@
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import type { CSSProperties } from "react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { branchProfiles } from "./branches/branchData";
+import { formatCurrency } from "./booking/availabilityUtils";
 import { BookingExperience } from "./booking/BookingExperience";
+import { getServiceCategory, serviceCategories } from "./booking/serviceCategories";
+import { getLocalizedPriceLabel, getLocalizedService, groupServicesForDisplay } from "./booking/servicePresentation";
+import type { Service } from "./booking/types";
 
 const orderedBranchProfiles = [...branchProfiles].sort((a, b) => a.label.vi.localeCompare(b.label.vi));
 
@@ -26,14 +30,6 @@ type PageKey =
   | "booking"
   | "contact";
 type Lang = "vi" | "en";
-type HomeGalleryTab =
-  | "Dreadlocks for men"
-  | "Dreadlocks for women"
-  | "Cornrows for men"
-  | "Barrel twist for men"
-  | "Twist for men"
-  | "Box braids for men"
-  | "Braids for women";
 type ServiceExplorerKey = "barber" | "dread" | "braid";
 
 const socialLinks = [
@@ -190,7 +186,7 @@ const barberServices = [
   }
 ];
 
-const priceBoards = [
+const legacyPriceBoards = [
   {
     id: "an-thuong",
     branch: "Cơ sở 1 · An Thượng",
@@ -377,91 +373,159 @@ const barbers = [
   }
 ];
 
-const galleryItems = [
-  { label: "Starter locs", cat: "Locs", img: "/images/hero-dreadlocks-v2.png" },
-  { label: "High-top fade", cat: "Barber", img: "/images/barber-portrait-v2.png" },
-  { label: "Locs care set", cat: "Products", img: "/images/locs-products-v2.png" },
-  { label: "Shop mood", cat: "Behind", img: "/images/barbershop-interior-v2.png" },
-  { label: "Color locs", cat: "Locs", img: "/images/hero-dreadlocks-v2.png" },
-  { label: "Clipper detail", cat: "Behind", img: "/images/barbershop-interior-v2.png" },
-  { label: "Beard care", cat: "Products", img: "/images/locs-products-v2.png" },
-  { label: "Crew portrait", cat: "Barber", img: "/images/barber-portrait-v2.png" }
-];
+type CatalogGender = "Men" | "Women";
 
-const homeGalleryImages: Record<HomeGalleryTab, string[]> = {
-  "Dreadlocks for men": [
-    "/images/collection / Dreadlocks for Men/collection1.webp",
-    "/images/collection / Dreadlocks for Men/collection2.webp",
-    "/images/collection / Dreadlocks for Men/collection3.webp",
-    "/images/collection / Dreadlocks for Men/collection4.webp",
-    "/images/collection / Dreadlocks for Men/collection5.webp",
-    "/images/collection / Dreadlocks for Men/collection6.webp",
-    "/images/collection / Dreadlocks for Men/collection7.webp",
-    "/images/collection / Dreadlocks for Men/collection8.webp",
-    "/images/collection / Dreadlocks for Men/collection10.webp",
-    "/images/collection / Dreadlocks for Men/collection11.webp",
-    "/images/collection / Dreadlocks for Men/collection12.webp",
-    "/images/collection / Dreadlocks for Men/collection14.webp",
-    "/images/collection / Dreadlocks for Men/collection15.webp"
-  ],
-  "Dreadlocks for women": [
-    "/images/collection /Dreadlocks for Women/collection1.webp",
-    "/images/collection /Dreadlocks for Women/collection2.webp",
-    "/images/collection /Dreadlocks for Women/collection3.webp",
-    "/images/collection /Dreadlocks for Women/collection4.webp",
-    "/images/collection /Dreadlocks for Women/collection5.webp",
-    "/images/collection /Dreadlocks for Women/collection6.webp",
-    "/images/collection /Dreadlocks for Women/collection7.webp",
-    "/images/collection /Dreadlocks for Women/collection8.webp"
-  ],
-  "Cornrows for men": [
-    "/images/collection /Cornrows for Men/collection1.webp",
-    "/images/collection /Cornrows for Men/collection2.webp",
-    "/images/collection /Cornrows for Men/collection3.webp",
-    "/images/collection /Cornrows for Men/collection4.webp",
-    "/images/collection /Cornrows for Men/collection5.webp",
-    "/images/collection /Cornrows for Men/collection6.webp",
-    "/images/collection /Cornrows for Men/collection7.webp",
-    "/images/collection /Cornrows for Men/collection8.webp"
-  ],
-  "Barrel twist for men": [
-    "/images/collection /Barrel Twist for Men/collection1.webp",
-    "/images/collection /Barrel Twist for Men/collection2.webp",
-    "/images/collection /Barrel Twist for Men/collection3.webp",
-    "/images/collection /Barrel Twist for Men/collection4.webp",
-    "/images/collection /Barrel Twist for Men/collection5.webp",
-    "/images/collection /Barrel Twist for Men/collection6.webp"
-  ],
-  "Twist for men": [
-    "/images/collection /Twist for Men/collection1.webp",
-    "/images/collection /Twist for Men/collection2.webp",
-    "/images/collection /Twist for Men/collection3.webp",
-    "/images/collection /Twist for Men/collection4.webp",
-    "/images/collection /Twist for Men/collection5.webp",
-    "/images/collection /Twist for Men/collection6.webp",
-    "/images/collection /Twist for Men/collection7.webp",
-    "/images/collection /Twist for Men/collection8.webp"
-  ],
-  "Box braids for men": [
-    "/images/collection /Boxbraids for Men/collection1.webp",
-    "/images/collection /Boxbraids for Men/collection2.webp",
-    "/images/collection /Boxbraids for Men/collection3.webp",
-    "/images/collection /Boxbraids for Men/collection4.webp",
-    "/images/collection /Boxbraids for Men/collection5.webp",
-    "/images/collection /Boxbraids for Men/collection6.webp",
-    "/images/collection /Boxbraids for Men/collection7.webp",
-    "/images/collection /Boxbraids for Men/collection8.webp"
-  ],
-  "Braids for women": [
-    "/images/collection /Braids for Women/collection1.webp",
-    "/images/collection /Braids for Women/collection2.webp",
-    "/images/collection /Braids for Women/collection3.webp",
-    "/images/collection /Braids for Women/collection5.webp",
-    "/images/collection /Braids for Women/collection6.webp",
-    "/images/collection /Braids for Women/collection7.webp",
-    "/images/collection /Braids for Women/collection8.webp"
-  ]
+type HairstyleCatalog = {
+  id: "dreadlocks" | "cornrows" | "barrel-twist" | "twist" | "braids";
+  title: string;
+  viDesc: string;
+  enDesc: string;
+  cover: string;
+  collections: Array<{
+    gender: CatalogGender;
+    images: string[];
+  }>;
 };
+
+const hairstyleCatalog: HairstyleCatalog[] = [
+  {
+    id: "dreadlocks",
+    title: "Dreadlocks",
+    viDesc: "Locs rõ section, giữ texture thật và form bền theo thời gian.",
+    enDesc: "Defined sections, real texture and a form that holds over time.",
+    cover: "/images/collection /thumbnail/dreadlock.webp",
+    collections: [
+      {
+        gender: "Men",
+        images: [
+          "/images/collection / Dreadlocks for Men/collection1.webp",
+          "/images/collection / Dreadlocks for Men/collection2.webp",
+          "/images/collection / Dreadlocks for Men/collection3.webp",
+          "/images/collection / Dreadlocks for Men/collection4.webp",
+          "/images/collection / Dreadlocks for Men/collection5.webp",
+          "/images/collection / Dreadlocks for Men/collection6.webp",
+          "/images/collection / Dreadlocks for Men/collection7.webp",
+          "/images/collection / Dreadlocks for Men/collection8.webp",
+          "/images/collection / Dreadlocks for Men/collection10.webp",
+          "/images/collection / Dreadlocks for Men/collection11.webp",
+          "/images/collection / Dreadlocks for Men/collection12.webp",
+          "/images/collection / Dreadlocks for Men/collection14.webp"
+        ]
+      },
+      {
+        gender: "Women",
+        images: [
+          "/images/collection /Dreadlocks for Women/collection1.webp",
+          "/images/collection /Dreadlocks for Women/collection2.webp",
+          "/images/collection /Dreadlocks for Women/collection3.webp",
+          "/images/collection /Dreadlocks for Women/collection4.webp",
+          "/images/collection /Dreadlocks for Women/collection5.webp",
+          "/images/collection /Dreadlocks for Women/collection6.webp",
+          "/images/collection /Dreadlocks for Women/collection7.webp",
+          "/images/collection /Dreadlocks for Women/collection8.webp"
+        ]
+      }
+    ]
+  },
+  {
+    id: "cornrows",
+    title: "Cornrows",
+    viDesc: "Đường tết sát da đầu, gọn nét và cá nhân hóa theo pattern.",
+    enDesc: "Close-to-scalp braids with clean lines and custom patterns.",
+    cover: "/images/collection /thumbnail/cornrow.webp",
+    collections: [
+      {
+        gender: "Men",
+        images: [
+          "/images/collection /Cornrows for Men/collection1.webp",
+          "/images/collection /Cornrows for Men/collection2.webp",
+          "/images/collection /Cornrows for Men/collection3.webp",
+          "/images/collection /Cornrows for Men/collection4.webp",
+          "/images/collection /Cornrows for Men/collection5.webp",
+          "/images/collection /Cornrows for Men/collection6.webp",
+          "/images/collection /Cornrows for Men/collection7.webp",
+          "/images/collection /Cornrows for Men/collection8.webp"
+        ]
+      }
+    ]
+  },
+  {
+    id: "twist",
+    title: "Twist",
+    viDesc: "Twist đều sợi, nhẹ đầu và dễ biến tấu theo độ dài tóc.",
+    enDesc: "Even twists with a light feel, shaped around your length.",
+    cover: "/images/collection /thumbnail/Twist .webp",
+    collections: [
+      {
+        gender: "Men",
+        images: [
+          "/images/collection /Twist for Men/collection1.webp",
+          "/images/collection /Twist for Men/collection2.webp",
+          "/images/collection /Twist for Men/collection3.webp",
+          "/images/collection /Twist for Men/collection4.webp",
+          "/images/collection /Twist for Men/collection5.webp",
+          "/images/collection /Twist for Men/collection6.webp",
+          "/images/collection /Twist for Men/collection7.webp",
+          "/images/collection /Twist for Men/collection8.webp"
+        ]
+      }
+    ]
+  },
+  {
+    id: "braids",
+    title: "Braids",
+    viDesc: "Box braids và braid tự nhiên, chọn form theo mật độ tóc riêng.",
+    enDesc: "Box and natural braids selected around your density and shape.",
+    cover: "/images/collection /thumbnail/braids.webp",
+    collections: [
+      {
+        gender: "Men",
+        images: [
+          "/images/collection /Boxbraids for Men/collection1.webp",
+          "/images/collection /Boxbraids for Men/collection2.webp",
+          "/images/collection /Boxbraids for Men/collection3.webp",
+          "/images/collection /Boxbraids for Men/collection4.webp",
+          "/images/collection /Boxbraids for Men/collection5.webp",
+          "/images/collection /Boxbraids for Men/collection6.webp",
+          "/images/collection /Boxbraids for Men/collection7.webp",
+          "/images/collection /Boxbraids for Men/collection8.webp"
+        ]
+      },
+      {
+        gender: "Women",
+        images: [
+          "/images/collection /Braids for Women/collection1.webp",
+          "/images/collection /Braids for Women/collection2.webp",
+          "/images/collection /Braids for Women/collection3.webp",
+          "/images/collection /Braids for Women/collection5.webp",
+          "/images/collection /Braids for Women/collection6.webp",
+          "/images/collection /Braids for Women/collection7.webp",
+          "/images/collection /Braids for Women/collection8.webp"
+        ]
+      }
+    ]
+  },
+  {
+    id: "barrel-twist",
+    title: "Barrel Twist",
+    viDesc: "Locs được cuộn chắc tay, tạo độ nổi khối và nhịp chuyển rõ.",
+    enDesc: "Locs wrapped with definition for sculpted volume and movement.",
+    cover: "/images/collection /thumbnail/Barrel Twist .webp",
+    collections: [
+      {
+        gender: "Men",
+        images: [
+          "/images/collection /Barrel Twist for Men/collection1.webp",
+          "/images/collection /Barrel Twist for Men/collection2.webp",
+          "/images/collection /Barrel Twist for Men/collection3.webp",
+          "/images/collection /Barrel Twist for Men/collection4.webp",
+          "/images/collection /Barrel Twist for Men/collection5.webp",
+          "/images/collection /Barrel Twist for Men/collection6.webp"
+        ]
+      }
+    ]
+  }
+];
 
 const products = [
   {
@@ -540,30 +604,31 @@ function routeForPage(pathname: string | null): PageKey {
   return pageRoutes[pathname ?? "/"] ?? "home";
 }
 
-export function SitePage({ page }: { page?: PageKey }) {
+export function SitePage({
+  page,
+  pricingServices = [],
+  pricingDataUnavailable = false
+}: {
+  page?: PageKey;
+  pricingServices?: Service[];
+  pricingDataUnavailable?: boolean;
+}) {
   const pathname = usePathname();
   const currentPage = page ?? routeForPage(pathname);
   const [language, setLanguage] = useState<Lang>("vi");
-  const [galleryFilter, setGalleryFilter] = useState("All");
   const [barberFilter, setBarberFilter] = useState("All");
-  const [selectedImage, setSelectedImage] = useState(0);
-  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [catalogOpen, setCatalogOpen] = useState(false);
+  const [selectedCatalogId, setSelectedCatalogId] = useState<HairstyleCatalog["id"]>("dreadlocks");
+  const [selectedCatalogGender, setSelectedCatalogGender] = useState<CatalogGender>("Men");
   const [selectedProduct, setSelectedProduct] = useState(products[0]);
   const [cartCount, setCartCount] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [homeGalleryTab, setHomeGalleryTab] = useState<HomeGalleryTab>("Dreadlocks for men");
-  const [homeGalleryVisibleTab, setHomeGalleryVisibleTab] = useState<HomeGalleryTab>("Dreadlocks for men");
   const [activeServiceExplorer, setActiveServiceExplorer] = useState<ServiceExplorerKey>("dread");
   const [isServiceExplorerOpen, setIsServiceExplorerOpen] = useState(false);
+  const [recoveredPricingServices, setRecoveredPricingServices] = useState<Service[]>([]);
+  const [pricingRecoveryFailed, setPricingRecoveryFailed] = useState(false);
   const isEnglish = language === "en";
-
-  const visibleGallery = useMemo(
-    () =>
-      galleryFilter === "All"
-        ? galleryItems
-        : galleryItems.filter((item) => item.cat === galleryFilter),
-    [galleryFilter]
-  );
+  const visiblePricingServices = pricingServices.length > 0 ? pricingServices : recoveredPricingServices;
 
   const visibleBarbersForBranch = (barberIds: string[]) =>
     barbers.filter(
@@ -571,6 +636,11 @@ export function SitePage({ page }: { page?: PageKey }) {
         barberIds.includes(barber.bookingId) &&
         (barberFilter === "All" || barber.specialties.includes(barberFilter))
     );
+
+  const selectedCatalog = hairstyleCatalog.find((catalog) => catalog.id === selectedCatalogId) ?? hairstyleCatalog[0];
+  const selectedCatalogCollection =
+    selectedCatalog.collections.find((collection) => collection.gender === selectedCatalogGender) ?? selectedCatalog.collections[0];
+  const activeCatalogImages = selectedCatalogCollection.images;
 
   useEffect(() => {
     document.documentElement.classList.add("reveal-ready");
@@ -607,40 +677,129 @@ export function SitePage({ page }: { page?: PageKey }) {
   }, [pathname]);
 
   useEffect(() => {
-    if (!menuOpen && !lightboxOpen) return;
+    if (currentPage !== "pricing" || pricingServices.length > 0 || !pricingDataUnavailable) return;
+    let isCurrent = true;
+
+    Promise.all(
+      ["chuong-duong", "an-thuong"].map(async (branchId) => {
+        const response = await fetch(`/api/services?branchId=${branchId}`);
+        if (!response.ok) throw new Error("Pricing recovery failed");
+        return (await response.json()) as Service[];
+      })
+    )
+      .then((result) => {
+        if (isCurrent) setRecoveredPricingServices(result.flat());
+      })
+      .catch(() => {
+        if (isCurrent) setPricingRecoveryFailed(true);
+      });
+
+    return () => {
+      isCurrent = false;
+    };
+  }, [currentPage, pricingDataUnavailable, pricingServices.length]);
+
+  useEffect(() => {
+    if (!menuOpen && !catalogOpen) return;
 
     const handleKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         setMenuOpen(false);
-        setLightboxOpen(false);
+        setCatalogOpen(false);
       }
 
-      if (!lightboxOpen || visibleGallery.length === 0) return;
-      if (event.key === "ArrowLeft") {
-        setSelectedImage((index) => (index === 0 ? visibleGallery.length - 1 : index - 1));
-      }
-      if (event.key === "ArrowRight") {
-        setSelectedImage((index) => (index + 1) % visibleGallery.length);
-      }
     };
 
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
-  }, [lightboxOpen, menuOpen, visibleGallery.length]);
+  }, [catalogOpen, menuOpen]);
 
-  function openLightbox(index: number) {
-    setSelectedImage(index);
-    setLightboxOpen(true);
+  function openCatalog(catalog: HairstyleCatalog) {
+    if (catalogOpen && selectedCatalogId === catalog.id) {
+      setCatalogOpen(false);
+      return;
+    }
+    setSelectedCatalogId(catalog.id);
+    setSelectedCatalogGender(catalog.collections[0].gender);
+    setCatalogOpen(true);
   }
 
-  function changeHomeGalleryTab(tab: HomeGalleryTab) {
-    if (tab === homeGalleryVisibleTab) return;
-    setHomeGalleryTab(tab);
-    setHomeGalleryVisibleTab(tab);
+  function renderHairstyleCatalog() {
+    return (
+      <>
+        <div className="hairstyle-catalog-grid" aria-label={isEnglish ? "Hairstyle catalogs" : "Các catalog kiểu tóc"}>
+          {hairstyleCatalog.map((catalog, index) => (
+            <button
+              className="hairstyle-catalog-card reveal"
+              type="button"
+              key={catalog.id}
+              onClick={() => openCatalog(catalog)}
+              aria-expanded={catalogOpen && selectedCatalogId === catalog.id}
+            >
+              <span className="hairstyle-catalog-cover">
+                <Image
+                  src={catalog.cover}
+                  alt={`${catalog.title} ${isEnglish ? "catalog cover" : "ảnh bìa catalog"}`}
+                  fill
+                  sizes="(max-width: 1080px) 33vw, 20vw"
+                  loading={index === 0 ? "eager" : "lazy"}
+                />
+                <span className="hairstyle-catalog-overlay">
+                  <small>{catalog.collections.map((collection) => collection.gender).join(" / ")}</small>
+                  <span className="hairstyle-catalog-text">
+                    <strong>{catalog.title}</strong>
+                    <span>{isEnglish ? catalog.enDesc : catalog.viDesc}</span>
+                  </span>
+                </span>
+              </span>
+            </button>
+          ))}
+        </div>
+        <div className="catalog-mobile-scroll-hint" aria-hidden="true">
+          <span className="catalog-scroll-arrow catalog-scroll-arrow-left">←</span>
+          <span>{isEnglish ? "Swipe to explore" : "Vuốt để xem thêm"}</span>
+          <span className="catalog-scroll-arrow catalog-scroll-arrow-right">→</span>
+        </div>
+        {catalogOpen && (
+          <div className="catalog-inline-panel" aria-label={`${selectedCatalog.title} ${selectedCatalogGender}`}>
+            {selectedCatalog.collections.length > 1 && (
+              <div className="catalog-inline-tabs" role="tablist" aria-label={isEnglish ? "Collection groups" : "Nhóm bộ ảnh"}>
+                {selectedCatalog.collections.map((collection) => (
+                  <button
+                    type="button"
+                    key={collection.gender}
+                    role="tab"
+                    aria-selected={selectedCatalogGender === collection.gender}
+                    className={selectedCatalogGender === collection.gender ? "active" : ""}
+                    onClick={() => setSelectedCatalogGender(collection.gender)}
+                  >
+                    {collection.gender}
+                  </button>
+                ))}
+              </div>
+            )}
+            <div className="catalog-inline-grid" key={`${selectedCatalog.id}-${selectedCatalogGender}`}>
+              {activeCatalogImages.map((image, index) => (
+                <figure
+                  className="catalog-inline-tile"
+                  key={image}
+                  style={{ "--catalog-delay": `${index * 42}ms` } as CSSProperties}
+                >
+                  <Image
+                    src={image}
+                    alt={`${selectedCatalog.title} ${selectedCatalogGender} ${index + 1}`}
+                    fill
+                    sizes="(max-width: 1080px) 33vw, 20vw"
+                  />
+                </figure>
+              ))}
+            </div>
+          </div>
+        )}
+      </>
+    );
   }
 
-  const currentLightboxItem = visibleGallery[selectedImage] ?? visibleGallery[0];
-  const activeHomeGallery = homeGalleryImages[homeGalleryVisibleTab];
   const activeServiceGroup = serviceExplorerGroups.find((group) => group.key === activeServiceExplorer) ?? serviceExplorerGroups[0];
   const displayedLocServices = isEnglish
     ? [
@@ -669,6 +828,31 @@ export function SitePage({ page }: { page?: PageKey }) {
   const showNews = currentPage === "news";
   const showBooking = currentPage === "booking";
   const showContact = currentPage === "contact";
+  const pricingBranches = [
+    {
+      id: "chuong-duong",
+      branch: isEnglish ? "Branch 01 · Chương Dương" : "Cơ sở 1 · Chương Dương",
+      address: "223 Chương Dương · Barber, Dreadlocks, Braids & Afro"
+    },
+    {
+      id: "an-thuong",
+      branch: isEnglish ? "Branch 02 · An Thượng" : "Cơ sở 2 · An Thượng",
+      address: "35–37 An Thượng 29 · Locs, braids & grooming"
+    }
+  ] as const;
+  const priceBoards = pricingBranches.map((branch) => ({
+    ...branch,
+    groups: serviceCategories
+      .map((category) => ({
+        id: category.id,
+        title: isEnglish ? category.labelEn : category.label,
+        sections: groupServicesForDisplay(
+          visiblePricingServices.filter((service) => service.branchId === branch.id && getServiceCategory(service) === category.id),
+          isEnglish
+        )
+      }))
+      .filter((group) => group.sections.length > 0)
+  }));
 
   return (
     <main id="main-content">
@@ -806,6 +990,24 @@ export function SitePage({ page }: { page?: PageKey }) {
                 </div>
               </div>
             </div>
+            <div className="hero-mobile-highlights" aria-label={isEnglish ? "Hero service highlights" : "Điểm nổi bật dịch vụ"}>
+              {heroHighlights.map((item) => (
+                <div className="hero-highlight" key={`mobile-${item.viTitle}`}>
+                  <Image
+                    src={item.icon}
+                    alt=""
+                    width={72}
+                    height={72}
+                    className="hero-highlight-icon"
+                    aria-hidden="true"
+                  />
+                  <div className="hero-highlight-copy">
+                    <strong>{isEnglish ? item.enTitle : item.viTitle}</strong>
+                    <p>{isEnglish ? item.enDesc : item.viDesc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
             <div className="hero-visual reveal">
               <Image
                 src="/images/hero2.png"
@@ -904,39 +1106,13 @@ export function SitePage({ page }: { page?: PageKey }) {
       )}
 
       {showHome && (
-        <section className="home-gallery section-shell">
+        <section className="hairstyle-library home-hairstyle-library section-shell">
           <div className="section-heading reveal">
-            <div>
-              <p className="eyebrow">{isEnglish ? "Gallery" : "Thư viện kiểu tóc"}</p>
-              <h2>{isEnglish ? "Texture on the wall." : "Chất tóc riêng trên từng khung hình."}</h2>
-            </div>
+            <p className="eyebrow">{isEnglish ? "Hairstyle catalog" : "Thư viện kiểu tóc"}</p>
+            <h2>{isEnglish ? "Find your texture." : "Chọn đúng texture."}</h2>
+            <p>{isEnglish ? "Open a cover to browse every look. Men and Women are separated where available." : "Chọn một ảnh bìa để xem toàn bộ mẫu. Những bộ có đủ mẫu sẽ được chia Men và Women."}</p>
           </div>
-          <div className="home-gallery-tabs reveal" role="tablist" aria-label="Home gallery categories">
-            {(Object.keys(homeGalleryImages) as HomeGalleryTab[]).map((tab) => (
-              <button
-                key={tab}
-                type="button"
-                role="tab"
-                aria-selected={homeGalleryTab === tab}
-                className={homeGalleryTab === tab ? "active" : ""}
-                onClick={() => changeHomeGalleryTab(tab)}
-              >
-                {tab}
-              </button>
-            ))}
-          </div>
-          <div className="home-gallery-grid" key={homeGalleryVisibleTab}>
-            {activeHomeGallery.map((src, index) => (
-              <figure className="home-gallery-tile" key={`${homeGalleryVisibleTab}-${src}-${index}`}>
-                <Image
-                  src={src}
-                  alt={`${homeGalleryVisibleTab} ${index + 1}`}
-                  fill
-                  sizes="(max-width: 700px) 100vw, (max-width: 980px) 50vw, 33vw"
-                />
-              </figure>
-            ))}
-          </div>
+          {renderHairstyleCatalog()}
         </section>
       )}
 
@@ -992,29 +1168,13 @@ export function SitePage({ page }: { page?: PageKey }) {
       )}
 
       {showGallery && (
-        <section id="gallery" className="gallery section-shell page-view">
+        <section id="gallery" className="hairstyle-library section-shell page-view">
           <div className="section-heading reveal">
             <p className="eyebrow">{pageEyebrows.gallery[language]}</p>
-            <h2>{isEnglish ? "Before, after, behind the chair." : "Trước, sau và phía sau ghế cắt."}</h2>
+            <h2>{isEnglish ? "Five catalogs. One texture that fits you." : "5 catalog để chọn đúng texture của bạn."}</h2>
+            <p>{isEnglish ? "Open a cover to see every look. Men and Women are separated where the collection has both." : "Chọn một ảnh bìa để xem toàn bộ mẫu. Những bộ có đủ mẫu sẽ được chia Men và Women."}</p>
           </div>
-          <FilterChips
-            items={["All", "Locs", "Barber", "Products", "Behind"]}
-            active={galleryFilter}
-            onChange={setGalleryFilter}
-          />
-          <div className="masonry-grid">
-            {visibleGallery.map((item, index) => (
-              <button
-                className="gallery-tile reveal"
-                type="button"
-                key={`${item.label}-${index}`}
-                onClick={() => openLightbox(index)}
-              >
-                <Image src={item.img} alt={item.label} fill sizes="(max-width: 700px) 100vw, 25vw" />
-                <span>{item.label}</span>
-              </button>
-            ))}
-          </div>
+          {renderHairstyleCatalog()}
         </section>
       )}
 
@@ -1159,14 +1319,14 @@ export function SitePage({ page }: { page?: PageKey }) {
             <p className="eyebrow">{pageEyebrows.pricing[language]}</p>
             <h2>{isEnglish ? "WINDREAD price menu" : "Bảng giá WINDREAD"}</h2>
           </div>
-          <div className="pricing-board reveal">
+          <div className="pricing-board">
             <p className="pricing-intro">
               {isEnglish
                 ? "Choose your location first. Each branch has its own bookable menu and crew."
                 : "Chọn đúng cơ sở trước khi đặt lịch. Mỗi chi nhánh có bảng giá và đội ngũ phục vụ riêng."}
             </p>
             <div className="pricing-branches">
-              {priceBoards.map((board) => (
+              {visiblePricingServices.length > 0 ? priceBoards.map((board) => (
                 <section className="pricing-branch" key={board.id} aria-labelledby={`price-${board.id}`}>
                   <div className="pricing-branch-heading">
                     <h3 id={`price-${board.id}`}>{board.branch}</h3>
@@ -1174,22 +1334,27 @@ export function SitePage({ page }: { page?: PageKey }) {
                   </div>
                   <div className="pricing-groups">
                     {board.groups.map((group) => (
-                      <section className="pricing-group" key={`${board.id}-${group.title}`}>
+                      <section className="pricing-group" key={`${board.id}-${group.id}`}>
                         <h4>{group.title}</h4>
-                        <div className="price-table">
-                          {group.rows.map(([name, desc, price]) => (
-                            <div className="price-row" key={name}>
-                              <div>
-                                <strong>
-                                  {name}
-                                  {name === "Gentleman's Set I" && <em className="best-seller">Bestseller</em>}
-                                </strong>
-                                <span>{desc}</span>
-                              </div>
-                              <b>{price}</b>
+                        {group.sections.map((section) => (
+                          <section className="pricing-subgroup" key={section.id}>
+                            <h5>{section.label}</h5>
+                            <div className="price-table">
+                              {section.services.map((service) => {
+                                const localizedService = getLocalizedService(service, isEnglish);
+                                return (
+                                  <div className="price-row" key={service.id}>
+                                    <div>
+                                      <strong>{localizedService.name}</strong>
+                                      <span>{localizedService.description} · {service.durationMinutes} {isEnglish ? "min" : "phút"}</span>
+                                    </div>
+                                    <b>{getLocalizedPriceLabel(service, isEnglish) || formatCurrency(service.price, isEnglish)}</b>
+                                  </div>
+                                );
+                              })}
                             </div>
-                          ))}
-                        </div>
+                          </section>
+                        ))}
                       </section>
                     ))}
                   </div>
@@ -1219,7 +1384,13 @@ export function SitePage({ page }: { page?: PageKey }) {
                     </div>
                   )}
                 </section>
-              ))}
+              )) : (
+                <p className="pricing-loading" role="status">
+                  {pricingRecoveryFailed
+                    ? (isEnglish ? "The price menu is temporarily unavailable. Please use Booking or contact the crew for the current price." : "Bảng giá đang tạm thời chưa tải được. Hãy vào Đặt lịch hoặc liên hệ crew để xem giá hiện tại.")
+                    : (isEnglish ? "Loading the current price menu…" : "Đang tải bảng giá hiện tại…")}
+                </p>
+              )}
             </div>
             <p className="pricing-note">
               {isEnglish
@@ -1284,14 +1455,14 @@ export function SitePage({ page }: { page?: PageKey }) {
           </div>
           <div className="contact-grid">
             <div className="map-card reveal" aria-label="Ban do WINDREAD">
-              <span className="map-pin">W</span>
+              <span className="map-pin"><Image src="/images/windread-mark.png" alt="" width={1420} height={1414} /></span>
               <p>{isEnglish ? "Ngu Hanh Son / Da Nang" : "Ngũ Hành Sơn / Đà Nẵng"}</p>
             </div>
             <div className="contact-cards">
               {[
                 [isEnglish ? "Address 1" : "Địa chỉ 1", "35 - 37 An Thượng 29, Ngũ Hành Sơn, Đà Nẵng"],
                 [isEnglish ? "Address 2" : "Địa chỉ 2", "223 Chương Dương, Ngũ Hành Sơn, Đà Nẵng"],
-                [isEnglish ? "Opening hours" : "Giờ mở cửa", "Mon-Sat 10:00-21:00 / Sun 12:00-18:00"],
+                [isEnglish ? "Opening hours" : "Giờ mở cửa", "Mon-Sun 09:00-19:00"],
                 [isEnglish ? "Phone" : "Điện thoại", "0393549656 (Zalo / WhatsApp)"]
               ].map(([title, text]) => (
                 <article className="info-card reveal" key={title}>
@@ -1317,7 +1488,12 @@ export function SitePage({ page }: { page?: PageKey }) {
             {orderedBranchProfiles.map((branch) => (
               <a className="branch-directory-card reveal" href={`/branches/${branch.id}`} key={branch.id}>
                 <span className="branch-directory-image">
-                  <Image src={branch.image} alt={`Không gian ${branch.name}`} fill sizes="(max-width: 760px) 100vw, 50vw" />
+                  <Image
+                    src={branch.id === "an-thuong" ? "/images/thumb1.webp" : branch.image}
+                    alt={`Không gian ${branch.name}`}
+                    fill
+                    sizes="(max-width: 760px) 100vw, 50vw"
+                  />
                 </span>
                 <span className="branch-directory-copy">
                   <small>{isEnglish ? branch.label.en : branch.label.vi}</small>
@@ -1373,10 +1549,10 @@ export function SitePage({ page }: { page?: PageKey }) {
 
         <div className="footer-media" aria-hidden="true">
           <Image
-            src="/images/footerbg.png"
+            src="/images/footerbg.webp"
             alt=""
-            width={1038}
-            height={400}
+            width={1676}
+            height={918}
             className="footer-image"
           />
         </div>
@@ -1385,31 +1561,6 @@ export function SitePage({ page }: { page?: PageKey }) {
         </p>
       </footer>
 
-      {lightboxOpen && currentLightboxItem && (
-        <div className="lightbox" role="dialog" aria-modal="true" aria-label="Gallery viewer">
-          <button className="lightbox-close" type="button" onClick={() => setLightboxOpen(false)}>
-            Close
-          </button>
-          <button
-            className="lightbox-nav prev"
-            type="button"
-            aria-label="Anh truoc"
-            onClick={() => setSelectedImage((index) => (index === 0 ? visibleGallery.length - 1 : index - 1))}
-          >
-            ‹
-          </button>
-          <Image src={currentLightboxItem.img} alt={currentLightboxItem.label} width={1100} height={760} />
-          <p>{currentLightboxItem.label}</p>
-          <button
-            className="lightbox-nav next"
-            type="button"
-            aria-label="Anh tiep"
-            onClick={() => setSelectedImage((index) => (index + 1) % visibleGallery.length)}
-          >
-            ›
-          </button>
-        </div>
-      )}
     </main>
   );
 }

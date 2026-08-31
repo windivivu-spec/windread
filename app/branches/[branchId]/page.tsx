@@ -82,8 +82,14 @@ export default async function BranchDetailPage({ params }: { params: Promise<{ b
 
       <section className="branch-visuals section-shell" aria-label={`Hình ảnh ${branch.name}`}>
         {branch.gallery.map((image, index) => (
-          <figure className={`branch-visual branch-visual-${index + 1}`} key={image}>
-            <Image src={image} alt="" fill sizes="(max-width: 760px) 100vw, 50vw" />
+          <figure className={`branch-visual branch-visual-${index + 1}`} key={image.src}>
+            <Image
+              src={image.src}
+              alt=""
+              width={image.width}
+              height={image.height}
+              sizes={index === 0 ? "100vw" : "(max-width: 760px) 100vw, (max-width: 1100px) 50vw, 33vw"}
+            />
           </figure>
         ))}
       </section>
@@ -151,7 +157,7 @@ export default async function BranchDetailPage({ params }: { params: Promise<{ b
           </nav>
         </div>
         <div className="footer-media" aria-hidden="true">
-          <Image src="/images/footerbg.png" alt="" width={1038} height={400} className="footer-image" />
+          <Image src="/images/footerbg.webp" alt="" width={1676} height={918} className="footer-image" />
         </div>
         <p className="footer-copyright">© 2025 Win Dread Locs & Barber Club. All Rights Reserved</p>
       </footer>

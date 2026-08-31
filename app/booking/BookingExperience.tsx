@@ -9,11 +9,16 @@ import {
   formatCurrency,
   getUpcomingDays
 } from "./availabilityUtils";
+import { getServiceCategory, serviceCategories } from "./serviceCategories";
+import { getLocalizedPriceLabel, getLocalizedService, groupServicesForDisplay } from "./servicePresentation";
 import type { Barber, Booking, BookingDraft, Branch, Service, TimeSlot } from "./types";
 
 type BookingErrors = Partial<Record<keyof BookingDraft, string>>;
 type BookingStepKey = "info" | "branch" | "service" | "barber" | "time";
 type CopyTarget = "code" | "details" | "";
+type BookingHistoryState = {
+  windreadBookingStep?: BookingStepKey;
+};
 type StoredBooking = {
   booking: Booking;
   savedAt: number;
@@ -36,6 +41,14 @@ const branchImages: Record<string, string> = {
   "an-thuong": "/images/thumb1.webp",
   "chuong-duong": "/images/branch chuong duong.webp"
 };
+
+function getLocalizedBranchName(branch: Branch | undefined, isEnglish: boolean) {
+  if (!branch) return "-";
+  if (!isEnglish) return branch.name;
+  if (branch.id === "chuong-duong") return "Branch 01 · Chương Dương";
+  if (branch.id === "an-thuong") return "Branch 02 · An Thượng";
+  return branch.name;
+}
 
 const LAST_BOOKING_STORAGE_KEY = "windread-last-booking-confirmation";
 const LAST_BOOKING_TTL_MS = 60 * 60 * 1000;
@@ -61,6 +74,7 @@ export function BookingExperience({ isEnglish }: { isEnglish: boolean }) {
   const [slideDirection, setSlideDirection] = useState<"forward" | "back">("forward");
   const bookingFormRef = useRef<HTMLFormElement | null>(null);
   const bookingResultRef = useRef<HTMLElement | null>(null);
+  const activeStepIndexRef = useRef(activeStepIndex);
 
   const selectedBranch = branches.find((branch) => branch.id === draft.branchId) ?? branches[0];
   const selectedService = services.find((service) => service.id === draft.serviceId) ?? services[0];
@@ -68,7 +82,7 @@ export function BookingExperience({ isEnglish }: { isEnglish: boolean }) {
   const lockedBarber = lockedBarberId
     ? bookingService.getBarbers().find((barber) => barber.id === lockedBarberId)
     : undefined;
-  const days = useMemo(() => getUpcomingDays(8), []);
+  const days = useMemo(() => getUpcomingDays(8, isEnglish), [isEnglish]);
   const isGroupBooking = draft.guestCount > 1;
   const bookingSteps = useMemo<{ key: BookingStepKey; label: string }[]>(
     () => lockedBarberId
@@ -86,6 +100,10 @@ export function BookingExperience({ isEnglish }: { isEnglish: boolean }) {
     [isEnglish, isGroupBooking, lockedBarberId]
   );
   const activeStep = bookingSteps[activeStepIndex];
+
+  useEffect(() => {
+    activeStepIndexRef.current = activeStepIndex;
+  }, [activeStepIndex]);
 
   const selectedSlot = slots.find((slot) => slot.startTime === draft.slot);
   const selectedBarber =
@@ -118,6 +136,39 @@ export function BookingExperience({ isEnglish }: { isEnglish: boolean }) {
     }));
     setActiveStepIndex(0);
   }, [clientReady]);
+
+  useEffect(() => {
+    if (!clientReady) return;
+
+    const initialState = window.history.state as BookingHistoryState | null;
+    const initialStep = initialState?.windreadBookingStep;
+    const initialIndex = initialStep ? bookingSteps.findIndex((step) => step.key === initialStep) : -1;
+
+    if (initialIndex >= 0) {
+      setActiveStepIndex(initialIndex);
+      activeStepIndexRef.current = initialIndex;
+    } else {
+      window.history.replaceState(
+        { ...initialState, windreadBookingStep: "info" satisfies BookingStepKey },
+        "",
+        window.location.href
+      );
+    }
+
+    const handlePopState = (event: PopStateEvent) => {
+      const step = (event.state as BookingHistoryState | null)?.windreadBookingStep;
+      const nextIndex = step ? bookingSteps.findIndex((item) => item.key === step) : -1;
+
+      if (nextIndex < 0) return;
+
+      setSlideDirection(nextIndex < activeStepIndexRef.current ? "back" : "forward");
+      setActiveStepIndex(nextIndex);
+      activeStepIndexRef.current = nextIndex;
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [bookingSteps, clientReady]);
 
   useEffect(() => {
     if (!clientReady) return;
@@ -304,7 +355,7 @@ export function BookingExperience({ isEnglish }: { isEnglish: boolean }) {
   function startNewBooking() {
     setCreatedBooking(null);
     setLockedBarberId(null);
-    setDraft({ ...initialDraft, date: getUpcomingDays(1)[0]?.value ?? "" });
+    setDraft({ ...initialDraft, date: getUpcomingDays(1, isEnglish)[0]?.value ?? "" });
     setErrors({});
     setSubmitError("");
     setActiveStepIndex(0);
@@ -313,8 +364,29 @@ export function BookingExperience({ isEnglish }: { isEnglish: boolean }) {
 
   function moveToStep(nextIndex: number) {
     const boundedIndex = Math.max(0, Math.min(bookingSteps.length - 1, nextIndex));
-    setSlideDirection(boundedIndex >= activeStepIndex ? "forward" : "back");
+    if (boundedIndex === activeStepIndex) return;
+
+    if (boundedIndex < activeStepIndex) {
+      window.history.go(boundedIndex - activeStepIndex);
+      return;
+    }
+
+    for (let index = activeStepIndex + 1; index <= boundedIndex; index += 1) {
+      window.history.pushState(
+        { ...(window.history.state as BookingHistoryState | null), windreadBookingStep: bookingSteps[index].key },
+        "",
+        window.location.href
+      );
+    }
+
+    setSlideDirection("forward");
     setActiveStepIndex(boundedIndex);
+    activeStepIndexRef.current = boundedIndex;
+  }
+
+  function moveToPreviousStep() {
+    if (activeStepIndex === 0) return;
+    window.history.back();
   }
 
   function moveToStepKey(key: BookingStepKey) {
@@ -460,7 +532,7 @@ export function BookingExperience({ isEnglish }: { isEnglish: boolean }) {
           <button
             className="ghost-button"
             type="button"
-            onClick={() => moveToStep(activeStepIndex - 1)}
+            onClick={moveToPreviousStep}
             disabled={activeStepIndex === 0}
           >
             {isEnglish ? "Back" : "Quay lại"}
@@ -513,7 +585,7 @@ function LockedBookingContext({
         </span>
         <div className="booking-locked-copy">
           <span>{isEnglish ? "Branch" : "Cơ sở"}</span>
-          <strong>{branch?.name ?? "-"}</strong>
+          <strong>{getLocalizedBranchName(branch, isEnglish)}</strong>
           <small>{branch?.address ?? "-"}</small>
         </div>
       </div>
@@ -542,7 +614,7 @@ function SavedBookingHint({
         <span>{isEnglish ? "Saved on this device" : "Mã đã lưu trên máy này"}</span>
         <strong>{booking.id}</strong>
         <small>
-          {formatBookingTime(booking.startTime)} / {isEnglish ? `${minutesLeft} min left` : `còn ${minutesLeft} phút`}
+          {formatBookingTime(booking.startTime, isEnglish)} / {isEnglish ? `${minutesLeft} min left` : `còn ${minutesLeft} phút`}
         </small>
       </div>
       <div className="saved-booking-actions">
@@ -586,7 +658,7 @@ function BranchSelector({
               <span className="branch-pick-media">
                 <Image src={branchImage} alt={`${branch.name} - ${branch.address}`} width={520} height={320} />
               </span>
-              <strong>{branch.name}</strong>
+              <strong>{getLocalizedBranchName(branch, isEnglish)}</strong>
               <span>{branch.address}</span>
             </button>
           );
@@ -612,6 +684,17 @@ function ServiceSelector({
   isEnglish: boolean;
   guestCount: number;
 }) {
+  const availableCategories = serviceCategories.filter((category) =>
+    services.some((service) => getServiceCategory(service) === category.id)
+  );
+  const [activeCategory, setActiveCategory] = useState(availableCategories[0]?.id ?? "barber");
+  const visibleCategory = availableCategories.some((category) => category.id === activeCategory)
+    ? activeCategory
+    : (availableCategories[0]?.id ?? "barber");
+  const currentCategory = serviceCategories.find((category) => category.id === visibleCategory);
+  const categoryServices = services.filter((service) => getServiceCategory(service) === visibleCategory);
+  const serviceSections = groupServicesForDisplay(categoryServices, isEnglish);
+
   return (
     <div className="booking-block">
       <h3>{isEnglish ? "Choose service" : "Chọn dịch vụ"}</h3>
@@ -625,18 +708,49 @@ function ServiceSelector({
           </span>
         </div>
       )}
-      <div className="service-pick-grid">
-        {services.map((service) => (
+      <div className="service-category-tabs" role="tablist" aria-label={isEnglish ? "Service groups" : "Nhóm dịch vụ"}>
+        {availableCategories.map((category) => (
           <button
-            className={selectedServiceId === service.id ? "is-selected" : ""}
+            className={visibleCategory === category.id ? "is-active" : ""}
             type="button"
-            key={service.id}
-            onClick={() => onSelect(service.id)}
+            role="tab"
+            aria-selected={visibleCategory === category.id}
+            key={category.id}
+            onClick={() => setActiveCategory(category.id)}
           >
-            <strong>{service.name}</strong>
-            <span>{service.durationMinutes} phút</span>
-            <small>{service.priceLabel ?? formatCurrency(service.price)}</small>
+            <strong>{isEnglish ? category.labelEn : category.label}</strong>
+            <span>{isEnglish ? category.descriptionEn : category.description}</span>
           </button>
+        ))}
+      </div>
+      {currentCategory && (
+        <div className="service-category-heading">
+          <span>{isEnglish ? currentCategory.labelEn : currentCategory.label}</span>
+          <small>{categoryServices.length} {isEnglish ? "services" : "dịch vụ"}</small>
+        </div>
+      )}
+      <div className="service-section-list">
+        {serviceSections.map((section) => (
+          <section className="service-section" key={section.id}>
+            <h4>{section.label}</h4>
+            <div className="service-pick-grid">
+              {section.services.map((service) => {
+                const localizedService = getLocalizedService(service, isEnglish);
+                return (
+                  <button
+                    className={selectedServiceId === service.id ? "is-selected" : ""}
+                    type="button"
+                    key={service.id}
+                    onClick={() => onSelect(service.id)}
+                  >
+                    <strong>{localizedService.name}</strong>
+                    <span>{service.durationMinutes} {isEnglish ? "min" : "phút"}</span>
+                    <small>{getLocalizedPriceLabel(service, isEnglish) || formatCurrency(service.price, isEnglish)}</small>
+                  </button>
+                );
+              })}
+            </div>
+          </section>
         ))}
       </div>
       {error && <p className="field-error">{error}</p>}
@@ -666,7 +780,9 @@ function BarberSelector({
           type="button"
           onClick={() => onSelect("any")}
         >
-          <span className="barber-avatar-fallback">ANY</span>
+          <span className="barber-avatar-fallback">
+            <Image src="/images/windread-mark.png" alt="" width={180} height={180} />
+          </span>
           <strong>{isEnglish ? "Any crew" : "Thợ bất kỳ"}</strong>
           <small>{isEnglish ? "Auto-pick available barber" : "Tự chọn thợ còn trống"}</small>
         </button>
@@ -682,7 +798,6 @@ function BarberSelector({
             </span>
             <strong>{barber.name}</strong>
             <small>{barber.title}</small>
-            <span>{barber.specialties.slice(0, 2).join(" / ")}</span>
           </button>
         ))}
       </div>
@@ -745,7 +860,7 @@ function TimeSlotPicker({
     <div className="booking-block">
       <div className="booking-block-title">
         <h3>{isEnglish ? "Available slots" : "Khung giờ còn trống"}</h3>
-        <span>+{BOOKING_BUFFER_MINUTES} phút buffer</span>
+        <span>+{BOOKING_BUFFER_MINUTES} {isEnglish ? "min buffer" : "phút buffer"}</span>
       </div>
       {slots.length > 0 ? (
         <div className="slot-grid">
@@ -841,7 +956,7 @@ function CustomerInfoForm({
         </label>
       </div>
       <label>
-        <span>Email optional</span>
+        <span>{isEnglish ? "Email (optional)" : "Email không bắt buộc"}</span>
         <input
           type="email"
           value={draft.customerEmail}
@@ -851,7 +966,7 @@ function CustomerInfoForm({
         {errors.customerEmail && <small className="field-error">{errors.customerEmail}</small>}
       </label>
       <label>
-        <span>{isEnglish ? "Note optional" : "Ghi chú optional"}</span>
+        <span>{isEnglish ? "Note (optional)" : "Ghi chú không bắt buộc"}</span>
         <textarea
           rows={4}
           value={draft.note}
@@ -894,7 +1009,7 @@ function BookingSummary({
         </div>
         <div>
           <dt>{isEnglish ? "Service" : "Dịch vụ"}</dt>
-          <dd>{service ? `${service.name} / ${service.durationMinutes} phút` : "-"}</dd>
+          <dd>{service ? `${getLocalizedService(service, isEnglish).name} / ${service.durationMinutes} ${isEnglish ? "min" : "phút"}` : "-"}</dd>
         </div>
         <div>
           <dt>{isEnglish ? "Guests" : "Số khách"}</dt>
@@ -906,7 +1021,7 @@ function BookingSummary({
         </div>
         <div>
           <dt>{isEnglish ? "Time" : "Ngày giờ"}</dt>
-          <dd>{slot ? formatBookingTime(slot.startTime) : "-"}</dd>
+          <dd>{slot ? formatBookingTime(slot.startTime, isEnglish) : "-"}</dd>
         </div>
         <div>
           <dt>{isEnglish ? "Phone" : "Số điện thoại"}</dt>
@@ -953,10 +1068,10 @@ function BookingSuccess({
     ? [
         `Booking code: ${booking.id}`,
         `Guests: ${booking.guestCount}`,
-        `Service: ${service?.name ?? "-"}`,
+        `Service: ${service ? getLocalizedService(service, true).name : "-"}`,
         `Barber: ${barber?.name ?? "-"}`,
         `Branch: ${branch?.address ?? "-"}`,
-        `Time: ${formatBookingTime(booking.startTime)}`,
+        `Time: ${formatBookingTime(booking.startTime, true)}`,
         `Phone: ${booking.customerPhone}`,
         "Status: Slot held, waiting for staff confirmation"
       ].join("\n")
@@ -1019,7 +1134,7 @@ function BookingSuccess({
       </p>
       <dl>
         <dt>{isEnglish ? "Service" : "Dịch vụ"}</dt>
-        <dd>{service?.name}</dd>
+        <dd>{service ? getLocalizedService(service, isEnglish).name : "-"}</dd>
         <dt>{isEnglish ? "Guests" : "Số khách"}</dt>
         <dd>{booking.guestCount} {isEnglish ? (booking.guestCount === 1 ? "guest" : "guests") : "khách"}</dd>
         <dt>{isEnglish ? "Barber" : "Thợ"}</dt>
@@ -1027,7 +1142,7 @@ function BookingSuccess({
         <dt>{isEnglish ? "Branch" : "Cơ sở"}</dt>
         <dd>{branch?.address}</dd>
         <dt>{isEnglish ? "Time" : "Ngày giờ"}</dt>
-        <dd>{formatBookingTime(booking.startTime)}</dd>
+        <dd>{formatBookingTime(booking.startTime, isEnglish)}</dd>
         <dt>{isEnglish ? "Phone" : "Số điện thoại"}</dt>
         <dd>{booking.customerPhone}</dd>
       </dl>

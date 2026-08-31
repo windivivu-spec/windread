@@ -1,0 +1,12 @@
+"use client";
+
+import Link from "next/link";
+import Image from "next/image";
+import { FormEvent, useState } from "react";
+
+export default function AdminSetupPage() {
+  const [form, setForm] = useState({ displayName: "", loginId: "", password: "", setupToken: "" });
+  const [message, setMessage] = useState(""); const [saving, setSaving] = useState(false);
+  async function submit(event: FormEvent<HTMLFormElement>) { event.preventDefault(); setSaving(true); setMessage(""); try { const response = await fetch("/api/admin/bootstrap", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(form) }); const result = await response.json() as { message?: string }; if (!response.ok) throw new Error(result.message || "Không thể thiết lập Admin."); setMessage("Đã tạo Admin đầu tiên. Bạn có thể đăng nhập ngay bây giờ."); } catch (error) { setMessage(error instanceof Error ? error.message : "Không thể thiết lập Admin."); } finally { setSaving(false); } }
+  return <main className="admin-login"><section><p className="admin-kicker">WINDREAD / FIRST SETUP</p><h1>Thiết lập<br/>chủ hệ thống.</h1><p className="admin-login-copy">Chỉ dùng một lần trước khi nhân viên đầu tiên được tạo.</p><form onSubmit={submit}><label>Họ tên<input required value={form.displayName} onChange={(event) => setForm({ ...form, displayName: event.target.value })}/></label><label>ID Admin<input required pattern="[a-zA-Z0-9][a-zA-Z0-9._-]{2,47}" value={form.loginId} onChange={(event) => setForm({ ...form, loginId: event.target.value })} placeholder="vd: win-admin" /></label><label>Mật khẩu<input required type="password" minLength={12} value={form.password} onChange={(event) => setForm({ ...form, password: event.target.value })}/></label><label>Mã thiết lập<input required type="password" value={form.setupToken} onChange={(event) => setForm({ ...form, setupToken: event.target.value })}/></label>{message && <p className={message.startsWith("Đã") ? "admin-form-success" : "admin-form-error"}>{message}</p>}<button className="admin-button" disabled={saving}>{saving ? "Đang tạo tài khoản…" : "Tạo Admin đầu tiên"}</button></form><p className="admin-login-help"><Link href="/admin/login">← Quay lại đăng nhập</Link></p></section><aside><span className="admin-login-orbit orbit-a"/><span className="admin-login-orbit orbit-b"/><Image className="admin-login-mark" src="/images/windread-mark.png" alt="WINDREAD" width={1420} height={1414} priority /><small>WINDREAD<br/>BARBER CLUB</small></aside></main>;
+}

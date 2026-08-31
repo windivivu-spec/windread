@@ -1,12 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createBooking, getBookings } from "../../booking/supabaseServer";
 import type { BookingDraft } from "../../booking/types";
+import { adminErrorResponse, assertRole, requireAdminContext } from "../../../lib/admin/auth";
 
 export async function GET() {
   try {
-    return NextResponse.json(await getBookings());
-  } catch {
-    return NextResponse.json({ message: "Không tải được danh sách booking." }, { status: 500 });
+    const context = await requireAdminContext();
+    assertRole(context, ["admin", "manager", "cashier", "employee"]);
+    const bookings = await getBookings();
+    const scoped = bookings.filter((booking) => {
+      if (context.role === "admin") return true;
+      if (!context.branchIds.includes(booking.branchId)) return false;
+      return context.role !== "employee" || booking.barberId === context.barberId;
+    });
+    return NextResponse.json(scoped);
+  } catch (error) {
+    return adminErrorResponse(error);
   }
 }
 

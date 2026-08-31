@@ -2,7 +2,7 @@ import { getAvailableSlots, getBookingEnd } from "./availabilityUtils";
 import { syncBookingToCalendar } from "./calendar";
 import { sendBarberBookingEmail } from "./email";
 import { barbers as mockBarbers, branches as mockBranches, seedBookings, services as mockServices } from "./mockBookingData";
-import type { Barber, Booking, BookingDraft, BookingStatus, Branch, Service, TimeSlot, Weekday, WorkingWindow } from "./types";
+import type { Barber, Booking, BookingDraft, BookingStatus, Branch, Service, ServiceCategory, TimeSlot, Weekday, WorkingWindow } from "./types";
 
 type SupabaseBranchRow = {
   id: string;
@@ -18,6 +18,7 @@ type SupabaseServiceRow = {
   description: string;
   price: number;
   price_label?: string | null;
+  service_category?: ServiceCategory | null;
   duration_minutes: number;
 };
 
@@ -148,6 +149,7 @@ function mapService(row: SupabaseServiceRow): Service {
     description: row.description,
     price: row.price,
     priceLabel: row.price_label ?? undefined,
+    category: row.service_category ?? undefined,
     durationMinutes: row.duration_minutes
   };
 }

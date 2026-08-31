@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { bookingService } from "../../booking/bookingService";
 import { formatBookingTime, toDateInputValue } from "../../booking/availabilityUtils";
 import type { Barber, Booking, BookingStatus, Branch, Service } from "../../booking/types";
+import { AdminFrame, useAdminSession } from "../components/AdminFrame";
 
 const statuses: BookingStatus[] = ["pending", "confirmed", "cancelled", "completed"];
 const statusLabels: Record<BookingStatus, string> = {
@@ -17,7 +19,7 @@ const viewLabels = {
   day: "Ngày",
   list: "Danh sách"
 } as const;
-const calendarHours = Array.from({ length: 15 }, (_, index) => index + 8);
+const calendarHours = Array.from({ length: 11 }, (_, index) => index + 9);
 const weekdayLabels = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
 
 type CalendarView = keyof typeof viewLabels;
@@ -69,13 +71,14 @@ function sortBookings(a: Booking, b: Booking) {
   return new Date(a.startTime).getTime() - new Date(b.startTime).getTime();
 }
 
-export default function AdminBookingsPage() {
+function BookingCalendar() {
+  const { branchId: adminBranchId, setBranchId: setAdminBranchId } = useAdminSession();
   const [selectedDate, setSelectedDate] = useState(() => getInitialParam("date", toDateInputValue(new Date())));
   const [view, setView] = useState<CalendarView>(() => {
     const value = getInitialParam("view", "week");
     return value === "day" || value === "list" ? value : "week";
   });
-  const [branchId, setBranchId] = useState(() => getInitialParam("branch", "all"));
+  const [branchId, setBranchId] = useState(() => getInitialParam("branch", adminBranchId || "all"));
   const [barberId, setBarberId] = useState(() => getInitialParam("barber", "all"));
   const [status, setStatus] = useState<BookingStatus | "all">(() => {
     const value = getInitialParam("status", "all");
@@ -123,6 +126,18 @@ export default function AdminBookingsPage() {
     if (!params.has("view") && window.matchMedia("(max-width: 780px)").matches) {
       setView("day");
     }
+  }, []);
+
+  useEffect(() => {
+    function handleBranchChange(event: Event) {
+      const nextBranchId = (event as CustomEvent<{ branchId?: string }>).detail?.branchId;
+      if (!nextBranchId) return;
+      setBranchId(nextBranchId);
+      setBarberId("all");
+    }
+
+    window.addEventListener("windread-admin-branch-change", handleBranchChange);
+    return () => window.removeEventListener("windread-admin-branch-change", handleBranchChange);
   }, []);
 
   useEffect(() => {
@@ -237,6 +252,7 @@ export default function AdminBookingsPage() {
           )}
         </dl>
         {!compact && booking.note && <p className="admin-card-note">{booking.note}</p>}
+        {!compact && booking.status !== "cancelled" && <Link className="admin-text-button" href={`/admin/pos?booking=${encodeURIComponent(booking.id)}`}>Tạo hóa đơn</Link>}
       </article>
     );
   }
@@ -279,6 +295,7 @@ export default function AdminBookingsPage() {
             ))}
           </select>
         </label>
+        {booking.status !== "cancelled" && <Link className="admin-list-invoice-link" href={`/admin/pos?booking=${encodeURIComponent(booking.id)}`}>Thu tiền</Link>}
         {booking.note && <p className="admin-list-note">{booking.note}</p>}
       </article>
     );
@@ -298,7 +315,7 @@ export default function AdminBookingsPage() {
   }, [visibleBookings]);
 
   return (
-    <main id="main-content" className="admin-bookings-page">
+    <section className="admin-bookings-page">
       <header className="admin-bookings-header">
         <a className="ghost-button" href="/booking">
           Về đặt lịch
@@ -342,7 +359,9 @@ export default function AdminBookingsPage() {
             <select
               value={branchId}
               onChange={(event) => {
-                setBranchId(event.target.value);
+                const nextBranchId = event.target.value;
+                setBranchId(nextBranchId);
+                setAdminBranchId(nextBranchId);
                 setBarberId("all");
               }}
             >
@@ -511,6 +530,10 @@ export default function AdminBookingsPage() {
           <div className="booking-empty">Không có booking phù hợp với bộ lọc hiện tại.</div>
         )}
       </section>
-    </main>
+    </section>
   );
+}
+
+export default function AdminBookingsPage() {
+  return <AdminFrame title="Lịch hẹn" eyebrow="Theo dõi lịch & tạo hóa đơn"><BookingCalendar /></AdminFrame>;
 }

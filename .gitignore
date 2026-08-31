@@ -42,6 +42,8 @@ yarn-error.log*
 /.agents/
 /.codex/
 /.claude/
+/supabase/.temp/
+CLAUDE.md
 /.cursor/
 /.gemini/
 /.vscode/
@@ -56,4 +58,3 @@ yarn-error.log*
 
 # typescript
 *.tsbuildinfo
-

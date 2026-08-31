@@ -16,6 +16,7 @@ const weekdays: Weekday[] = [
 ];
 
 const weekdayLabels = ["CN", "Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7"];
+const weekdayLabelsEn = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 function vietnamDateParts(date: Date) {
   const parts = new Intl.DateTimeFormat("en", {
@@ -40,7 +41,7 @@ export function toDateInputValue(date: Date) {
   return `${parts.year}-${parts.month}-${parts.day}`;
 }
 
-export function getUpcomingDays(count = 7, now = new Date()) {
+export function getUpcomingDays(count = 7, isEnglish = false, now = new Date()) {
   const [year, month, day] = toDateInputValue(now).split("-").map(Number);
   return Array.from({ length: count }, (_, index) => {
     const date = new Date(Date.UTC(year, month - 1, day + index, 12));
@@ -48,20 +49,21 @@ export function getUpcomingDays(count = 7, now = new Date()) {
     const [, valueMonth, valueDay] = value.split("-");
     return {
       value,
-      label: `${weekdayLabels[weekdayIndex(value)]}, ${valueDay}/${valueMonth}`
+      label: `${(isEnglish ? weekdayLabelsEn : weekdayLabels)[weekdayIndex(value)]}, ${valueDay}/${valueMonth}`
     };
   });
 }
 
-export function formatCurrency(value: number) {
-  return `${value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")}đ`;
+export function formatCurrency(value: number, isEnglish = false) {
+  const formatted = value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, isEnglish ? "," : ".");
+  return isEnglish ? `${formatted} VND` : `${formatted}đ`;
 }
 
-export function formatBookingTime(iso: string) {
+export function formatBookingTime(iso: string, isEnglish = false) {
   const date = new Date(iso);
   const parts = vietnamDateParts(date);
   const dateValue = `${parts.year}-${parts.month}-${parts.day}`;
-  return `${weekdayLabels[weekdayIndex(dateValue)]}, ${parts.day}/${parts.month} ${parts.hour}:${parts.minute}`;
+  return `${(isEnglish ? weekdayLabelsEn : weekdayLabels)[weekdayIndex(dateValue)]}, ${parts.day}/${parts.month} ${parts.hour}:${parts.minute}`;
 }
 
 export function addMinutes(date: Date, minutes: number) {

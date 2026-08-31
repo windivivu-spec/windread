@@ -24,8 +24,8 @@ export const shopKnowledge = {
     channels: "Điện thoại / Zalo / WhatsApp"
   },
   hours: {
-    mondayToSaturday: "10:00-21:00",
-    sunday: "12:00-18:00",
+    mondayToSaturday: "09:00-19:00",
+    sunday: "09:00-19:00",
     timezone: "Asia/Ho_Chi_Minh"
   },
   pricing: [

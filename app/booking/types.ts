@@ -29,8 +29,11 @@ export type Service = {
   description: string;
   price: number;
   priceLabel?: string;
+  category?: ServiceCategory;
   durationMinutes: number;
 };
+
+export type ServiceCategory = "barber" | "dreadlocks" | "braids" | "afro";
 
 export type Barber = {
   id: string;

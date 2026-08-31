@@ -509,13 +509,13 @@ const serviceIdsByBranch = {
 };
 
 const weekdayHours = {
-  monday: { start: "10:00", end: "21:00" },
-  tuesday: { start: "10:00", end: "21:00" },
-  wednesday: { start: "10:00", end: "21:00" },
-  thursday: { start: "10:00", end: "21:00" },
-  friday: { start: "10:00", end: "21:00" },
-  saturday: { start: "10:00", end: "21:00" },
-  sunday: { start: "12:00", end: "18:00" }
+  monday: { start: "09:00", end: "19:00" },
+  tuesday: { start: "09:00", end: "19:00" },
+  wednesday: { start: "09:00", end: "19:00" },
+  thursday: { start: "09:00", end: "19:00" },
+  friday: { start: "09:00", end: "19:00" },
+  saturday: { start: "09:00", end: "19:00" },
+  sunday: { start: "09:00", end: "19:00" }
 } as const;
 
 export const barbers: Barber[] = [
