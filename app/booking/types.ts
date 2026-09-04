@@ -43,6 +43,7 @@ export type Barber = {
   avatar: string;
   title: string;
   specialties: string[];
+  experienceYears?: number;
   serviceIds: string[];
   workingHours: Partial<Record<Weekday, WorkingWindow>>;
 };

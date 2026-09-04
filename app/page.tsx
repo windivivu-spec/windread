@@ -293,70 +293,70 @@ const legacyPriceBoards = [
 const barbers = [
   {
     bookingId: "huy",
-    name: "HUY",
+    name: "FARM",
     role: "BARBER",
-    specialties: ["Locs", "Fade"],
-    years: "6 năm",
+    specialties: ["Haircut | Beard Trim & Shape-Up"],
+    years: "5 năm",
     bio: "Fade mượt, line up sắc và form cắt hợp phong cách streetwear.",
     style: "Low fade, burst fade, sharp line up",
     image: "/images/barber/barber1.webp"
   },
   {
     bookingId: "van-huy",
-    name: "VĂN HUY",
+    name: "HUYBRAIDER",
     role: "BARBER",
-    specialties: ["Fade"],
-    years: "6 năm",
+    specialties: ["Afro Hair Braiding & Loc Artistry & Haircut"],
+    years: "5 năm",
     bio: "Tay kéo gọn, fade mượt, hợp streetwear và form mặt châu Á.",
     style: "Low fade, burst fade, sharp line up",
     image: "/images/barber/barber2.webp"
   },
   {
     bookingId: "tinh",
-    name: "TÌNH",
+    name: "TINHTEOTOP",
     role: "BARBER",
-    specialties: ["Beard"],
-    years: "7 năm",
+    specialties: ["Haircut"],
+    years: "1 năm",
     bio: "Classic barber rituals, hot towel, beard shape và finish premium.",
     style: "Tapered beard, calm shave, old-school finish",
     image: "/images/barber/barber3.webp"
   },
   {
     bookingId: "phuc",
-    name: "PHÚC",
+    name: "DEMIBOY",
     role: "BARBER",
-    specialties: ["Classic"],
-    years: "4 năm",
+    specialties: ["Haircut", "Dreadlock"],
+    years: "1 năm",
     bio: "Tư vấn màu, texture và treatment phù hợp với nền tóc hiện tại.",
     style: "Color, texture, treatment",
     image: "/images/barber/barber4.webp"
   },
   {
     bookingId: "thuan",
-    name: "THUẬN",
+    name: "THUANBARBER",
     role: "BARBER",
-    specialties: ["Classic"],
-    years: "5 năm",
+    specialties: ["Haircut"],
+    years: "4 năm",
     bio: "Xử lý layer và texture tự nhiên cho các form tóc có độ chuyển động.",
     style: "Textured crop, layered cut, natural volume",
     image: "/images/barber/barber5.webp"
   },
   {
     bookingId: "kien",
-    name: "KIÊN",
+    name: "KD",
     role: "BARBER",
-    specialties: ["Fade"],
-    years: "4 năm",
+    specialties: ["Haircut"],
+    years: "5 năm",
     bio: "Tập trung vào đường viền tóc, taper và finish sạch từ mọi góc nhìn.",
     style: "Line up, taper, clean finish",
     image: "/images/barber/barber6.webp"
   },
   {
     bookingId: "duy",
-    name: "DUY",
+    name: "DUY LOCS",
     role: "BARBER",
-    specialties: ["Classic"],
-    years: "4 năm",
+    specialties: ["Haircut + Locs"],
+    years: "5 năm",
     bio: "Tư vấn texture, màu trầm và treatment để giữ tóc khỏe sau xử lý.",
     style: "Wave, color, treatment",
     image: "/images/barber/barber7.webp"
@@ -636,7 +636,7 @@ export function SitePage({
     barbers.filter(
       (barber) =>
         barberIds.includes(barber.bookingId) &&
-        (barberFilter === "All" || barber.specialties.includes(barberFilter))
+        (barberFilter === "All" || barber.specialties.join(" ").toLowerCase().includes(barberFilter.toLowerCase()))
     );
 
   function warmServiceGroup(groupKey: ServiceExplorerKey) {
@@ -1323,7 +1323,7 @@ export function SitePage({
               <p className="eyebrow">{pageEyebrows.barbers[language]}</p>
               <h1>{isEnglish ? "The hands that hold the shape." : "Những bàn tay giữ form."}</h1>
             </div>
-            <FilterChips items={["All", "Locs", "Fade", "Classic", "Beard"]} active={barberFilter} onChange={setBarberFilter} />
+            <FilterChips items={["All", "Haircut", "Locs", "Dreadlock", "Braiding", "Beard"]} active={barberFilter} onChange={setBarberFilter} />
           </div>
 
           {orderedBranchProfiles.map((branch) => {
@@ -1374,8 +1374,10 @@ export function SitePage({
                             />
                           </div>
                           <div className="barber-card-content">
-                            <h3>{barber.name}</h3>
                             <p className="barber-card-title">{barber.role}</p>
+                            <h3>{barber.name}</h3>
+                            <p className="barber-card-experience">{isEnglish ? `${barber.years} experience` : `${barber.years} kinh nghiệm`}</p>
+                            <p className="barber-card-specialties">{isEnglish ? "Specializes in" : "Chuyên môn"}: {barber.specialties.join(" · ")}</p>
                             <div className="barber-card-actions">
                               <a className="barber-book-link" href={`/booking?branch=${branch.id}&barber=${barber.bookingId}`}>{isEnglish ? "Book" : "Đặt lịch"}</a>
                             </div>

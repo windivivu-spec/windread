@@ -30,6 +30,7 @@ type SupabaseBarberRow = {
   avatar: string;
   title: string;
   specialties: string[];
+  experience_years: number | null;
   working_hours: Partial<Record<Weekday, WorkingWindow>>;
 };
 
@@ -163,6 +164,7 @@ function mapBarber(row: SupabaseBarberRow, serviceIds: string[]): Barber {
     avatar: row.avatar,
     title: row.title,
     specialties: row.specialties ?? [],
+    experienceYears: row.experience_years ?? undefined,
     serviceIds,
     workingHours: row.working_hours ?? {}
   };

@@ -2854,7 +2854,12 @@ textarea:focus-visible {
 }
 
 .barbers-crew-area .barber-card-title {
-  margin: 8px 0 0;
+  display: inline-flex;
+  width: fit-content;
+  margin: 0 0 8px;
+  padding: 4px 7px;
+  border: 1px solid rgba(216, 50, 69, 0.72);
+  background: rgba(163, 22, 38, 0.14);
   color: var(--accent);
   font-family: var(--font-small);
   font-size: 0.64rem;
@@ -2862,6 +2867,25 @@ textarea:focus-visible {
   letter-spacing: 0.075em;
   line-height: 1.45;
   text-transform: uppercase;
+}
+
+.barbers-crew-area .barber-card-experience,
+.barbers-crew-area .barber-card-specialties {
+  margin: 8px 0 0;
+  line-height: 1.5;
+}
+
+.barbers-crew-area .barber-card-experience {
+  color: var(--accent);
+  font-family: var(--font-small);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.barbers-crew-area .barber-card-specialties {
+  color: var(--text);
+  font-size: 0.95rem;
 }
 
 @media (max-width: 1080px) {
