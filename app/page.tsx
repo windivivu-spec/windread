@@ -968,12 +968,17 @@ export function SitePage({
               <h1 className="brand-title">
                 <Image
                   src="/images/windread-logo.png"
-                  alt="WINDREAD"
+                  alt="WINDREAD - Dreadlock, Braid & Barber Đà Nẵng"
                   width={1327}
                   height={331}
                   priority
                   className="brand-logo"
                 />
+                <span className="sr-only">
+                  {isEnglish
+                    ? "WINDREAD - Leading Dreadlock, Braid, Cornrow & Barber Studio in Da Nang, Vietnam"
+                    : "WINDREAD - Tiệm Làm Dreadlock, Braid, Cornrow & Barber Hàng Đầu Tại Đà Nẵng"}
+                </span>
               </h1>
               <div className="hero-subcontent">
                 <div className="hero-pole" aria-hidden="true">
@@ -1109,12 +1114,54 @@ export function SitePage({
                   quality={70}
                   onLoad={(event) => event.currentTarget.closest(".service-explorer-panel")?.classList.add("is-loaded")}
                 />
-                <div className="service-explorer-panel-copy">
-                  <button className="service-explorer-back" type="button" onClick={() => setIsServiceExplorerOpen(false)}>
-                    {isEnglish ? "All services" : "Tất cả dịch vụ"}
-                  </button>
-                  <p>{activeServiceGroup.title}</p>
-                  <h2>{isEnglish ? activeServiceGroup.enDesc : activeServiceGroup.viDesc}</h2>
+                <div className="service-explorer-header">
+                  <div className="service-explorer-panel-copy">
+                    <button className="service-explorer-back" type="button" onClick={() => setIsServiceExplorerOpen(false)}>
+                      {isEnglish ? "All services" : "Tất cả dịch vụ"}
+                    </button>
+                    <p>{activeServiceGroup.title}</p>
+                    <h2>{isEnglish ? activeServiceGroup.enDesc : activeServiceGroup.viDesc}</h2>
+                  </div>
+                  <div className="service-explorer-action-area">
+                    {activeServiceGroup.key === "dread" && (
+                      <>
+                        <a className="service-explorer-more-btn" href="/dreadlock-da-nang">
+                          {isEnglish ? "Explore Dreadlocks →" : "Xem Thêm Dreadlocks →"}
+                        </a>
+                        <div className="service-explorer-sub-pills">
+                          <a className="service-explorer-sub-pill" href="/news/gia-lam-dreadlock-o-da-nang">
+                            Bảng giá Locs
+                          </a>
+                          <a className="service-explorer-sub-pill" href="/news/top-dia-chi-lam-dreadlock-tai-da-nang">
+                            Địa chỉ uy tín
+                          </a>
+                        </div>
+                      </>
+                    )}
+                    {activeServiceGroup.key === "braid" && (
+                      <>
+                        <a className="service-explorer-more-btn" href="/braids-da-nang">
+                          {isEnglish ? "Explore Braids →" : "Xem Thêm Braids →"}
+                        </a>
+                        <div className="service-explorer-sub-pills">
+                          <a className="service-explorer-sub-pill" href="/cornrows-da-nang">
+                            Cornrows
+                          </a>
+                          <a className="service-explorer-sub-pill" href="/box-braids-da-nang">
+                            Box Braids
+                          </a>
+                          <a className="service-explorer-sub-pill" href="/news/top-noi-lam-braids-tai-da-nang">
+                            Cẩm nang tết tóc
+                          </a>
+                        </div>
+                      </>
+                    )}
+                    {activeServiceGroup.key === "barber" && (
+                      <a className="service-explorer-more-btn" href="/barbers">
+                        {isEnglish ? "Explore Barber Club →" : "Xem Thêm Barber →"}
+                      </a>
+                    )}
+                  </div>
                 </div>
                 <div className="service-explorer-service-grid">
                   {activeServiceGroup.services.map((service, index) => (
@@ -1211,7 +1258,7 @@ export function SitePage({
         <section id="about" className="about section-shell page-view">
           <div className="about-copy reveal">
             <p className="eyebrow">{pageEyebrows.about[language]}</p>
-            <h2>{isEnglish ? "About WINDREAD" : "Câu chuyện WINDREAD"}</h2>
+            <h1>{isEnglish ? "About WINDREAD | Locs & Street Barber Club Da Nang" : "Về WINDREAD | Tiệm Dreadlock & Street Barber Club Đà Nẵng"}</h1>
             <p>
               {isEnglish
                 ? "WINDREAD started from a love for real dreadlocks, sharp fades and late nights moving through alleyways with bass behind the shoulders. The shop blends Saigon street energy, Harajuku attitude and classic barber discipline."
@@ -1240,12 +1287,26 @@ export function SitePage({
         <section id="services" className="services section-shell page-view">
           <div className="section-heading reveal">
             <p className="eyebrow">{pageEyebrows.services[language]}</p>
-            <h2>{isEnglish ? "Clear services. No confusing menu." : "Dịch vụ rõ ràng. Không menu rối."}</h2>
+            <h1>{isEnglish ? "Dreadlocks, Braids & Barber Services in Da Nang" : "Dịch Vụ Dreadlocks, Braids & Barber Tại Đà Nẵng"}</h1>
             <p>
               {isEnglish
                 ? "Choose dread work for long-term texture, braid work for tight patterns, or a clean fade to reset the whole look today."
                 : "Chọn dread để xây texture dài hạn, braid để lên pattern gọn, hoặc clean fade để reset visual ngay hôm nay."}
             </p>
+          </div>
+          <div className="money-page-pills" aria-label="Chuyên trang dịch vụ" style={{ marginBottom: "1.5rem", display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
+            <a href="/dreadlock-da-nang" className="pill-link" style={{ padding: "0.4rem 0.8rem", borderRadius: "999px", background: "var(--panel)", border: "1px solid var(--line)", fontSize: "0.85rem" }}>
+              ✦ Dreadlock Đà Nẵng
+            </a>
+            <a href="/braids-da-nang" className="pill-link" style={{ padding: "0.4rem 0.8rem", borderRadius: "999px", background: "var(--panel)", border: "1px solid var(--line)", fontSize: "0.85rem" }}>
+              ✦ Braid & Tết Tóc Đà Nẵng
+            </a>
+            <a href="/cornrows-da-nang" className="pill-link" style={{ padding: "0.4rem 0.8rem", borderRadius: "999px", background: "var(--panel)", border: "1px solid var(--line)", fontSize: "0.85rem" }}>
+              ✦ Cornrows Đà Nẵng
+            </a>
+            <a href="/box-braids-da-nang" className="pill-link" style={{ padding: "0.4rem 0.8rem", borderRadius: "999px", background: "var(--panel)", border: "1px solid var(--line)", fontSize: "0.85rem" }}>
+              ✦ Box Braids Đà Nẵng
+            </a>
           </div>
           <div className="highlight-banner reveal">
             <strong>Locs Specialist</strong>
@@ -1262,7 +1323,7 @@ export function SitePage({
         <section id="gallery" className="hairstyle-library section-shell page-view">
           <div className="section-heading reveal">
             <p className="eyebrow">{pageEyebrows.gallery[language]}</p>
-            <h2>{isEnglish ? "Five catalogs. One texture that fits you." : "5 catalog để chọn đúng texture của bạn."}</h2>
+            <h1>{isEnglish ? "Hairstyle Gallery | Dreadlocks, Braids & Barber Da Nang" : "Bộ Sưu Tập Tóc Dreadlocks & Braids Đà Nẵng"}</h1>
             <p>{isEnglish ? "Open a cover to see every look. Men and Women are separated where the collection has both." : "Chọn một ảnh bìa để xem toàn bộ mẫu. Những bộ có đủ mẫu sẽ được chia Men và Women."}</p>
           </div>
           {renderHairstyleCatalog()}
@@ -1273,7 +1334,7 @@ export function SitePage({
         <section id="shop" className="shop section-shell page-view">
           <div className="section-heading reveal">
             <p className="eyebrow">{pageEyebrows.shop[language]}</p>
-            <h2>{isEnglish ? "Locs care & grooming goods." : "Đồ chăm locs và grooming."}</h2>
+            <h1>{isEnglish ? "Locs & Braids Care Shop | WINDREAD" : "Sản Phẩm Chăm Sóc Dreadlocks & Braids | WINDREAD"}</h1>
             <p>{isEnglish ? "Care products, beard goods and merch selected for the days after you leave the chair." : "Sản phẩm chăm locs, beard và merch được chọn để dùng sau mỗi lần rời ghế."}</p>
           </div>
           <div className="shop-layout">
@@ -1410,7 +1471,7 @@ export function SitePage({
         <section id="pricing" className="pricing section-shell page-view">
           <div className="section-heading reveal">
             <p className="eyebrow">{pageEyebrows.pricing[language]}</p>
-            <h2>{isEnglish ? "WINDREAD price menu" : "Bảng giá WINDREAD"}</h2>
+            <h1>{isEnglish ? "WINDREAD Price Menu | Dreadlock, Braid & Barber Da Nang" : "Bảng Giá Dịch Vụ Dreadlock, Braid & Barber Đà Nẵng"}</h1>
           </div>
           <div className="pricing-board">
             <p className="pricing-intro">
@@ -1544,7 +1605,7 @@ export function SitePage({
         <section id="contact" className="contact section-shell page-view">
           <div className="section-heading reveal">
             <p className="eyebrow">{pageEyebrows.contact[language]}</p>
-            <h2>{isEnglish ? "The WINDREAD chair is on." : "Ghế WINDREAD đang sáng đèn."}</h2>
+            <h1>{isEnglish ? "Contact WINDREAD Barber & Hair Studio Da Nang" : "Địa Chỉ & Liên Hệ Tiệm WINDREAD Đà Nẵng"}</h1>
           </div>
           <div className="contact-grid">
             <div className="map-card reveal" aria-label="Ban do WINDREAD">
@@ -1629,21 +1690,32 @@ export function SitePage({
             </div>
           </div>
 
-          <nav className="footer-links" aria-label={isEnglish ? "Footer quick links" : "Liên kết footer"}>
-            <h2>{isEnglish ? "Quick Links" : "Liên kết nhanh"}</h2>
-            <a href="/">{isEnglish ? "Home" : "Trang chủ"}</a>
-            <a href="/about">{isEnglish ? "About" : "Giới thiệu"}</a>
-            <a href="/services">{isEnglish ? "Services" : "Dịch vụ"}</a>
-            <a href="/gallery">{isEnglish ? "Gallery" : "Thư viện"}</a>
-            <a href="/booking">{isEnglish ? "Booking" : "Đặt lịch"}</a>
-            <a href="/contact">{isEnglish ? "Contact" : "Liên hệ"}</a>
-          </nav>
+          <div className="footer-nav-groups">
+            <nav className="footer-links" aria-label={isEnglish ? "Footer service links" : "Dịch vụ trọng tâm"}>
+              <h2>{isEnglish ? "Specialized Services" : "Dịch vụ trọng tâm"}</h2>
+              <a href="/dreadlock-da-nang">Dreadlock Đà Nẵng</a>
+              <a href="/braids-da-nang">Braid & Tết Tóc Đà Nẵng</a>
+              <a href="/cornrows-da-nang">Cornrows Đà Nẵng</a>
+              <a href="/box-braids-da-nang">Box Braids Đà Nẵng</a>
+              <a href="/news">{isEnglish ? "Care Journal" : "Cẩm nang tóc"}</a>
+            </nav>
+
+            <nav className="footer-links" aria-label={isEnglish ? "Footer quick links" : "Liên kết nhanh"}>
+              <h2>{isEnglish ? "Quick Links" : "Liên kết nhanh"}</h2>
+              <a href="/">{isEnglish ? "Home" : "Trang chủ"}</a>
+              <a href="/about">{isEnglish ? "About" : "Giới thiệu"}</a>
+              <a href="/services">{isEnglish ? "Services" : "Dịch vụ"}</a>
+              <a href="/pricing">{isEnglish ? "Pricing" : "Bảng giá"}</a>
+              <a href="/booking">{isEnglish ? "Booking" : "Đặt lịch"}</a>
+              <a href="/contact">{isEnglish ? "Contact" : "Liên hệ"}</a>
+            </nav>
+          </div>
         </div>
 
         <div className="footer-media" aria-hidden="true">
           <Image
             src="/images/footerbg.webp"
-            alt=""
+            alt="WINDREAD Dreadlock & Barber Studio Đà Nẵng"
             width={1676}
             height={918}
             className="footer-image"

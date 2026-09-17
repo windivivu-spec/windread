@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <title>WINDREAD Knowledge Graph (Graphify)</title>
+  <style>
+    body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0b070d; color: #f4eee8; overflow: hidden; }
+    #header { position: absolute; top: 15px; left: 20px; z-index: 10; background: rgba(22, 15, 23, 0.85); backdrop-filter: blur(8px); padding: 12px 20px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); }
+    #header h1 { margin: 0 0 5px 0; font-size: 1.1rem; color: #d83245; }
+    #header p { margin: 0; font-size: 0.85rem; color: #b7aaa4; }
+    #info-panel { position: absolute; bottom: 20px; right: 20px; width: 320px; max-height: 400px; overflow-y: auto; background: rgba(22, 15, 23, 0.9); border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); padding: 15px; font-size: 0.85rem; }
+    svg { width: 100vw; height: 100vh; }
+    .node text { font-size: 11px; fill: #eee; pointer-events: none; }
+    .node circle { stroke: #fff; stroke-width: 1.5px; cursor: pointer; }
+    .edge { stroke: rgba(255,255,255,0.2); stroke-width: 1.2px; }
+  </style>
+</head>
+<body>
+  <div id="header">
+    <h1>WINDREAD Knowledge Graph</h1>
+    <p>3-Tier Architecture & Local SEO Entities (Graphify standard)</p>
+  </div>
+  <div id="info-panel">
+    <h3>Entity Inspector</h3>
+    <p id="inspector-desc">Click any node to inspect relationships, community and SEO properties.</p>
+  </div>
+  <svg id="canvas"></svg>
+
+  <script>
+    fetch('graph.json')
+      .then(r => r.json())
+      .then(data => {
+        const svg = document.getElementById('canvas');
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+        const colors = ['#e63946', '#f4a261', '#2a9d8f', '#e76f51', '#457b9d', '#a8dadc'];
+        
+        // Simple force layout representation
+        const nodes = data.nodes;
+        const edges = data.edges;
+        const posMap = {};
+        
+        nodes.forEach((n, idx) => {
+          const angle = (idx / nodes.length) * 2 * Math.PI;
+          const radius = n.community === 1 ? 150 : (n.community === 0 ? 80 : 320);
+          posMap[n.id] = {
+            x: width / 2 + Math.cos(angle) * radius + (Math.random() - 0.5) * 40,
+            y: height / 2 + Math.sin(angle) * radius + (Math.random() - 0.5) * 40,
+            node: n
+          };
+        });
+
+        let edgeSvg = '';
+        edges.forEach(e => {
+          const s = posMap[e.source];
+          const t = posMap[e.target];
+          if (s && t) {
+            edgeSvg += `<line class="edge" x1="${s.x}" y1="${s.y}" x2="${t.x}" y2="${t.y}" />`;
+          }
+        });
+
+        let nodeSvg = '';
+        nodes.forEach(n => {
+          const p = posMap[n.id];
+          const r = n.community === 1 ? 16 : (n.community === 0 ? 18 : 10);
+          const color = colors[n.community % colors.length];
+          nodeSvg += `
+            <g class="node" transform="translate(${p.x},${p.y})" onclick="inspectNode('${n.id}')">
+              <circle r="${r}" fill="${color}" />
+              <text dx="${r + 4}" dy="4">${n.label}</text>
+            </g>
+          `;
+        });
+
+        svg.innerHTML = edgeSvg + nodeSvg;
+        window.graphData = data;
+      });
+
+    function inspectNode(id) {
+      const node = window.graphData.nodes.find(n => n.id === id);
+      if (!node) return;
+      const panel = document.getElementById('inspector-desc');
+      panel.innerHTML = `
+        <strong>${node.label}</strong><br/>
+        Type: <code>${node.type}</code><br/>
+        Community: <strong>${window.graphData.metadata.communities[node.community].name}</strong><br/>
+        Degree: <strong>${node.degree}</strong><br/><br/>
+        <pre style="background: rgba(0,0,0,0.4); padding: 8px; border-radius: 4px; overflow-x: auto;">${JSON.stringify(node.properties, null, 2)}</pre>
+      `;
+    }
+  </script>
+</body>
+</html>

@@ -15,6 +15,7 @@ const AdminSessionContext = createContext<AdminSessionValue | null>(null);
 
 const navigation: Array<{ href: string; icon: string; label: string; roles: Role[] }> = [
   { href: "/admin/bookings", icon: "◷", label: "Lịch hẹn", roles: ["admin", "manager", "cashier", "employee"] },
+  { href: "/admin/news", icon: "✍", label: "Bài viết", roles: ["admin", "manager"] },
   { href: "/admin/settings", icon: "◌", label: "Cài đặt", roles: ["admin"] }
 ];
 

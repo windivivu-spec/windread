@@ -1,0 +1,654 @@
+{
+  "metadata": {
+    "generator": "graphify-labs/graphify",
+    "version": "1.0.0",
+    "createdAt": "2026-09-15T10:05:27.223861",
+    "totalNodes": 31,
+    "totalEdges": 32,
+    "communities": {
+      "0": {
+        "name": "Brand & Local Infrastructure",
+        "desc": "WINDREAD brand, physical branches in Da Nang, geo-coordinates, barbers"
+      },
+      "1": {
+        "name": "Tier 1: Money Pages",
+        "desc": "High-conversion transactional landing pages targeting primary keywords"
+      },
+      "2": {
+        "name": "Tier 2: Informational Guides (E-E-A-T)",
+        "desc": "Top-of-funnel educational articles establishing topical authority"
+      },
+      "3": {
+        "name": "Tier 3: Local Discovery Articles",
+        "desc": "Bottom-of-funnel articles capturing high commercial intent in Da Nang"
+      },
+      "4": {
+        "name": "Keyword Entities & Search Intent",
+        "desc": "Target search terms categorized by intent and volume"
+      },
+      "5": {
+        "name": "Service Catalog & Pricing",
+        "desc": "Structured service offerings, prices, durations, and booking mappings"
+      }
+    }
+  },
+  "nodes": [
+    {
+      "id": "entity:windread-brand",
+      "label": "WINDREAD Locs & Barber Club",
+      "type": "ORGANIZATION",
+      "community": 0,
+      "properties": {
+        "siteUrl": "https://windread.vn",
+        "phone": "+84393549656",
+        "city": "Đà Nẵng",
+        "country": "Vietnam",
+        "specialties": [
+          "Dreadlocks",
+          "Braids",
+          "Cornrows",
+          "Box Braids",
+          "Barber Fades"
+        ]
+      },
+      "degree": 2
+    },
+    {
+      "id": "branch:an-thuong",
+      "label": "WINDREAD An Thượng (Cơ sở 2)",
+      "type": "BRANCH",
+      "community": 0,
+      "properties": {
+        "address": "35 - 37 An Thượng 29, Ngũ Hành Sơn, Đà Nẵng",
+        "lat": 16.0538,
+        "lng": 108.2442,
+        "focus": "Locs & Braids",
+        "targetAudience": "Locals, Expats, Beach Tourists"
+      },
+      "degree": 5
+    },
+    {
+      "id": "branch:chuong-duong",
+      "label": "WINDREAD Chương Dương (Cơ sở 1)",
+      "type": "BRANCH",
+      "community": 0,
+      "properties": {
+        "address": "223 Chương Dương, Ngũ Hành Sơn, Đà Nẵng",
+        "lat": 16.0506,
+        "lng": 108.2369,
+        "focus": "Barber, Clean Fade & Afro Styles",
+        "targetAudience": "Men Grooming, Streetwear Culture"
+      },
+      "degree": 2
+    },
+    {
+      "id": "page:dreadlock-da-nang",
+      "label": "/dreadlock-da-nang",
+      "type": "MONEY_PAGE",
+      "community": 1,
+      "properties": {
+        "title": "Dreadlock Đà Nẵng | Tiệm Làm & Nối Dreadlocks Chuyên Nghiệp WINDREAD",
+        "primaryKeyword": "dreadlock Đà Nẵng",
+        "intent": "Transactional / Commercial",
+        "priceRange": "1.200.000đ - 6.000.000đ"
+      },
+      "degree": 10
+    },
+    {
+      "id": "page:braids-da-nang",
+      "label": "/braids-da-nang",
+      "type": "MONEY_PAGE",
+      "community": 1,
+      "properties": {
+        "title": "Braid Đà Nẵng | Dịch Vụ Tết Tóc Nam & Nữ Đẹp Chuyên Nghiệp | WINDREAD",
+        "primaryKeyword": "braid Đà Nẵng",
+        "intent": "Transactional / Commercial",
+        "priceRange": "350.000đ - 2.200.000đ"
+      },
+      "degree": 8
+    },
+    {
+      "id": "page:cornrows-da-nang",
+      "label": "/cornrows-da-nang",
+      "type": "MONEY_PAGE",
+      "community": 1,
+      "properties": {
+        "title": "Cornrow Đà Nẵng | Tết Tóc Sát Da Đầu Nam & Nữ Sắc Nét | WINDREAD",
+        "primaryKeyword": "cornrow Đà Nẵng",
+        "intent": "Transactional / Commercial",
+        "priceRange": "300.000đ - 800.000đ"
+      },
+      "degree": 4
+    },
+    {
+      "id": "page:box-braids-da-nang",
+      "label": "/box-braids-da-nang",
+      "type": "MONEY_PAGE",
+      "community": 1,
+      "properties": {
+        "title": "Box Braids Đà Nẵng | Tết Tóc Hộp Đẹp, Cá Tính Cho Nam & Nữ | WINDREAD",
+        "primaryKeyword": "box braids Đà Nẵng",
+        "intent": "Transactional / Commercial",
+        "priceRange": "400.000đ - 2.600.000đ"
+      },
+      "degree": 3
+    },
+    {
+      "id": "article:top-dia-chi-lam-dreadlock-tai-da-nang",
+      "label": "Top Địa Chỉ Làm Dreadlock Tại Đà Nẵng",
+      "type": "ARTICLE_LOCAL_DISCOVERY",
+      "community": 3,
+      "properties": {
+        "slug": "top-dia-chi-lam-dreadlock-tai-da-nang",
+        "intent": "Commercial Investigation",
+        "targetKeywords": [
+          "top địa chỉ làm dreadlock tại đà nẵng",
+          "làm dreadlock ở đà nẵng"
+        ]
+      },
+      "degree": 2
+    },
+    {
+      "id": "article:top-noi-lam-braids-tai-da-nang",
+      "label": "Top Nơi Làm Braids Tại Đà Nẵng",
+      "type": "ARTICLE_LOCAL_DISCOVERY",
+      "community": 3,
+      "properties": {
+        "slug": "top-noi-lam-braids-tai-da-nang",
+        "intent": "Commercial Investigation",
+        "targetKeywords": [
+          "top nơi làm braids tại đà nẵng",
+          "tết tóc đà nẵng"
+        ]
+      },
+      "degree": 2
+    },
+    {
+      "id": "article:gia-lam-dreadlock-o-da-nang",
+      "label": "Giá Làm Dreadlock Ở Đà Nẵng",
+      "type": "ARTICLE_LOCAL_DISCOVERY",
+      "community": 3,
+      "properties": {
+        "slug": "gia-lam-dreadlock-o-da-nang",
+        "intent": "Commercial Investigation",
+        "targetKeywords": [
+          "giá làm dreadlock ở đà nẵng",
+          "bảng giá dreadlock đà nẵng"
+        ]
+      },
+      "degree": 2
+    },
+    {
+      "id": "article:hair-braiding-da-nang-for-foreigners",
+      "label": "Hair Braiding Da Nang For Foreigners",
+      "type": "ARTICLE_LOCAL_DISCOVERY",
+      "community": 3,
+      "properties": {
+        "slug": "hair-braiding-da-nang-for-foreigners",
+        "intent": "Local Commercial",
+        "targetKeywords": [
+          "hair braiding Da Nang",
+          "braids Da Nang",
+          "dreadlock Da Nang"
+        ]
+      },
+      "degree": 2
+    },
+    {
+      "id": "article:barber-cat-toc-my-den-da-nang",
+      "label": "Barber Cắt Tóc Mỹ Đen Đà Nẵng",
+      "type": "ARTICLE_LOCAL_DISCOVERY",
+      "community": 3,
+      "properties": {
+        "slug": "barber-cat-toc-my-den-da-nang",
+        "intent": "Commercial / Local",
+        "targetKeywords": [
+          "barber tại đà nẵng",
+          "tóc mỹ đen đà nẵng",
+          "cắt tóc đẹp đà nẵng"
+        ]
+      },
+      "degree": 1
+    },
+    {
+      "id": "article:tiem-lam-cornrow-dep-o-da-nang",
+      "label": "Tiệm Làm Cornrow Đẹp Ở Đà Nẵng",
+      "type": "ARTICLE_LOCAL_DISCOVERY",
+      "community": 3,
+      "properties": {
+        "slug": "tiem-lam-cornrow-dep-o-da-nang",
+        "intent": "Commercial Investigation",
+        "targetKeywords": [
+          "tiệm làm cornrow đẹp ở đà nẵng",
+          "cornrow Đà Nẵng"
+        ]
+      },
+      "degree": 2
+    },
+    {
+      "id": "article:du-lich-da-nang-tet-toc-o-dau",
+      "label": "Du Lịch Đà Nẵng Tết Tóc Ở Đâu",
+      "type": "ARTICLE_LOCAL_DISCOVERY",
+      "community": 3,
+      "properties": {
+        "slug": "du-lich-da-nang-tet-toc-o-dau",
+        "intent": "Local Discovery",
+        "targetKeywords": [
+          "du lịch đà nẵng tết tóc ở đâu",
+          "tết tóc đi biển đà nẵng"
+        ]
+      },
+      "degree": 1
+    },
+    {
+      "id": "article:phuc-hoi-va-retwist-dreadlock-da-nang",
+      "label": "Phục Hồi & Retwist Dreadlock Đà Nẵng",
+      "type": "ARTICLE_LOCAL_DISCOVERY",
+      "community": 3,
+      "properties": {
+        "slug": "phuc-hoi-va-retwist-dreadlock-da-nang",
+        "intent": "Commercial / Care",
+        "targetKeywords": [
+          "retwist dreadlock Đà Nẵng",
+          "phục hồi dreadlock đà nẵng"
+        ]
+      },
+      "degree": 1
+    },
+    {
+      "id": "article:dreadlock-la-gi",
+      "label": "Dreadlock Là Gì?",
+      "type": "ARTICLE_INFORMATIONAL",
+      "community": 2,
+      "properties": {
+        "slug": "dreadlock-la-gi",
+        "intent": "Informational",
+        "targetKeywords": [
+          "dreadlock là gì",
+          "các kiểu dreadlock"
+        ]
+      },
+      "degree": 2
+    },
+    {
+      "id": "article:nguon-goc-dreadlock",
+      "label": "Nguồn Gốc Dreadlock",
+      "type": "ARTICLE_INFORMATIONAL",
+      "community": 2,
+      "properties": {
+        "slug": "nguon-goc-dreadlock",
+        "intent": "Informational",
+        "targetKeywords": [
+          "nguồn gốc dreadlock",
+          "lịch sử dreadlock"
+        ]
+      },
+      "degree": 2
+    },
+    {
+      "id": "article:dreadlock-giu-duoc-bao-lau",
+      "label": "Dreadlock Giữ Được Bao Lâu?",
+      "type": "ARTICLE_INFORMATIONAL",
+      "community": 2,
+      "properties": {
+        "slug": "dreadlock-giu-duoc-bao-lau",
+        "intent": "Informational",
+        "targetKeywords": [
+          "dreadlock giữ được bao lâu"
+        ]
+      },
+      "degree": 1
+    },
+    {
+      "id": "article:phan-biet-cornrow-va-box-braids",
+      "label": "Phân Biệt Cornrow Và Box Braids",
+      "type": "ARTICLE_INFORMATIONAL",
+      "community": 2,
+      "properties": {
+        "slug": "phan-biet-cornrow-va-box-braids",
+        "intent": "Informational Comparison",
+        "targetKeywords": [
+          "cornrow và box braids khác nhau thế nào"
+        ]
+      },
+      "degree": 3
+    },
+    {
+      "id": "article:khi-nao-nen-retwist-dreadlock",
+      "label": "Khi Nào Nên Retwist Dreadlock?",
+      "type": "ARTICLE_INFORMATIONAL",
+      "community": 2,
+      "properties": {
+        "slug": "khi-nao-nen-retwist-dreadlock",
+        "intent": "Informational Care",
+        "targetKeywords": [
+          "khi nào nên retwist dreadlock"
+        ]
+      },
+      "degree": 1
+    },
+    {
+      "id": "article:cach-cham-soc-toc-braids",
+      "label": "Cách Chăm Sóc Tóc Braids",
+      "type": "ARTICLE_INFORMATIONAL",
+      "community": 2,
+      "properties": {
+        "slug": "cach-cham-soc-toc-braids",
+        "intent": "Informational Care",
+        "targetKeywords": [
+          "cách chăm sóc tóc braids",
+          "gội đầu khi tết tóc braids"
+        ]
+      },
+      "degree": 1
+    },
+    {
+      "id": "article:starter-locs-huong-dan-cho-nguoi-moi",
+      "label": "Starter Locs Hướng Dẫn Người Mới",
+      "type": "ARTICLE_INFORMATIONAL",
+      "community": 2,
+      "properties": {
+        "slug": "starter-locs-huong-dan-cho-nguoi-moi",
+        "intent": "Informational Guide",
+        "targetKeywords": [
+          "starter locs",
+          "bắt đầu làm dreadlock"
+        ]
+      },
+      "degree": 1
+    },
+    {
+      "id": "kw:dreadlock-da-nang",
+      "label": "dreadlock Đà Nẵng",
+      "type": "KEYWORD",
+      "community": 4,
+      "properties": {
+        "priority": 1,
+        "intent": "Transactional"
+      },
+      "degree": 1
+    },
+    {
+      "id": "kw:braid-da-nang",
+      "label": "braid Đà Nẵng",
+      "type": "KEYWORD",
+      "community": 4,
+      "properties": {
+        "priority": 1,
+        "intent": "Transactional"
+      },
+      "degree": 1
+    },
+    {
+      "id": "kw:cornrow-da-nang",
+      "label": "cornrow Đà Nẵng",
+      "type": "KEYWORD",
+      "community": 4,
+      "properties": {
+        "priority": 1,
+        "intent": "Transactional"
+      },
+      "degree": 1
+    },
+    {
+      "id": "kw:box-braids-da-nang",
+      "label": "box braids Đà Nẵng",
+      "type": "KEYWORD",
+      "community": 4,
+      "properties": {
+        "priority": 1,
+        "intent": "Transactional"
+      },
+      "degree": 1
+    },
+    {
+      "id": "kw:tet-toc-da-nang",
+      "label": "tết tóc Đà Nẵng",
+      "type": "KEYWORD",
+      "community": 4,
+      "properties": {
+        "priority": 1,
+        "intent": "Transactional"
+      },
+      "degree": 1
+    },
+    {
+      "id": "kw:hair-braiding-da-nang",
+      "label": "hair braiding Da Nang",
+      "type": "KEYWORD",
+      "community": 4,
+      "properties": {
+        "priority": 1,
+        "intent": "Transactional"
+      },
+      "degree": 1
+    },
+    {
+      "id": "kw:barber-tai-da-nang",
+      "label": "barber tại đà nẵng",
+      "type": "KEYWORD",
+      "community": 4,
+      "properties": {
+        "priority": 2,
+        "intent": "Commercial"
+      },
+      "degree": 0
+    },
+    {
+      "id": "kw:cat-toc-dep-da-nang",
+      "label": "cắt tóc đẹp đà nẵng",
+      "type": "KEYWORD",
+      "community": 4,
+      "properties": {
+        "priority": 2,
+        "intent": "Commercial"
+      },
+      "degree": 0
+    },
+    {
+      "id": "kw:toc-my-den-da-nang",
+      "label": "tóc mỹ đen đà nẵng",
+      "type": "KEYWORD",
+      "community": 4,
+      "properties": {
+        "priority": 2,
+        "intent": "Commercial"
+      },
+      "degree": 0
+    }
+  ],
+  "edges": [
+    {
+      "source": "entity:windread-brand",
+      "target": "branch:an-thuong",
+      "relation": "OPERATES_BRANCH",
+      "weight": 1.0
+    },
+    {
+      "source": "entity:windread-brand",
+      "target": "branch:chuong-duong",
+      "relation": "OPERATES_BRANCH",
+      "weight": 1.0
+    },
+    {
+      "source": "branch:an-thuong",
+      "target": "page:dreadlock-da-nang",
+      "relation": "PRIMARY_LOCATION_FOR",
+      "weight": 1.0
+    },
+    {
+      "source": "branch:an-thuong",
+      "target": "page:braids-da-nang",
+      "relation": "PRIMARY_LOCATION_FOR",
+      "weight": 1.0
+    },
+    {
+      "source": "branch:an-thuong",
+      "target": "page:cornrows-da-nang",
+      "relation": "PRIMARY_LOCATION_FOR",
+      "weight": 1.0
+    },
+    {
+      "source": "branch:an-thuong",
+      "target": "page:box-braids-da-nang",
+      "relation": "PRIMARY_LOCATION_FOR",
+      "weight": 1.0
+    },
+    {
+      "source": "branch:chuong-duong",
+      "target": "article:barber-cat-toc-my-den-da-nang",
+      "relation": "PRIMARY_LOCATION_FOR",
+      "weight": 1.0
+    },
+    {
+      "source": "page:dreadlock-da-nang",
+      "target": "kw:dreadlock-da-nang",
+      "relation": "TARGETS_KEYWORD",
+      "weight": 1.0
+    },
+    {
+      "source": "page:braids-da-nang",
+      "target": "kw:braid-da-nang",
+      "relation": "TARGETS_KEYWORD",
+      "weight": 1.0
+    },
+    {
+      "source": "page:braids-da-nang",
+      "target": "kw:tet-toc-da-nang",
+      "relation": "TARGETS_KEYWORD",
+      "weight": 0.9
+    },
+    {
+      "source": "page:braids-da-nang",
+      "target": "kw:hair-braiding-da-nang",
+      "relation": "TARGETS_KEYWORD",
+      "weight": 0.9
+    },
+    {
+      "source": "page:cornrows-da-nang",
+      "target": "kw:cornrow-da-nang",
+      "relation": "TARGETS_KEYWORD",
+      "weight": 1.0
+    },
+    {
+      "source": "page:box-braids-da-nang",
+      "target": "kw:box-braids-da-nang",
+      "relation": "TARGETS_KEYWORD",
+      "weight": 1.0
+    },
+    {
+      "source": "article:top-dia-chi-lam-dreadlock-tai-da-nang",
+      "target": "page:dreadlock-da-nang",
+      "relation": "INTERNAL_LINKS_TO",
+      "weight": 0.95
+    },
+    {
+      "source": "article:gia-lam-dreadlock-o-da-nang",
+      "target": "page:dreadlock-da-nang",
+      "relation": "INTERNAL_LINKS_TO",
+      "weight": 0.95
+    },
+    {
+      "source": "article:phuc-hoi-va-retwist-dreadlock-da-nang",
+      "target": "page:dreadlock-da-nang",
+      "relation": "INTERNAL_LINKS_TO",
+      "weight": 0.95
+    },
+    {
+      "source": "article:top-noi-lam-braids-tai-da-nang",
+      "target": "page:braids-da-nang",
+      "relation": "INTERNAL_LINKS_TO",
+      "weight": 0.95
+    },
+    {
+      "source": "article:hair-braiding-da-nang-for-foreigners",
+      "target": "page:braids-da-nang",
+      "relation": "INTERNAL_LINKS_TO",
+      "weight": 0.95
+    },
+    {
+      "source": "article:tiem-lam-cornrow-dep-o-da-nang",
+      "target": "page:cornrows-da-nang",
+      "relation": "INTERNAL_LINKS_TO",
+      "weight": 0.95
+    },
+    {
+      "source": "article:du-lich-da-nang-tet-toc-o-dau",
+      "target": "page:braids-da-nang",
+      "relation": "INTERNAL_LINKS_TO",
+      "weight": 0.95
+    },
+    {
+      "source": "article:dreadlock-la-gi",
+      "target": "page:dreadlock-da-nang",
+      "relation": "INTERNAL_LINKS_TO",
+      "weight": 0.8
+    },
+    {
+      "source": "article:nguon-goc-dreadlock",
+      "target": "page:dreadlock-da-nang",
+      "relation": "INTERNAL_LINKS_TO",
+      "weight": 0.8
+    },
+    {
+      "source": "article:dreadlock-giu-duoc-bao-lau",
+      "target": "page:dreadlock-da-nang",
+      "relation": "INTERNAL_LINKS_TO",
+      "weight": 0.85
+    },
+    {
+      "source": "article:starter-locs-huong-dan-cho-nguoi-moi",
+      "target": "page:dreadlock-da-nang",
+      "relation": "INTERNAL_LINKS_TO",
+      "weight": 0.9
+    },
+    {
+      "source": "article:khi-nao-nen-retwist-dreadlock",
+      "target": "page:dreadlock-da-nang",
+      "relation": "INTERNAL_LINKS_TO",
+      "weight": 0.85
+    },
+    {
+      "source": "article:phan-biet-cornrow-va-box-braids",
+      "target": "page:cornrows-da-nang",
+      "relation": "INTERNAL_LINKS_TO",
+      "weight": 0.85
+    },
+    {
+      "source": "article:phan-biet-cornrow-va-box-braids",
+      "target": "page:box-braids-da-nang",
+      "relation": "INTERNAL_LINKS_TO",
+      "weight": 0.85
+    },
+    {
+      "source": "article:cach-cham-soc-toc-braids",
+      "target": "page:braids-da-nang",
+      "relation": "INTERNAL_LINKS_TO",
+      "weight": 0.85
+    },
+    {
+      "source": "article:dreadlock-la-gi",
+      "target": "article:nguon-goc-dreadlock",
+      "relation": "RELATED_ARTICLE",
+      "weight": 0.7
+    },
+    {
+      "source": "article:top-dia-chi-lam-dreadlock-tai-da-nang",
+      "target": "article:gia-lam-dreadlock-o-da-nang",
+      "relation": "RELATED_ARTICLE",
+      "weight": 0.85
+    },
+    {
+      "source": "article:top-noi-lam-braids-tai-da-nang",
+      "target": "article:hair-braiding-da-nang-for-foreigners",
+      "relation": "RELATED_ARTICLE",
+      "weight": 0.85
+    },
+    {
+      "source": "article:tiem-lam-cornrow-dep-o-da-nang",
+      "target": "article:phan-biet-cornrow-va-box-braids",
+      "relation": "RELATED_ARTICLE",
+      "weight": 0.8
+    }
+  ]
+}

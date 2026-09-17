@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { barbers } from "../../booking/mockBookingData";
 import { buildMetadata } from "../../seo";
 import { branchProfiles, findBranchProfile } from "../branchData";
+import { SiteHeader } from "../../components/SiteHeader";
 
 export function generateStaticParams() {
   return branchProfiles.map((branch) => ({ branchId: branch.id }));
@@ -31,21 +32,7 @@ export default async function BranchDetailPage({ params }: { params: Promise<{ b
 
   return (
     <main id="main-content" className="branch-page">
-      <header className="site-nav branch-site-nav" aria-label="Điều hướng chính">
-        <a className="nav-brand" href="/" aria-label="WINDREAD home">
-          <Image src="/images/windread-logo.png" alt="WINDREAD" width={265} height={81} className="nav-logo" priority />
-        </a>
-        <nav className="nav-links" aria-label="Liên kết chính">
-          <a href="/">Trang chủ</a>
-          <a href="/about">Giới thiệu</a>
-          <a href="/barbers">Barber</a>
-          <a href="/pricing">Bảng giá</a>
-          <a href="/news">Tin tức</a>
-        </nav>
-        <div className="nav-actions">
-          <a className="book-button" href={`/booking?branch=${branch.id}`}>Đặt lịch</a>
-        </div>
-      </header>
+      <SiteHeader />
 
       <section className="branch-hero">
         <div className="branch-hero-image">
@@ -148,16 +135,27 @@ export default async function BranchDetailPage({ params }: { params: Promise<{ b
               <a href="tel:0393549656">0393549656 (Zalo / WhatsApp)</a>
             </div>
           </div>
-          <nav className="footer-links" aria-label="Liên kết nhanh">
-            <h2>Liên kết nhanh</h2>
-            <a href="/">Trang chủ</a>
-            <a href="/barbers">Barber</a>
-            <a href="/services">Dịch vụ</a>
-            <a href="/booking">Đặt lịch</a>
-          </nav>
+          <div className="footer-nav-groups">
+            <nav className="footer-links" aria-label="Dịch vụ trọng tâm">
+              <h2>Dịch vụ chính</h2>
+              <a href="/dreadlock-da-nang">Dreadlock Đà Nẵng</a>
+              <a href="/braids-da-nang">Braid & Tết Tóc Đà Nẵng</a>
+              <a href="/cornrows-da-nang">Cornrows Đà Nẵng</a>
+              <a href="/box-braids-da-nang">Box Braids Đà Nẵng</a>
+            </nav>
+
+            <nav className="footer-links" aria-label="Liên kết nhanh">
+              <h2>Liên kết nhanh</h2>
+              <a href="/">Trang chủ</a>
+              <a href="/about">Giới thiệu</a>
+              <a href="/pricing">Bảng giá</a>
+              <a href="/news">Tin tức</a>
+              <a href="/booking">Đặt lịch</a>
+            </nav>
+          </div>
         </div>
         <div className="footer-media" aria-hidden="true">
-          <Image src="/images/footerbg.webp" alt="" width={1676} height={918} className="footer-image" />
+          <Image src="/images/footerbg.webp" alt="WINDREAD Barbershop Studio Đà Nẵng" width={1676} height={918} className="footer-image" />
         </div>
         <p className="footer-copyright">© 2025 Win Dread Locs & Barber Club. All Rights Reserved</p>
       </footer>

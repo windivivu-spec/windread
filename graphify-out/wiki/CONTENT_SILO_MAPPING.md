@@ -1,0 +1,23 @@
+# Content Silo Mapping (Internal Linking)
+- **Dreadlock Cluster**:
+  - Money Page: `/dreadlock-da-nang`
+  - Supporting Articles:
+    - `/news/top-dia-chi-lam-dreadlock-tai-da-nang`
+    - `/news/gia-lam-dreadlock-o-da-nang`
+    - `/news/phuc-hoi-va-retwist-dreadlock-da-nang`
+    - `/news/dreadlock-la-gi`
+    - `/news/nguon-goc-dreadlock`
+    - `/news/dreadlock-giu-duoc-bao-lau`
+    - `/news/starter-locs-huong-dan-cho-nguoi-moi`
+    - `/news/khi-nao-nen-retwist-dreadlock`
+- **Braids & Cornrow Cluster**:
+  - Money Pages: `/braids-da-nang`, `/cornrows-da-nang`, `/box-braids-da-nang`
+  - Supporting Articles:
+    - `/news/top-noi-lam-braids-tai-da-nang`
+    - `/news/hair-braiding-da-nang-for-foreigners`
+    - `/news/tiem-lam-cornrow-dep-o-da-nang`
+    - `/news/du-lich-da-nang-tet-toc-o-dau`
+    - `/news/phan-biet-cornrow-va-box-braids`
+    - `/news/cach-cham-soc-toc-braids`
+- **Barber Cluster**:
+  - Supporting Article: `/news/barber-cat-toc-my-den-da-nang` -> Branch 1 Chương Dương.
