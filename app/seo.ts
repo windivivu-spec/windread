@@ -5,7 +5,7 @@ export const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://windread.vn"
 export const siteName = "WINDREAD";
 
 export const defaultDescription =
-  "WINDREAD là locs và barber club cho dreadlocks, braid, clean fades và street grooming tại Việt Nam.";
+  "WINDREAD là Hair Culture Club -Since 2020 tại Đà Nẵng, chuyên Locs, Dreadlocks, Barber, Afro Hair, Braids và Cornrows. Không gian dành cho những người yêu hair culture, street style và phong cách cá nhân.";
 
 export const routes = [
   { path: "/", label: "Trang chủ", priority: 1 },
@@ -68,8 +68,8 @@ export function buildMetadata({ title, description, path, image = "/images/hero-
 
 export const pageSeo = {
   home: buildMetadata({
-    title: "WINDREAD | Dreadlock, Braid & Barber Hàng Đầu Tại Đà Nẵng",
-    description: "WINDREAD là tiệm làm dreadlocks, braids, cornrows, box braids và cắt tóc barber phong cách đường phố uy tín tại Đà Nẵng. 2 cơ sở: An Thượng & Chương Dương.",
+    title: "WIN DREAD | Hair Culture Club | Locs · Barber · Afro Hair · Braids Đà Nẵng",
+    description: defaultDescription,
     path: "/"
   }),
   dreadlocksDaNang: buildMetadata({

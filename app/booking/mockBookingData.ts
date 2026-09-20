@@ -469,16 +469,16 @@ const allServices: Service[] = [
   {
     id: "cd-hair-washing",
     branchId: "chuong-duong",
-    name: "Gội đầu thư giãn",
+    name: "Gội đầu",
     description: "Hair washing cơ bản.",
-    price: 40000,
-    durationMinutes: 30
+    price: 50000,
+    durationMinutes: 20
   },
   {
     id: "cd-haircut-expert",
     branchId: "chuong-duong",
-    name: "Cắt tóc bởi chuyên gia",
-    description: "Chỉ nhận đặt lịch trước.",
+    name: "W Signature Haircut",
+    description: "Cắt tóc đặt trước với tư vấn tạo kiểu.",
     price: 160000,
     durationMinutes: 60
   },
@@ -497,6 +497,76 @@ const allServices: Service[] = [
     description: "Full head shave hoặc face shave.",
     price: 70000,
     durationMinutes: 30
+  },
+  {
+    id: "cd-afro-wash",
+    branchId: "chuong-duong",
+    name: "Gội afro cơ bản",
+    description: "Gội afro cơ bản.",
+    price: 50000,
+    priceLabel: "50.000đ",
+    category: "afro",
+    durationMinutes: 30
+  },
+  {
+    id: "cd-afro-wash-care",
+    branchId: "chuong-duong",
+    name: "Gội & dưỡng afro",
+    description: "Gội và dưỡng afro cơ bản.",
+    price: 100000,
+    priceLabel: "100.000đ",
+    category: "afro",
+    durationMinutes: 45
+  },
+  {
+    id: "cd-afro-blow-dry",
+    branchId: "chuong-duong",
+    name: "Sấy stretch afro",
+    description: "Gội afro và sấy stretch.",
+    price: 150000,
+    priceLabel: "150.000đ",
+    category: "afro",
+    durationMinutes: 60
+  },
+  {
+    id: "cd-afro-professional-blowout",
+    branchId: "chuong-duong",
+    name: "Sấy afro chuyên dụng",
+    description: "Sấy afro bằng máy chuyên dụng.",
+    price: 200000,
+    priceLabel: "200.000đ",
+    category: "afro",
+    durationMinutes: 75
+  },
+  {
+    id: "cd-afro-deep-treatment",
+    branchId: "chuong-duong",
+    name: "Ủ kem chuyên sâu",
+    description: "Ủ kem chuyên sâu cho afro.",
+    price: 200000,
+    priceLabel: "200.000đ",
+    category: "afro",
+    durationMinutes: 75
+  },
+  {
+    id: "cd-afro-signature-care",
+    branchId: "chuong-duong",
+    name: "Signature Afro Care",
+    description: "Gội, ủ kem, dưỡng và tạo kiểu.",
+    price: 400000,
+    priceLabel: "400.000đ",
+    category: "afro",
+    durationMinutes: 120
+  },
+  {
+    id: "cd-afro-finger-comb-coil",
+    branchId: "chuong-duong",
+    name: "Finger / comb coil",
+    description: "Tạo coil thủ công.",
+    price: 420000,
+    priceLabel: "420.000đ / giờ",
+    category: "afro",
+    durationMinutes: 60
   }
 ];
 

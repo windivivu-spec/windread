@@ -3189,47 +3189,135 @@ textarea:focus-visible {
 
 .pricing-branches {
   display: grid;
-  gap: clamp(48px, 6vw, 84px);
+  gap: 0;
 }
 
-.pricing-branch + .pricing-branch {
-  padding-top: clamp(40px, 5vw, 68px);
-  border-top: 1px solid rgba(244, 238, 232, 0.22);
+.pricing-branch-tabs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: clamp(26px, 3vw, 34px);
 }
 
-.pricing-branch-heading {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 22px;
-  margin-bottom: clamp(28px, 3vw, 42px);
+.pricing-branch-tab,
+.pricing-service-tab {
+  border: 1px solid rgba(244, 238, 232, 0.16);
+  background: rgba(255, 255, 255, 0.025);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 180ms ease, background-color 180ms ease, transform 180ms ease;
 }
 
-.pricing-branch-heading h3 {
+.pricing-branch-tab {
+  display: grid;
+  min-height: 96px;
+  align-content: center;
+  gap: 5px;
+  padding: 17px 20px;
+  color: var(--muted);
+}
+
+.pricing-branch-tab strong {
+  color: #fff8ef;
+  font-family: "SVN VT Redzone Classic", Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
+  font-size: clamp(1.08rem, 1.55vw, 1.48rem);
+  font-weight: 900;
+  letter-spacing: 0.07em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.pricing-branch-tab span,
+.pricing-service-tab span {
+  color: var(--muted);
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+.pricing-branch-tab:hover,
+.pricing-branch-tab.is-active,
+.pricing-service-tab:hover:not(:disabled),
+.pricing-service-tab.is-active {
+  border-color: rgba(216, 50, 69, 0.78);
+  background: linear-gradient(100deg, rgba(163, 22, 38, 0.48), rgba(163, 22, 38, 0.1));
+}
+
+.pricing-branch-tab.is-active,
+.pricing-service-tab.is-active {
+  box-shadow: inset 5px 0 0 var(--accent-strong);
+}
+
+.pricing-branch-tab:focus-visible,
+.pricing-service-tab:focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 4px;
+}
+
+.pricing-branch-tab:active,
+.pricing-service-tab:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.pricing-category-heading {
   margin: 0;
   color: var(--accent-strong);
   font-family: "SVN VT Redzone Classic", Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
-  font-size: clamp(1.65rem, 3vw, 3rem);
+  font-size: clamp(1.15rem, 1.75vw, 1.48rem);
   font-weight: 900;
   letter-spacing: 0.075em;
   line-height: 1;
   text-transform: uppercase;
 }
 
-.pricing-branch-heading p {
-  max-width: 390px;
-  margin: 0;
+.pricing-service-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin: 12px 0 clamp(24px, 2.5vw, 30px);
+}
+
+.pricing-service-tab {
+  display: grid;
+  min-height: 90px;
+  align-content: center;
+  gap: 5px;
+  padding: 14px 16px;
   color: var(--muted);
-  font-size: 0.92rem;
-  line-height: 1.5;
-  text-align: right;
+}
+
+.pricing-service-tab strong {
+  color: #fff8ef;
+  font-family: var(--font-small);
+  font-size: clamp(0.88rem, 1vw, 1rem);
+  font-weight: 900;
+  letter-spacing: 0.03em;
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+
+.pricing-service-tab.is-active strong {
+  color: #fff8ef;
+}
+
+.pricing-service-tab:disabled {
+  cursor: not-allowed;
+  opacity: 0.36;
 }
 
 .pricing-groups {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: 1fr;
   gap: clamp(34px, 4vw, 58px);
   align-items: start;
+}
+
+.pricing-group {
+  min-width: 0;
+}
+
+.pricing-group:nth-child(even) {
+  border-left: 0;
+  padding-left: 0;
 }
 
 .pricing-group h4 {
@@ -3277,19 +3365,39 @@ textarea:focus-visible {
 
 .price-table {
   display: grid;
-  gap: 0;
+  grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+  gap: 8px;
 }
 
 .price-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: 20px;
-  align-items: center;
-  padding: 14px 0;
+  min-height: 122px;
+  gap: 18px;
+  align-items: stretch;
+  padding: 16px 18px;
+  border: 1px solid rgba(244, 238, 232, 0.14);
+  background: rgba(255, 255, 255, 0.035);
 }
 
-.price-row + .price-row {
-  border-top: 1px solid rgba(244, 238, 232, 0.12);
+.price-row-book {
+  color: inherit;
+  text-decoration: none;
+  transition: background-color 180ms ease, transform 180ms ease;
+}
+
+.price-row-book:hover {
+  border-color: rgba(216, 50, 69, 0.72);
+  background: rgba(163, 22, 38, 0.24);
+}
+
+.price-row-book:focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 4px;
+}
+
+.price-row-book:active {
+  transform: translateY(1px);
 }
 
 .price-row strong,
@@ -3334,11 +3442,99 @@ textarea:focus-visible {
   margin-top: 3px;
 }
 
+.price-row-copy {
+  align-self: center;
+}
+
+.price-row-copy > span {
+  max-width: 38ch;
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+}
+
+.price-row-facts {
+  display: grid;
+  min-width: max-content;
+  align-content: space-between;
+  justify-items: end;
+  padding: 1px 0;
+}
+
+.price-row-facts .price-row-duration {
+  margin: 0;
+  color: var(--muted);
+  font-family: var(--font-small);
+  font-size: 0.74rem;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
 .price-row b {
   white-space: nowrap;
   color: var(--accent-strong);
   font-size: clamp(0.94rem, 1.2vw, 1.08rem);
   text-align: right;
+}
+
+.price-row-signature {
+  margin: 0;
+  padding: 16px 18px;
+  border: 1px solid rgba(216, 50, 69, 0.72);
+  border-left: 5px solid var(--accent-strong);
+  background: linear-gradient(100deg, rgba(163, 22, 38, 0.4), rgba(163, 22, 38, 0.1) 74%, transparent);
+}
+
+.price-row-signature strong {
+  color: var(--accent-strong);
+  font-size: clamp(1.02rem, 1.35vw, 1.2rem);
+}
+
+.price-row-signature b {
+  font-size: clamp(1.08rem, 1.55vw, 1.3rem);
+}
+
+.pricing-afro-guide {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  margin-top: 28px;
+  border: 1px solid rgba(216, 50, 69, 0.42);
+  background: rgba(216, 50, 69, 0.42);
+}
+
+.pricing-afro-guide section {
+  padding: 20px;
+  background: rgba(13, 7, 10, 0.94);
+}
+
+.pricing-afro-guide h5 {
+  margin: 0 0 15px;
+  color: var(--accent-strong);
+  font-family: "SVN VT Redzone Classic", Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
+  font-size: 1.1rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.pricing-afro-guide p {
+  display: grid;
+  gap: 3px;
+  margin: 0;
+  padding: 9px 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.pricing-afro-guide p + p {
+  border-top: 1px solid rgba(244, 238, 232, 0.11);
+}
+
+.pricing-afro-guide strong {
+  color: #fff8ef;
+  font-size: 0.9rem;
 }
 
 .pricing-note {
@@ -3609,6 +3805,14 @@ textarea:focus-visible {
   gap: 8px;
   max-width: 100%;
   margin-bottom: 14px;
+}
+
+.booking-stepper-4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.booking-stepper-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .booking-stepper button {
@@ -6489,9 +6693,14 @@ textarea:focus-visible {
     grid-row: span 1;
   }
 
-  .price-row {
+  .price-table {
     grid-template-columns: 1fr;
-    gap: 5px;
+  }
+
+  .price-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    min-height: 104px;
+    gap: 10px;
   }
 
   .pricing-groups {
@@ -6499,15 +6708,40 @@ textarea:focus-visible {
     gap: 36px;
   }
 
-  .pricing-branch-heading {
-    align-items: flex-start;
-    flex-direction: column;
+  .pricing-branch-tabs {
+    grid-template-columns: 1fr;
     gap: 8px;
+    margin-bottom: 24px;
   }
 
-  .pricing-branch-heading p {
-    max-width: none;
-    text-align: left;
+  .pricing-branch-tab {
+    min-height: 78px;
+    padding: 14px 16px;
+  }
+
+  .pricing-service-tabs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin: 10px 0 24px;
+  }
+
+  .pricing-service-tab {
+    min-height: 82px;
+    padding: 12px;
+  }
+
+  .pricing-branch-tab span,
+  .pricing-service-tab span {
+    font-size: clamp(0.72rem, 3.1vw, 0.82rem);
+  }
+
+  .pricing-group:nth-child(even) {
+    padding-left: 0;
+    border-left: 0;
+  }
+
+  .pricing-category-heading {
+    font-size: clamp(1.05rem, 4.8vw, 1.3rem);
   }
 
   .pricing-group h4 {
@@ -6544,7 +6778,11 @@ textarea:focus-visible {
   }
 
   .price-row {
-    padding: 12px 0;
+    padding: 13px 14px;
+  }
+
+  .pricing-afro-guide {
+    grid-template-columns: 1fr;
   }
 
   .price-row strong {
@@ -6557,9 +6795,9 @@ textarea:focus-visible {
   }
 
   .price-row b {
-    justify-self: start;
+    justify-self: end;
     font-size: clamp(0.79rem, 3.65vw, 0.94rem);
-    text-align: left;
+    text-align: right;
   }
 
   .highlight-banner {
@@ -9789,4 +10027,3 @@ textarea:focus-visible {
   font-style: italic;
   max-width: 80ch;
 }
-

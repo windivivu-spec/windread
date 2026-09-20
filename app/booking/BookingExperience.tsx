@@ -86,23 +86,40 @@ export function BookingExperience({ isEnglish }: { isEnglish: boolean }) {
   const bookingSteps = useMemo<{ key: BookingStepKey; label: string }[]>(
     () => lockedBarberId
       ? [
-          { key: "info", label: isEnglish ? "Info" : "Thông tin" },
-          { key: "time", label: isEnglish ? "Time" : "Ngày giờ" }
+          { key: "time", label: isEnglish ? "Time" : "Ngày giờ" },
+          { key: "info", label: isEnglish ? "Info" : "Thông tin" }
         ]
       : [
-          { key: "info", label: isEnglish ? "Info" : "Thông tin" },
           { key: "branch", label: isEnglish ? "Branch" : "Cơ sở" },
           { key: "service", label: isEnglish ? "Service" : "Dịch vụ" },
           ...(isGroupBooking ? [] : [{ key: "barber" as const, label: isEnglish ? "Barber" : "Thợ" }]),
-          { key: "time", label: isEnglish ? "Time" : "Ngày giờ" }
+          { key: "time", label: isEnglish ? "Time" : "Ngày giờ" },
+          { key: "info", label: isEnglish ? "Info" : "Thông tin" }
         ],
     [isEnglish, isGroupBooking, lockedBarberId]
   );
-  const activeStep = bookingSteps[activeStepIndex];
+  const visibleStepIndex = Math.min(activeStepIndex, Math.max(bookingSteps.length - 1, 0));
+  const activeStep = bookingSteps[visibleStepIndex];
 
   useEffect(() => {
     activeStepIndexRef.current = activeStepIndex;
   }, [activeStepIndex]);
+
+  useEffect(() => {
+    if (activeStepIndex < bookingSteps.length) return;
+
+    const nextIndex = Math.max(bookingSteps.length - 1, 0);
+    setActiveStepIndex(nextIndex);
+    activeStepIndexRef.current = nextIndex;
+
+    if (clientReady && bookingSteps[nextIndex]) {
+      window.history.replaceState(
+        { ...(window.history.state as BookingHistoryState | null), windreadBookingStep: bookingSteps[nextIndex].key },
+        "",
+        window.location.href
+      );
+    }
+  }, [activeStepIndex, bookingSteps, clientReady]);
 
   const selectedSlot = slots.find((slot) => slot.startTime === draft.slot);
   const selectedBarber =
@@ -120,16 +137,17 @@ export function BookingExperience({ isEnglish }: { isEnglish: boolean }) {
     const searchParams = new URLSearchParams(window.location.search);
     const barberId = searchParams.get("barber");
     const branchId = searchParams.get("branch");
+    const serviceId = searchParams.get("service");
     const barber = barberId ? bookingService.getBarbers().find((item) => item.id === barberId) : undefined;
     const branch = branchId ? bookingService.getBranches().find((item) => item.id === branchId) : undefined;
-    if (!barber && !branch) return;
+    if (!barber && !branch && !serviceId) return;
 
     if (barber) setLockedBarberId(barber.id);
     setDraft((current) => ({
       ...current,
       branchId: barber?.branchId ?? branch?.id ?? current.branchId,
       barberId: barber?.id ?? "any",
-      serviceId: barber ? barber.serviceIds[0] ?? current.serviceId : current.serviceId,
+      serviceId: barber ? barber.serviceIds[0] ?? current.serviceId : serviceId ?? current.serviceId,
       guestCount: barber ? 1 : current.guestCount,
       slot: ""
     }));
@@ -148,7 +166,7 @@ export function BookingExperience({ isEnglish }: { isEnglish: boolean }) {
       activeStepIndexRef.current = initialIndex;
     } else {
       window.history.replaceState(
-        { ...initialState, windreadBookingStep: "info" satisfies BookingStepKey },
+        { ...initialState, windreadBookingStep: bookingSteps[0]?.key ?? ("info" satisfies BookingStepKey) },
         "",
         window.location.href
       );
@@ -326,7 +344,7 @@ export function BookingExperience({ isEnglish }: { isEnglish: boolean }) {
       setErrors(nextErrors);
       setSubmitError(result.message);
       if (nextErrors.customerName || nextErrors.customerPhone || nextErrors.customerEmail) {
-        moveToStep(0);
+        moveToStepKey("info");
       } else if (nextErrors.branchId) {
         moveToStepKey("branch");
       } else if (nextErrors.serviceId) {
@@ -415,14 +433,14 @@ export function BookingExperience({ isEnglish }: { isEnglish: boolean }) {
 
   return (
     <form className="booking-console reveal" ref={bookingFormRef} onSubmit={submitBooking}>
-      <div className="booking-stepper" aria-label={isEnglish ? "Booking steps" : "Các bước đặt lịch"}>
+      <div className={`booking-stepper booking-stepper-${bookingSteps.length}`} aria-label={isEnglish ? "Booking steps" : "Các bước đặt lịch"}>
         {bookingSteps.map((step, index) => (
           <button
-            className={`${activeStepIndex === index ? "is-active" : ""} ${activeStepIndex > index ? "is-complete" : ""}`}
+            className={`${visibleStepIndex === index ? "is-active" : ""} ${visibleStepIndex > index ? "is-complete" : ""}`}
             type="button"
             key={step.key}
             onClick={() => moveToStep(index)}
-            aria-current={activeStepIndex === index ? "step" : undefined}
+            aria-current={visibleStepIndex === index ? "step" : undefined}
           >
             <b>{index + 1}</b>
             {step.label}
@@ -454,13 +472,25 @@ export function BookingExperience({ isEnglish }: { isEnglish: boolean }) {
         <div className="booking-step-viewport">
           <section className={`booking-panel booking-step-card slide-${slideDirection}`} key={activeStep.key}>
             {activeStep.key === "info" && (
-              <CustomerInfoForm
-                draft={draft}
-                errors={errors}
-                onChange={updateDraft}
-                isEnglish={isEnglish}
-                isBarberLocked={Boolean(lockedBarberId)}
-              />
+              <>
+                <CustomerInfoForm
+                  draft={draft}
+                  errors={errors}
+                  onChange={updateDraft}
+                  isEnglish={isEnglish}
+                  isBarberLocked={Boolean(lockedBarberId)}
+                />
+                <BookingSummary
+                  branch={selectedBranch}
+                  service={selectedService}
+                  barber={selectedBarber}
+                  slot={selectedSlot}
+                  draft={draft}
+                  submitError={submitError}
+                  isSubmitting={isSubmitting}
+                  isEnglish={isEnglish}
+                />
+              </>
             )}
 
             {!lockedBarberId && activeStep.key === "branch" && (
@@ -512,16 +542,6 @@ export function BookingExperience({ isEnglish }: { isEnglish: boolean }) {
                   isEnglish={isEnglish}
                   guestCount={draft.guestCount}
                 />
-                <BookingSummary
-                  branch={selectedBranch}
-                  service={selectedService}
-                  barber={selectedBarber}
-                  slot={selectedSlot}
-                  draft={draft}
-                  submitError={submitError}
-                  isSubmitting={isSubmitting}
-                  isEnglish={isEnglish}
-                />
               </>
             )}
           </section>
@@ -532,15 +552,15 @@ export function BookingExperience({ isEnglish }: { isEnglish: boolean }) {
             className="ghost-button"
             type="button"
             onClick={moveToPreviousStep}
-            disabled={activeStepIndex === 0}
+            disabled={visibleStepIndex === 0}
           >
             {isEnglish ? "Back" : "Quay lại"}
           </button>
           <span>
-            {activeStepIndex + 1}/{bookingSteps.length}
+            {visibleStepIndex + 1}/{bookingSteps.length}
           </span>
-          {activeStepIndex < bookingSteps.length - 1 ? (
-            <button className="book-button" type="button" onClick={() => moveToStep(activeStepIndex + 1)}>
+          {visibleStepIndex < bookingSteps.length - 1 ? (
+            <button className="book-button" type="button" onClick={() => moveToStep(visibleStepIndex + 1)}>
               {isEnglish ? "Next" : "Tiếp tục"}
             </button>
           ) : (
@@ -909,7 +929,7 @@ function CustomerInfoForm({
 }) {
   return (
     <div className="booking-block">
-      <h3>1. {isEnglish ? "Your info" : "Thông tin khách"}</h3>
+      <h3>{isEnglish ? "Your info" : "Thông tin khách"}</h3>
       <div className="booking-guest-count" aria-describedby="guest-count-help">
         <label className="booking-guest-select">
           <span>{isEnglish ? "Guests" : "Số khách"}</span>

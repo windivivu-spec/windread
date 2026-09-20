@@ -31,6 +31,8 @@ type PageKey =
   | "contact";
 type Lang = "vi" | "en";
 type ServiceExplorerKey = "barber" | "dread" | "braid";
+type PricingBranchId = "chuong-duong" | "an-thuong";
+type PricingCategoryId = "barber" | "dreadlocks" | "braids" | "afro";
 
 const socialLinks = [
   { label: "Instagram", icon: "IG", href: "https://www.instagram.com/windread.locs_barber.club" },
@@ -629,6 +631,8 @@ export function SitePage({
   const [preloadedCatalogs, setPreloadedCatalogs] = useState<HairstyleCatalog["id"][]>([]);
   const [recoveredPricingServices, setRecoveredPricingServices] = useState<Service[]>([]);
   const [pricingRecoveryFailed, setPricingRecoveryFailed] = useState(false);
+  const [activePricingBranchId, setActivePricingBranchId] = useState<PricingBranchId>("chuong-duong");
+  const [activePricingCategoryId, setActivePricingCategoryId] = useState<PricingCategoryId>("barber");
   const isEnglish = language === "en";
   const visiblePricingServices = pricingServices.length > 0 ? pricingServices : recoveredPricingServices;
 
@@ -897,6 +901,16 @@ export function SitePage({
       }))
       .filter((group) => group.sections.length > 0)
   }));
+  const activePricingBoard = priceBoards.find((board) => board.id === activePricingBranchId) ?? priceBoards[0];
+  const activePricingGroup = activePricingBoard?.groups.find((group) => group.id === activePricingCategoryId) ?? activePricingBoard?.groups[0];
+
+  function selectPricingBranch(branchId: PricingBranchId) {
+    const nextBoard = priceBoards.find((board) => board.id === branchId);
+    setActivePricingBranchId(branchId);
+    if (nextBoard && !nextBoard.groups.some((group) => group.id === activePricingCategoryId)) {
+      setActivePricingCategoryId(nextBoard.groups[0]?.id ?? "barber");
+    }
+  }
 
   return (
     <main id="main-content">
@@ -1480,39 +1494,93 @@ export function SitePage({
                 : "Chọn đúng cơ sở trước khi đặt lịch. Mỗi chi nhánh có bảng giá và đội ngũ phục vụ riêng."}
             </p>
             <div className="pricing-branches">
-              {visiblePricingServices.length > 0 ? priceBoards.map((board) => (
-                <section className="pricing-branch" key={board.id} aria-labelledby={`price-${board.id}`}>
-                  <div className="pricing-branch-heading">
-                    <h3 id={`price-${board.id}`}>{board.branch}</h3>
-                    <p>{board.address}</p>
+              {visiblePricingServices.length > 0 && activePricingBoard && activePricingGroup ? (
+                <>
+                  <div className="pricing-branch-tabs" aria-label={isEnglish ? "Choose a branch" : "Chọn cơ sở"}>
+                    {priceBoards.map((board) => (
+                      <button
+                        className={`pricing-branch-tab${board.id === activePricingBoard.id ? " is-active" : ""}`}
+                        type="button"
+                        key={board.id}
+                        aria-pressed={board.id === activePricingBoard.id}
+                        onClick={() => selectPricingBranch(board.id)}
+                      >
+                        <strong>{board.branch}</strong>
+                        <span>{board.address}</span>
+                      </button>
+                    ))}
                   </div>
-                  <div className="pricing-groups">
-                    {board.groups.map((group) => (
-                      <section className="pricing-group" key={`${board.id}-${group.id}`}>
-                        <h4>{group.title}</h4>
-                        {group.sections.map((section) => (
+
+                  <section className="pricing-branch" aria-label={activePricingBoard.branch}>
+                    <h3 className="pricing-category-heading">{isEnglish ? "Choose a service" : "Chọn dịch vụ"}</h3>
+                    <div className="pricing-service-tabs" aria-label={isEnglish ? "Choose a service category" : "Chọn dịch vụ"}>
+                      {serviceCategories.map((category) => {
+                        const isAvailable = activePricingBoard.groups.some((group) => group.id === category.id);
+                        return (
+                          <button
+                            className={`pricing-service-tab${category.id === activePricingGroup.id ? " is-active" : ""}`}
+                            type="button"
+                            key={category.id}
+                            disabled={!isAvailable}
+                            aria-pressed={category.id === activePricingGroup.id}
+                            onClick={() => setActivePricingCategoryId(category.id)}
+                          >
+                            <strong>{isEnglish ? category.labelEn : category.label}</strong>
+                            <span>{isEnglish ? category.descriptionEn : category.description}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    <div className="pricing-groups">
+                      <section className="pricing-group" key={`${activePricingBoard.id}-${activePricingGroup.id}`}>
+                        <h4>{activePricingGroup.title}</h4>
+                        {activePricingGroup.sections.map((section) => (
                           <section className="pricing-subgroup" key={section.id}>
                             <h5>{section.label}</h5>
                             <div className="price-table">
                               {section.services.map((service) => {
                                 const localizedService = getLocalizedService(service, isEnglish);
                                 return (
-                                  <div className="price-row" key={service.id}>
-                                    <div>
+                                  <a
+                                    className={`price-row price-row-book${service.id === "cd-win-dread-experience" ? " price-row-signature" : ""}`}
+                                    href={`/booking?branch=${encodeURIComponent(service.branchId)}&service=${encodeURIComponent(service.id)}`}
+                                    key={service.id}
+                                  >
+                                    <div className="price-row-copy">
                                       <strong>{localizedService.name}</strong>
-                                      <span>{localizedService.description} · {service.durationMinutes} {isEnglish ? "min" : "phút"}</span>
+                                      <span title={localizedService.description}>{localizedService.description}</span>
                                     </div>
-                                    <b>{getLocalizedPriceLabel(service, isEnglish) || formatCurrency(service.price, isEnglish)}</b>
-                                  </div>
+                                    <div className="price-row-facts">
+                                      <span className="price-row-duration">{service.durationMinutes} {isEnglish ? "min" : "phút"}</span>
+                                      <b>{getLocalizedPriceLabel(service, isEnglish) || formatCurrency(service.price, isEnglish)}</b>
+                                    </div>
+                                  </a>
                                 );
                               })}
                             </div>
                           </section>
                         ))}
+                        {activePricingBoard.id === "chuong-duong" && activePricingGroup.id === "afro" && (
+                          <div className="pricing-afro-guide">
+                            <section>
+                              <h5>{isEnglish ? "Level guide" : "Hướng dẫn mức giá"}</h5>
+                              <p><strong>{isEnglish ? "Level 1" : "Mức 1"}</strong><span>{isEnglish ? "Base price - short/normal density" : "Giá gốc - tóc ngắn/mật độ thường"}</span></p>
+                              <p><strong>{isEnglish ? "Level 2" : "Mức 2"}</strong><span>+50.000đ - {isEnglish ? "medium or thicker hair" : "tóc vừa hoặc dày hơn"}</span></p>
+                              <p><strong>{isEnglish ? "Level 3" : "Mức 3"}</strong><span>+100.000đ - {isEnglish ? "long or very dense hair" : "tóc dài hoặc rất dày"}</span></p>
+                            </section>
+                            <section>
+                              <h5>{isEnglish ? "Add-on" : "Dịch vụ bổ sung"}</h5>
+                              <p><strong>{isEnglish ? "Extra detangling" : "Gỡ rối thêm"}</strong><span>+100.000đ / 30 {isEnglish ? "min" : "phút"}</span></p>
+                              <p><strong>Signature Afro Care</strong><span>{isEnglish ? "Level 2 +50.000đ · Level 3 +100.000đ" : "Mức 2 +50.000đ · Mức 3 +100.000đ"}</span></p>
+                            </section>
+                          </div>
+                        )}
                       </section>
-                    ))}
-                  </div>
-                  {board.id === "an-thuong" && (
+                    </div>
+                  </section>
+
+                  {activePricingBoard.id === "an-thuong" && (
                     <div className="pricing-extras">
                       <section className="free-utilities" aria-labelledby="free-utilities-title">
                         <h4 id="free-utilities-title">{isEnglish ? "Free utilities" : "Tiện ích miễn phí"}</h4>
@@ -1537,8 +1605,8 @@ export function SitePage({
                       </section>
                     </div>
                   )}
-                </section>
-              )) : (
+                </>
+              ) : (
                 <p className="pricing-loading" role="status">
                   {pricingRecoveryFailed
                     ? (isEnglish ? "The price menu is temporarily unavailable. Please use Booking or contact the crew for the current price." : "Bảng giá đang tạm thời chưa tải được. Hãy vào Đặt lịch hoặc liên hệ crew để xem giá hiện tại.")

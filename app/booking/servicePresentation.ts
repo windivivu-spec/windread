@@ -54,8 +54,7 @@ const chuongDuongOrder: Array<[SectionId, string[]]> = [
   ["braids-cornrows", ["cd-cornrows-half-head", "cd-cornrows-2-lines", "cd-cornrows-4-lines", "cd-cornrows-6-lines", "cd-cornrows-8-lines", "cd-cornrows-10-lines", "cd-braids-custom-design"]],
   ["braids-full", ["cd-box-braids-shoulder", "cd-box-braids-over-shoulder", "cd-box-braids-mid-back", "cd-knotless-braids-shoulder", "cd-knotless-braids-over-shoulder", "cd-knotless-braids-mid-back", "cd-boho-braids-shoulder", "cd-boho-braids-over-shoulder", "cd-boho-braids-mid-back"]],
   ["braids-addons", ["cd-braid-extension-40", "cd-braid-extension-60", "cd-braid-extension-80", "cd-braid-curl-ends"]],
-  ["afro-main", ["cd-afro-basic-wash", "cd-afro-wash-detangle", "cd-afro-signature-curl-treatment"]],
-  ["afro-addons", ["cd-afro-heavy-detangle", "cd-afro-extra-density", "cd-afro-extra-length"]]
+  ["afro-main", ["cd-afro-wash", "cd-afro-wash-care", "cd-afro-blow-dry", "cd-afro-professional-blowout", "cd-afro-deep-treatment", "cd-afro-signature-care", "cd-afro-finger-comb-coil"]]
 ];
 
 const chuongDuongPlacement = new Map<string, { sectionId: SectionId; itemOrder: number }>();
@@ -128,7 +127,7 @@ const englishServiceCopy: Record<string, EnglishServiceCopy> = {
   "cd-fresh-cut": { name: "Fresh Cut", description: "Haircut and styling with a wash." },
   "cd-gentlemans-set": { name: "Gentleman's Set", description: "Haircut and styling with a hot and cold towel shave." },
   "cd-full-grooming": { name: "Full Grooming", description: "Haircut and styling, wash, and hot and cold towel shave." },
-  "cd-win-dread-experience": { name: "The Win Dread Experience", description: "Signature haircut, wash, and hot and cold towel shave." },
+  "cd-win-dread-experience": { name: "W Signature Grooming Experience", description: "Signature haircut, wash, grooming and hot and cold towel shave. Advance booking only." },
   "cd-sides-back-fade": { name: "Sides & nape fade", description: "A clean-up for the sides and nape." },
   "cd-basic-beard-trim-line-up": { name: "Basic beard trim & line-up", description: "Beard and outline clean-up." },
   "cd-hair-washing": { name: "Hair wash", description: "Basic hair wash." },
@@ -183,6 +182,13 @@ const englishServiceCopy: Record<string, EnglishServiceCopy> = {
   "cd-afro-signature-curl-treatment": { name: "Signature afro curl treatment", description: "Curl treatment for afro hair." },
   "cd-afro-extra-density": { name: "Extra-density afro add-on", description: "Add-on for each 30 minutes of extra density." },
   "cd-afro-extra-length": { name: "Extra-length afro add-on", description: "Add-on for each 30 minutes of extra length." },
+  "cd-afro-wash": { name: "Basic afro wash", description: "A basic afro wash." },
+  "cd-afro-wash-care": { name: "Afro wash & care", description: "Basic afro wash and conditioning." },
+  "cd-afro-blow-dry": { name: "Afro stretch blow-dry", description: "Afro wash with stretch blow-dry." },
+  "cd-afro-professional-blowout": { name: "Professional afro blowout", description: "Afro blowout using professional equipment." },
+  "cd-afro-deep-treatment": { name: "Deep treatment", description: "Deep conditioning treatment for afro hair." },
+  "cd-afro-signature-care": { name: "Signature Afro Care", description: "Wash, deep treatment, conditioning and styling." },
+  "cd-afro-finger-comb-coil": { name: "Finger / comb coil", description: "Hand-coiled styling, charged hourly." },
   "an-dreadlock": { name: "Dreadlocks", description: "New dreadlocks based on length, density and hair base; consultation required." },
   "an-single-dread": { name: "Single dread", description: "One individual dread for 20–30 cm length." },
   "an-pair-dreads": { name: "Pair of dreads", description: "A pair of dreads for 30–40 cm length." },
