@@ -41,25 +41,32 @@ const socialLinks = [
 
 const heroHighlights = [
   {
-    icon: "/images/icon/moc.png",
-    viTitle: "Chuyên Locs",
-    viDesc: "Tạo chất riêng",
-    enTitle: "Locs Focus",
-    enDesc: "Signature texture"
-  },
-  {
-    icon: "/images/icon/clipper.png",
-    viTitle: "Barbers",
-    viDesc: "Nhiều kinh nghiệm",
+    icon: "/images/hero-specialties/barber.png",
+    viTitle: "Barber",
+    viDesc: "Fade và cắt tạo kiểu",
     enTitle: "Barber",
-    enDesc: "Style-precise cuts"
+    enDesc: "Fades and sharp cuts"
   },
   {
-    icon: "/images/icon/spray.png",
-    viTitle: "Chất lượng",
-    viDesc: "Sản phẩm cao cấp",
-    enTitle: "Quality",
-    enDesc: "Premium products"
+    icon: "/images/hero-specialties/dreadlocks.png",
+    viTitle: "Dreadlocks",
+    viDesc: "Locs theo chất riêng",
+    enTitle: "Dreadlocks",
+    enDesc: "Locs with character"
+  },
+  {
+    icon: "/images/hero-specialties/afro-hair.png",
+    viTitle: "Afro Hair",
+    viDesc: "Tôn vinh tóc tự nhiên",
+    enTitle: "Afro Hair",
+    enDesc: "Natural texture care"
+  },
+  {
+    icon: "/images/hero-specialties/braids-cornrows.png",
+    viTitle: "Braids & Cornrows",
+    viDesc: "Tết tóc theo phom riêng",
+    enTitle: "Braids & Cornrows",
+    enDesc: "Braids made for you"
   }
 ] as const;
 
@@ -995,81 +1002,54 @@ export function SitePage({
                 </span>
               </h1>
               <div className="hero-subcontent">
-                <div className="hero-pole" aria-hidden="true">
-                  <video
-                    className="hero-pole-video"
-                    autoPlay
-                    loop
-                    muted
-                    playsInline
-                    preload="auto"
-                    onCanPlay={(event) => {
-                      event.currentTarget.muted = true;
-                      event.currentTarget.play().catch(() => undefined);
-                    }}
-                  >
-                    <source src="/loop-hero.mov" type="video/quicktime" />
-                    <source src="/loop-hero-web.mp4" type="video/mp4" />
-                  </video>
-                </div>
-                <div className="hero-subcopy">
-                  <div className="hero-highlights" aria-label={isEnglish ? "Hero service highlights" : "Điểm nổi bật dịch vụ"}>
-                    {heroHighlights.map((item) => (
-                      <div className="hero-highlight" key={item.viTitle}>
-                        <Image
-                          src={item.icon}
-                          alt=""
-                          width={72}
-                          height={72}
-                          className="hero-highlight-icon"
-                          aria-hidden="true"
-                        />
-                        <div className="hero-highlight-copy">
-                          <strong>{isEnglish ? item.enTitle : item.viTitle}</strong>
-                          <p>{isEnglish ? item.enDesc : item.viDesc}</p>
-                        </div>
+                <div className="hero-highlights" aria-label={isEnglish ? "Signature styles" : "Bốn kiểu tóc đặc trưng"}>
+                  {heroHighlights.map((item) => (
+                    <div className="hero-highlight" key={item.viTitle}>
+                      <Image
+                        src={item.icon}
+                        alt=""
+                        width={72}
+                        height={72}
+                        className="hero-highlight-icon"
+                        aria-hidden="true"
+                      />
+                      <div className="hero-highlight-copy">
+                        <strong>{isEnglish ? item.enTitle : item.viTitle}</strong>
+                        <p>{isEnglish ? item.enDesc : item.viDesc}</p>
                       </div>
-                    ))}
+                    </div>
+                  ))}
+                </div>
+                <div className="hero-details">
+                  <div className="hero-pole" aria-hidden="true">
+                    <video className="hero-pole-video" autoPlay loop muted playsInline preload="metadata">
+                      <source src="/loop-web.mp4" type="video/mp4" />
+                      <source src="/loop-web.mov" type="video/quicktime" />
+                    </video>
                   </div>
-                  {isEnglish ? (
-                    <p className="hero-desc">
-                      A minimalist, sharp, and disciplined space. Where raw hair texture is elevated by premium services and a street soul.
-                    </p>
-                  ) : (
-                    <ul className="hero-desc hero-desc-list">
-                      <li>Không gian đậm chất Street vibes - Old School 90’s.</li>
-                      <li>Thánh địa của tóc nam, Afro, Dreadlocks &amp; Braids.</li>
-                      <li>Tôn vinh kiểu tóc đẹp qua đôi tay thợ tóc từ đường phố.</li>
-                    </ul>
-                  )}
-                  <div className="hero-actions">
-                    <a className="book-button large" href="/booking">
-                      {isEnglish ? "Book Now" : "Đặt lịch"} <span aria-hidden="true">{"->"}</span>
-                    </a>
-                    <a className="ghost-button" href="/pricing">
-                      {isEnglish ? "See pricing" : "Xem bảng giá"}
-                    </a>
+                  <div className="hero-subcopy">
+                    {isEnglish ? (
+                      <p className="hero-desc">
+                        A minimalist, sharp, and disciplined space. Where raw hair texture is elevated by premium services and a street soul.
+                      </p>
+                    ) : (
+                      <ul className="hero-desc hero-desc-list">
+                        <li>Không gian đậm chất Street vibes - Old School 90’s.</li>
+                        <li>Thánh địa của tóc nam, Afro, Dreadlocks &amp; Braids.</li>
+                        <li>Tôn vinh kiểu tóc đẹp qua đôi tay thợ tóc từ đường phố.</li>
+                      </ul>
+                    )}
+                    <div className="hero-actions">
+                      <a className="book-button large" href="/booking">
+                        {isEnglish ? "Book Now" : "Đặt lịch"} <span aria-hidden="true">{"->"}</span>
+                      </a>
+                      <a className="ghost-button" href="/pricing">
+                        {isEnglish ? "See pricing" : "Xem bảng giá"}
+                      </a>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-            <div className="hero-mobile-highlights" aria-label={isEnglish ? "Hero service highlights" : "Điểm nổi bật dịch vụ"}>
-              {heroHighlights.map((item) => (
-                <div className="hero-highlight" key={`mobile-${item.viTitle}`}>
-                  <Image
-                    src={item.icon}
-                    alt=""
-                    width={72}
-                    height={72}
-                    className="hero-highlight-icon"
-                    aria-hidden="true"
-                  />
-                  <div className="hero-highlight-copy">
-                    <strong>{isEnglish ? item.enTitle : item.viTitle}</strong>
-                    <p>{isEnglish ? item.enDesc : item.viDesc}</p>
-                  </div>
-                </div>
-              ))}
             </div>
             <div className="hero-visual reveal">
               <Image
@@ -1081,6 +1061,24 @@ export function SitePage({
                 className="hero-image parallax-img"
               />
             </div>
+          </div>
+          <div className="hero-mobile-highlights" aria-label={isEnglish ? "Signature styles" : "Bốn kiểu tóc đặc trưng"}>
+            {heroHighlights.map((item) => (
+              <div className="hero-highlight" key={`mobile-${item.viTitle}`}>
+                <Image
+                  src={item.icon}
+                  alt=""
+                  width={72}
+                  height={72}
+                  className="hero-highlight-icon"
+                  aria-hidden="true"
+                />
+                <div className="hero-highlight-copy">
+                  <strong>{isEnglish ? item.enTitle : item.viTitle}</strong>
+                  <p>{isEnglish ? item.enDesc : item.viDesc}</p>
+                </div>
+              </div>
+            ))}
           </div>
           <section className="moment-marquee" aria-label={isEnglish ? "Moments at WINDREAD" : "Khoảnh khắc tại WINDREAD"}>
             <div className="moment-marquee-track">
@@ -1454,7 +1452,9 @@ export function SitePage({
                             <p className="barber-card-experience">{isEnglish ? `${barber.years} experience` : `${barber.years} kinh nghiệm`}</p>
                             <p className="barber-card-specialties">{isEnglish ? "Specializes in" : "Chuyên môn"}: {barber.specialties.join(" · ")}</p>
                             <div className="barber-card-actions">
-                              <a className="barber-book-link" href={`/booking?branch=${branch.id}&barber=${barber.bookingId}`}>{isEnglish ? "Book" : "Đặt lịch"}</a>
+                              <a className="barber-book-link" href={barber.bookingId === "win-dread" ? `tel:${branch.phone}` : `/booking?branch=${branch.id}&barber=${barber.bookingId}`}>
+                                {barber.bookingId === "win-dread" ? (isEnglish ? "Call to book" : "Liên hệ đặt lịch") : (isEnglish ? "Book" : "Đặt lịch")}
+                              </a>
                             </div>
                           </div>
                         </article>
@@ -1698,6 +1698,20 @@ export function SitePage({
             </div>
           </div>
         </section>
+      )}
+
+      {showHome && (
+        <div className="specialty-marquee" aria-label={isEnglish ? "WINDREAD hair services: Dreadlocks, Retwist, Locs Repair, Locs Detox, Braids, Box Braids, Knotless Braids, Cornrows, Afro Hair" : "Dịch vụ tóc WINDREAD: Dreadlocks, Retwist, Locs Repair, Locs Detox, Braids, Box Braids, Knotless Braids, Cornrows, Afro Hair"}>
+          <div className="specialty-marquee-track" aria-hidden="true">
+            {[0, 1].map((copy) => (
+              <div className="specialty-marquee-group" key={copy}>
+                {["Dreadlocks", "Retwist", "Locs Repair", "Locs Detox", "Braids", "Box Braids", "Knotless Braids", "Cornrows", "Afro Hair"].map((service) => (
+                  <span className="specialty-marquee-item" key={service}>{service}</span>
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
       )}
 
       {showHome && (

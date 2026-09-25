@@ -1,5 +1,6 @@
 import { barbers, branches, seedBookings, services } from "./mockBookingData";
 import { getAvailableSlots } from "./availabilityUtils";
+import { isOnlineBookableBarber } from "./onlineBooking";
 import type { Booking, BookingDraft, BookingStatus } from "./types";
 
 const STORAGE_KEY = "windread-bookings";
@@ -48,6 +49,7 @@ export const bookingService = {
 
   getBarbers(branchId?: string, serviceId?: string) {
     return barbers.filter((barber) => {
+      if (!isOnlineBookableBarber(barber.id)) return false;
       if (branchId && barber.branchId !== branchId) return false;
       if (serviceId && !barber.serviceIds.includes(serviceId)) return false;
       return true;
@@ -82,7 +84,7 @@ export const bookingService = {
     if (serviceId) params.set("serviceId", serviceId);
 
     try {
-      return await fetchJson<typeof barbers>(`/api/barbers?${params.toString()}`);
+      return (await fetchJson<typeof barbers>(`/api/barbers?${params.toString()}`)).filter((barber) => isOnlineBookableBarber(barber.id));
     } catch {
       return this.getBarbers(branchId, serviceId);
     }
@@ -111,7 +113,7 @@ export const bookingService = {
       service,
       barberId,
       date,
-      barbers,
+      barbers: this.getBarbers(branchId, serviceId),
       bookings: this.getBookings(includeStored)
     });
   },

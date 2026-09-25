@@ -1095,13 +1095,13 @@ function BookingSuccess({
       <h3>{isEnglish ? "Your booking request has been received." : "Đã nhận yêu cầu đặt lịch của bạn."}</h3>
       <p className="booking-success-note">
         {isEnglish
-          ? "Our staff will contact you at the phone number or WhatsApp you provided to verify the appointment. The time is only confirmed after the crew replies."
-          : "Nhân viên sẽ liên hệ qua số điện thoại hoặc WhatsApp bạn đã cung cấp để xác minh lịch. Lịch chỉ được xác nhận sau khi crew phản hồi."}
+          ? "WINDREAD will contact you using the phone number provided to confirm your appointment. Your booking is confirmed once WINDREAD responds."
+          : "WINDREAD sẽ liên hệ qua số điện thoại bạn đã cung cấp để xác nhận lịch hẹn. Lịch có hiệu lực sau khi WINDREAD phản hồi."}
       </p>
       <div className="booking-contact-card">
         <span>{isEnglish ? "Confirmation contact" : "Thông tin xác minh"}</span>
-        <strong>{isEnglish ? `We will contact ${booking.customerPhone}` : `Crew sẽ liên hệ ${booking.customerPhone}`}</strong>
-        <p>{booking.note ? (isEnglish ? `Your note: ${booking.note}` : `Ghi chú của bạn: ${booking.note}`) : (isEnglish ? "No contact preference was added. We will use the phone number above." : "Bạn chưa để lại cách liên hệ riêng. Crew sẽ dùng số điện thoại bên trên.")}</p>
+        <strong>{isEnglish ? `WINDREAD will contact ${booking.customerPhone}` : `WINDREAD sẽ liên hệ qua số ${booking.customerPhone}`}</strong>
+        {booking.note && <p>{isEnglish ? `Your note: ${booking.note}` : `Ghi chú của bạn: ${booking.note}`}</p>}
       </div>
       <dl>
         <dt>{isEnglish ? "Service" : "Dịch vụ"}</dt>
@@ -1109,7 +1109,7 @@ function BookingSuccess({
         <dt>{isEnglish ? "Guests" : "Số khách"}</dt>
         <dd>{booking.guestCount} {isEnglish ? (booking.guestCount === 1 ? "guest" : "guests") : "khách"}</dd>
         <dt>{isEnglish ? "Barber" : "Thợ"}</dt>
-        <dd>{booking.guestCount > 1 ? (isEnglish ? "Crew auto-matched" : "Crew tự xếp thợ") : barber?.name}</dd>
+        <dd>{booking.guestCount > 1 ? (isEnglish ? "WINDREAD will assign barbers" : "WINDREAD sẽ sắp xếp thợ") : barber?.name}</dd>
         <dt>{isEnglish ? "Branch" : "Cơ sở"}</dt>
         <dd>{branch?.address}</dd>
         <dt>{isEnglish ? "Time" : "Ngày giờ"}</dt>
@@ -1117,6 +1117,14 @@ function BookingSuccess({
         <dt>{isEnglish ? "Phone" : "Số điện thoại"}</dt>
         <dd>{booking.customerPhone}</dd>
       </dl>
+      <div className="booking-arrival-note">
+        <strong>{isEnglish ? "Before your visit" : "Lưu ý khi đến tiệm"}</strong>
+        <p>
+          {isEnglish
+            ? "Please arrive 5 minutes early so we can discuss the style that suits you. Arriving 15 minutes late or more will result in your appointment being cancelled."
+            : "Vui lòng đến trước giờ hẹn 5 phút để được tư vấn kiểu tóc phù hợp. Lịch hẹn sẽ được hủy nếu bạn đến muộn từ 15 phút trở lên."}
+        </p>
+      </div>
       <div className="success-actions">
         <a className="ghost-button" href="/">
           {isEnglish ? "Back home" : "Về trang chủ"}

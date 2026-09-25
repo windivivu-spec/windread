@@ -108,7 +108,9 @@ export default async function BranchDetailPage({ params }: { params: Promise<{ b
                 <h3>{barber.name}</h3>
                 <p>{barber.title}</p>
               </div>
-              <a href={`/booking?barber=${barber.id}`}>Đặt với {barber.name}</a>
+              <a href={barber.id === "win-dread" ? `tel:${branch.phone}` : `/booking?barber=${barber.id}`}>
+                {barber.id === "win-dread" ? "Liên hệ đặt lịch" : `Đặt với ${barber.name}`}
+              </a>
             </article>
           ))}
         </div>

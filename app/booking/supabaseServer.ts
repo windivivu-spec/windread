@@ -2,6 +2,7 @@ import { getAvailableSlots, getBookingEnd } from "./availabilityUtils";
 import { syncBookingToCalendar } from "./calendar";
 import { sendBarberBookingEmail } from "./email";
 import { barbers as mockBarbers, branches as mockBranches, seedBookings, services as mockServices } from "./mockBookingData";
+import { isOnlineBookableBarber } from "./onlineBooking";
 import type { Barber, Booking, BookingDraft, BookingStatus, Branch, Service, ServiceCategory, TimeSlot, Weekday, WorkingWindow } from "./types";
 
 type SupabaseBranchRow = {
@@ -311,7 +312,8 @@ async function findMatchingBooking(draft: BookingDraft): Promise<Booking | null>
 }
 
 export async function getSlots(branchId: string, serviceId: string, barberId: string, date: string): Promise<TimeSlot[]> {
-  const [services, barbers, bookings] = await Promise.all([getServices(branchId), getBarbers(branchId), getBookings()]);
+  const [services, allBarbers, bookings] = await Promise.all([getServices(branchId), getBarbers(branchId), getBookings()]);
+  const barbers = allBarbers.filter((barber) => isOnlineBookableBarber(barber.id));
   const service = services.find((item) => item.id === serviceId);
   if (!service) return [];
 
@@ -326,6 +328,9 @@ export async function getSlots(branchId: string, serviceId: string, barberId: st
 }
 
 export async function createBooking(draft: BookingDraft) {
+  if (!isOnlineBookableBarber(draft.barberId)) {
+    return { booking: null, errors: { barberId: "Liên hệ hotline để đặt lịch với WIN DREAD." }, message: "Vui lòng gọi hotline để đặt lịch với WIN DREAD." };
+  }
   const errors = validateBookingDraft(draft);
   if (Object.keys(errors).length > 0) {
     return { booking: null, errors, message: "Thông tin đặt lịch chưa đầy đủ." };
