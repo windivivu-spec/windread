@@ -632,6 +632,7 @@ textarea:focus-visible {
   display: block;
   width: min(840px, 58vw);
   height: auto;
+  transform: translateX(-5.2%);
   filter: drop-shadow(0 24px 44px rgba(0, 0, 0, 0.76));
 }
 
@@ -4633,22 +4634,26 @@ textarea:focus-visible {
 }
 
 .booking-arrival-note {
-  max-width: 46rem;
-  border-left: 3px solid var(--accent-strong);
-  padding: 6px 0 6px 16px;
+  width: min(100%, 740px);
+  border: 1px solid rgba(216, 50, 69, 0.8);
+  border-left: 5px solid var(--accent-strong);
+  padding: clamp(16px, 2.5vw, 24px);
+  background: #2b0b10;
+  box-shadow: 0 12px 28px rgba(5, 3, 6, 0.3);
   font-family: var(--font-small);
 }
 
 .booking-arrival-note strong {
   color: #fff8ef;
-  font-size: 0.9rem;
+  font-size: clamp(1rem, 1.6vw, 1.15rem);
+  font-weight: 900;
 }
 
 .booking-arrival-note p {
-  margin: 6px 0 0;
-  color: rgba(244, 238, 232, 0.82);
-  font-size: 0.92rem;
-  line-height: 1.55;
+  margin: 10px 0 0;
+  color: #f4eee8;
+  font-size: clamp(0.98rem, 1.5vw, 1.08rem);
+  line-height: 1.6;
 }
 
 .success-mark {
@@ -5325,6 +5330,7 @@ textarea:focus-visible {
 
 .specialty-marquee-track {
   animation: specialty-marquee-scroll 42s linear infinite;
+  will-change: transform;
 }
 
 .specialty-marquee-group {
@@ -5332,6 +5338,8 @@ textarea:focus-visible {
 }
 
 .specialty-marquee-item {
+  position: relative;
+  top: 3px;
   display: inline-flex;
   flex: 0 0 auto;
   align-items: center;
@@ -5350,17 +5358,13 @@ textarea:focus-visible {
   color: var(--accent-strong);
 }
 
-.specialty-marquee:hover .specialty-marquee-track {
-  animation-play-state: paused;
-}
-
 @keyframes specialty-marquee-scroll {
   from {
-    transform: translateX(-50%);
+    transform: translate3d(-50%, 0, 0);
   }
 
   to {
-    transform: translateX(0);
+    transform: translate3d(0, 0, 0);
   }
 }
 
@@ -5823,6 +5827,7 @@ textarea:focus-visible {
   width: min(280px, 70%);
   height: auto;
   margin-bottom: 14px;
+  transform: translateX(-5.2%);
   filter: drop-shadow(0 18px 24px rgba(0, 0, 0, 0.76));
 }
 
@@ -8931,6 +8936,7 @@ textarea:focus-visible {
 
   .specialty-marquee-track {
     animation: none;
+    will-change: auto;
   }
 
   .branch-directory-card,

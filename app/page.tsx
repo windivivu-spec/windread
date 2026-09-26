@@ -924,10 +924,10 @@ export function SitePage({
       <header className="site-nav" aria-label="Dieu huong chinh">
         <a className="nav-brand" href="/" aria-label="WINDREAD home">
           <Image
-            src="/images/windread-logo.png"
+            src="/logo-white.png"
             alt=""
-            width={265}
-            height={81}
+            width={2000}
+            height={735}
             priority
             className="nav-logo"
           />
@@ -988,10 +988,10 @@ export function SitePage({
               <p className="eyebrow">{pageEyebrows.home[language]}</p>
               <h1 className="brand-title">
                 <Image
-                  src="/images/windread-logo.png"
+                  src="/logo-white.png"
                   alt="WINDREAD - Dreadlock, Braid & Barber Đà Nẵng"
-                  width={1327}
-                  height={331}
+                  width={2000}
+                  height={735}
                   priority
                   className="brand-logo"
                 />
@@ -1749,10 +1749,10 @@ export function SitePage({
         <div className="footer-content">
           <div className="footer-brand">
             <Image
-              src="/images/windread-logo.png"
+              src="/logo-white.png"
               alt="Win Dread Locs Barber Club"
-              width={1327}
-              height={404}
+              width={2000}
+              height={735}
               className="footer-logo"
             />
             <div className="footer-contact">

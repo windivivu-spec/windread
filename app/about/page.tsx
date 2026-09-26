@@ -226,10 +226,10 @@ export default function AboutPage() {
       <header className="site-nav about-book-nav" aria-label="Điều hướng chính">
         <Link className="nav-brand" href="/" aria-label="WINDREAD home">
           <Image
-            src="/images/windread-logo.png"
+            src="/logo-white.png"
             alt=""
-            width={265}
-            height={81}
+            width={2000}
+            height={735}
             priority
             className="nav-logo"
           />

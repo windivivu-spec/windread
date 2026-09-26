@@ -91,7 +91,7 @@ export default async function ArticleDetailPage({
       name: siteName,
       logo: {
         "@type": "ImageObject",
-        url: new URL("/images/windread-logo.png", siteUrl).toString()
+        url: new URL("/logo-white.png", siteUrl).toString()
       }
     },
     mainEntityOfPage: {
@@ -336,10 +336,10 @@ export default async function ArticleDetailPage({
         <div className="footer-content">
           <div className="footer-brand">
             <Image
-              src="/images/windread-logo.png"
+              src="/logo-white.png"
               alt="WINDREAD Cẩm Nang Tóc Đà Nẵng"
-              width={1327}
-              height={404}
+              width={2000}
+              height={735}
               className="footer-logo"
             />
             <div className="footer-contact">

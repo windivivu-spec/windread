@@ -402,7 +402,7 @@ export default function BoxBraidsDaNangPage() {
         <div className="torn-divider" aria-hidden="true" />
         <div className="footer-content">
           <div className="footer-brand">
-            <Image src="/images/windread-logo.png" alt="WINDREAD Box Braids Đà Nẵng" width={1327} height={404} className="footer-logo" />
+            <Image src="/logo-white.png" alt="WINDREAD Box Braids Đà Nẵng" width={2000} height={735} className="footer-logo" />
             <div className="footer-contact">
               <span>Cơ sở 1: 223 Chương Dương, Ngũ Hành Sơn, Đà Nẵng</span>
               <span>Cơ sở 2: 35 - 37 An Thượng 29, Ngũ Hành Sơn, Đà Nẵng</span>

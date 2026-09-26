@@ -130,7 +130,7 @@ export default async function BranchDetailPage({ params }: { params: Promise<{ b
         <div className="torn-divider" aria-hidden="true" />
         <div className="footer-content">
           <div className="footer-brand">
-            <Image src="/images/windread-logo.png" alt="WINDREAD" width={1327} height={404} className="footer-logo" />
+            <Image src="/logo-white.png" alt="WINDREAD" width={2000} height={735} className="footer-logo" />
             <div className="footer-contact">
               <span>35 - 37 An Thượng 29, Ngũ Hành Sơn, Đà Nẵng</span>
               <span>223 Chương Dương, Ngũ Hành Sơn, Đà Nẵng</span>

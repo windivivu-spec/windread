@@ -33,10 +33,10 @@ export function SiteHeader() {
     <header className="site-nav" aria-label="Điều hướng chính">
       <Link className="nav-brand" href="/" aria-label="WINDREAD home" onClick={() => setMenuOpen(false)}>
         <Image
-          src="/images/windread-logo.png"
+          src="/logo-white.png"
           alt="WINDREAD Barber & Locs Club"
-          width={265}
-          height={81}
+          width={2000}
+          height={735}
           priority
           className="nav-logo"
         />
