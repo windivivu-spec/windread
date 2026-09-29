@@ -24,9 +24,9 @@ type StoredBooking = {
 };
 
 const initialDraft: BookingDraft = {
-  branchId: "chuong-duong",
-  serviceId: "cd-haircut",
-  barberId: "any",
+  branchId: "",
+  serviceId: "",
+  barberId: "",
   date: getUpcomingDays(1)[0]?.value ?? "",
   slot: "",
   customerName: "",
@@ -54,11 +54,9 @@ const LAST_BOOKING_TTL_MS = 60 * 60 * 1000;
 
 export function BookingExperience({ isEnglish }: { isEnglish: boolean }) {
   const [branches, setBranches] = useState<Branch[]>(() => [...bookingService.getBranches()].sort((a, b) => a.name.localeCompare(b.name)));
-  const [services, setServices] = useState<Service[]>(() => bookingService.getServices(initialDraft.branchId));
-  const [barbers, setBarbers] = useState<Barber[]>(() => bookingService.getBarbers(initialDraft.branchId, initialDraft.serviceId));
-  const [slots, setSlots] = useState<TimeSlot[]>(() =>
-    bookingService.getAvailableSlots(initialDraft.branchId, initialDraft.serviceId, initialDraft.barberId, initialDraft.date, false)
-  );
+  const [services, setServices] = useState<Service[]>([]);
+  const [barbers, setBarbers] = useState<Barber[]>([]);
+  const [slots, setSlots] = useState<TimeSlot[]>([]);
   const [draft, setDraft] = useState<BookingDraft>(initialDraft);
   const [errors, setErrors] = useState<BookingErrors>({});
   const [submitError, setSubmitError] = useState("");
@@ -75,8 +73,8 @@ export function BookingExperience({ isEnglish }: { isEnglish: boolean }) {
   const bookingResultRef = useRef<HTMLElement | null>(null);
   const activeStepIndexRef = useRef(activeStepIndex);
 
-  const selectedBranch = branches.find((branch) => branch.id === draft.branchId) ?? branches[0];
-  const selectedService = services.find((service) => service.id === draft.serviceId) ?? services[0];
+  const selectedBranch = branches.find((branch) => branch.id === draft.branchId);
+  const selectedService = services.find((service) => service.id === draft.serviceId);
   const filteredBarbers = barbers;
   const lockedBarber = lockedBarberId
     ? bookingService.getBarbers().find((barber) => barber.id === lockedBarberId)
@@ -100,10 +98,32 @@ export function BookingExperience({ isEnglish }: { isEnglish: boolean }) {
   );
   const visibleStepIndex = Math.min(activeStepIndex, Math.max(bookingSteps.length - 1, 0));
   const activeStep = bookingSteps[visibleStepIndex];
+  const isStepComplete = (key: BookingStepKey) => {
+    switch (key) {
+      case "branch": return branches.some((branch) => branch.id === draft.branchId);
+      case "service": return services.some((service) => service.id === draft.serviceId && service.branchId === draft.branchId);
+      case "barber": return draft.barberId === "any" || barbers.some((barber) => barber.id === draft.barberId);
+      case "time": return Boolean(draft.date && draft.slot && slots.some((slot) => slot.startTime === draft.slot));
+      case "info": return false;
+    }
+  };
+  const firstIncompleteStepIndex = bookingSteps.findIndex((step) => !isStepComplete(step.key));
+  const furthestAccessibleStepIndex = firstIncompleteStepIndex < 0 ? bookingSteps.length - 1 : firstIncompleteStepIndex;
 
   useEffect(() => {
     activeStepIndexRef.current = activeStepIndex;
   }, [activeStepIndex]);
+
+  useEffect(() => {
+    if (!clientReady || activeStepIndex <= furthestAccessibleStepIndex) return;
+    setActiveStepIndex(furthestAccessibleStepIndex);
+    activeStepIndexRef.current = furthestAccessibleStepIndex;
+    window.history.replaceState(
+      { ...(window.history.state as BookingHistoryState | null), windreadBookingStep: bookingSteps[furthestAccessibleStepIndex].key },
+      "",
+      window.location.href
+    );
+  }, [activeStepIndex, bookingSteps, clientReady, furthestAccessibleStepIndex]);
 
   useEffect(() => {
     if (activeStepIndex < bookingSteps.length) return;
@@ -146,7 +166,7 @@ export function BookingExperience({ isEnglish }: { isEnglish: boolean }) {
     setDraft((current) => ({
       ...current,
       branchId: barber?.branchId ?? branch?.id ?? current.branchId,
-      barberId: barber?.id ?? "any",
+      barberId: barber?.id ?? (current.guestCount > 1 ? "any" : ""),
       serviceId: barber ? barber.serviceIds[0] ?? current.serviceId : serviceId ?? current.serviceId,
       guestCount: barber ? 1 : current.guestCount,
       slot: ""
@@ -161,12 +181,12 @@ export function BookingExperience({ isEnglish }: { isEnglish: boolean }) {
     const initialStep = initialState?.windreadBookingStep;
     const initialIndex = initialStep ? bookingSteps.findIndex((step) => step.key === initialStep) : -1;
 
-    if (initialIndex >= 0) {
-      setActiveStepIndex(initialIndex);
-      activeStepIndexRef.current = initialIndex;
-    } else {
+    const initialTargetIndex = initialIndex >= 0 ? Math.min(initialIndex, furthestAccessibleStepIndex) : 0;
+    setActiveStepIndex(initialTargetIndex);
+    activeStepIndexRef.current = initialTargetIndex;
+    if (initialIndex !== initialTargetIndex) {
       window.history.replaceState(
-        { ...initialState, windreadBookingStep: bookingSteps[0]?.key ?? ("info" satisfies BookingStepKey) },
+        { ...initialState, windreadBookingStep: bookingSteps[initialTargetIndex]?.key ?? ("info" satisfies BookingStepKey) },
         "",
         window.location.href
       );
@@ -178,6 +198,17 @@ export function BookingExperience({ isEnglish }: { isEnglish: boolean }) {
 
       if (nextIndex < 0) return;
 
+      if (nextIndex > furthestAccessibleStepIndex) {
+        window.history.replaceState(
+          { ...(window.history.state as BookingHistoryState | null), windreadBookingStep: bookingSteps[furthestAccessibleStepIndex].key },
+          "",
+          window.location.href
+        );
+        setActiveStepIndex(furthestAccessibleStepIndex);
+        activeStepIndexRef.current = furthestAccessibleStepIndex;
+        return;
+      }
+
       setSlideDirection(nextIndex < activeStepIndexRef.current ? "back" : "forward");
       setActiveStepIndex(nextIndex);
       activeStepIndexRef.current = nextIndex;
@@ -185,7 +216,7 @@ export function BookingExperience({ isEnglish }: { isEnglish: boolean }) {
 
     window.addEventListener("popstate", handlePopState);
     return () => window.removeEventListener("popstate", handlePopState);
-  }, [bookingSteps, clientReady]);
+  }, [bookingSteps, clientReady, furthestAccessibleStepIndex]);
 
   useEffect(() => {
     if (!clientReady) return;
@@ -247,6 +278,10 @@ export function BookingExperience({ isEnglish }: { isEnglish: boolean }) {
 
   useEffect(() => {
     if (!clientReady) return;
+    if (!draft.branchId) {
+      setServices([]);
+      return;
+    }
     let active = true;
 
     bookingService.fetchServices(draft.branchId).then((nextServices) => {
@@ -255,10 +290,11 @@ export function BookingExperience({ isEnglish }: { isEnglish: boolean }) {
       setDraft((current) => {
         if (current.branchId !== draft.branchId) return current;
         const serviceStillValid = nextServices.some((service) => service.id === current.serviceId);
+        if (serviceStillValid) return current;
         return {
           ...current,
-          serviceId: serviceStillValid ? current.serviceId : nextServices[0]?.id ?? "",
-          barberId: serviceStillValid ? current.barberId : "any",
+          serviceId: "",
+          barberId: "",
           slot: ""
         };
       });
@@ -275,16 +311,21 @@ export function BookingExperience({ isEnglish }: { isEnglish: boolean }) {
       const barberStillValid = lockedBarberId
         ? current.barberId === lockedBarberId
         : current.barberId === "any" || serviceBarbers.some((barber) => barber.id === current.barberId);
+      if (barberStillValid) return current;
       return {
         ...current,
-        barberId: barberStillValid ? current.barberId : lockedBarberId ?? "any",
+        barberId: lockedBarberId ?? (current.guestCount > 1 ? "any" : ""),
         slot: ""
       };
     });
-  }, [barbers, draft.branchId, draft.date, draft.serviceId, lockedBarberId]);
+  }, [barbers, draft.branchId, draft.serviceId, lockedBarberId]);
 
   useEffect(() => {
     if (!clientReady) return;
+    if (!draft.branchId || !draft.serviceId) {
+      setBarbers([]);
+      return;
+    }
     let active = true;
 
     bookingService.fetchBarbers(draft.branchId, draft.serviceId).then((nextBarbers) => {
@@ -298,6 +339,10 @@ export function BookingExperience({ isEnglish }: { isEnglish: boolean }) {
 
   useEffect(() => {
     if (!clientReady) return;
+    if (!draft.branchId || !draft.serviceId || !draft.barberId || !draft.date) {
+      setSlots([]);
+      return;
+    }
     let active = true;
 
     bookingService
@@ -318,6 +363,8 @@ export function BookingExperience({ isEnglish }: { isEnglish: boolean }) {
       const next = { ...current, ...value };
       if (next.guestCount > 1) {
         next.barberId = "any";
+      } else if (value.guestCount !== undefined && current.guestCount > 1 && !lockedBarberId) {
+        next.barberId = "";
       }
       if (value.guestCount !== undefined || value.branchId || value.serviceId || value.barberId || value.date) {
         next.slot = "";
@@ -381,14 +428,14 @@ export function BookingExperience({ isEnglish }: { isEnglish: boolean }) {
 
   function moveToStep(nextIndex: number) {
     const boundedIndex = Math.max(0, Math.min(bookingSteps.length - 1, nextIndex));
-    if (boundedIndex === activeStepIndex) return;
+    if (boundedIndex > furthestAccessibleStepIndex || boundedIndex === visibleStepIndex) return;
 
-    if (boundedIndex < activeStepIndex) {
-      window.history.go(boundedIndex - activeStepIndex);
+    if (boundedIndex < visibleStepIndex) {
+      window.history.go(boundedIndex - visibleStepIndex);
       return;
     }
 
-    for (let index = activeStepIndex + 1; index <= boundedIndex; index += 1) {
+    for (let index = visibleStepIndex + 1; index <= boundedIndex; index += 1) {
       window.history.pushState(
         { ...(window.history.state as BookingHistoryState | null), windreadBookingStep: bookingSteps[index].key },
         "",
@@ -402,7 +449,7 @@ export function BookingExperience({ isEnglish }: { isEnglish: boolean }) {
   }
 
   function moveToPreviousStep() {
-    if (activeStepIndex === 0) return;
+    if (visibleStepIndex === 0) return;
     window.history.back();
   }
 
@@ -440,6 +487,7 @@ export function BookingExperience({ isEnglish }: { isEnglish: boolean }) {
             type="button"
             key={step.key}
             onClick={() => moveToStep(index)}
+            disabled={index > furthestAccessibleStepIndex}
             aria-current={visibleStepIndex === index ? "step" : undefined}
           >
             <b>{index + 1}</b>
@@ -497,7 +545,7 @@ export function BookingExperience({ isEnglish }: { isEnglish: boolean }) {
               <BranchSelector
                 branches={branches}
                 selectedBranchId={draft.branchId}
-                onSelect={(branchId) => updateDraft({ branchId, serviceId: "", barberId: "any", slot: "" })}
+                onSelect={(branchId) => updateDraft({ branchId, serviceId: "", barberId: "", slot: "" })}
                 error={errors.branchId}
                 isEnglish={isEnglish}
               />
@@ -507,7 +555,7 @@ export function BookingExperience({ isEnglish }: { isEnglish: boolean }) {
               <ServiceSelector
                 services={services}
                 selectedServiceId={draft.serviceId}
-                onSelect={(serviceId) => updateDraft({ serviceId, barberId: "any", slot: "" })}
+                onSelect={(serviceId) => updateDraft({ serviceId, barberId: isGroupBooking ? "any" : "", slot: "" })}
                 error={errors.serviceId}
                 isEnglish={isEnglish}
                 guestCount={draft.guestCount}
@@ -560,7 +608,7 @@ export function BookingExperience({ isEnglish }: { isEnglish: boolean }) {
             {visibleStepIndex + 1}/{bookingSteps.length}
           </span>
           {visibleStepIndex < bookingSteps.length - 1 ? (
-            <button className="book-button" type="button" onClick={() => moveToStep(visibleStepIndex + 1)}>
+            <button className="book-button" type="button" onClick={() => moveToStep(visibleStepIndex + 1)} disabled={!isStepComplete(activeStep.key)}>
               {isEnglish ? "Next" : "Tiếp tục"}
             </button>
           ) : (

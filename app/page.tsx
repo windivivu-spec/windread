@@ -1684,7 +1684,7 @@ export function SitePage({
               {[
                 [isEnglish ? "Address 1" : "Địa chỉ 1", "35 - 37 An Thượng 29, Ngũ Hành Sơn, Đà Nẵng"],
                 [isEnglish ? "Address 2" : "Địa chỉ 2", "223 Chương Dương, Ngũ Hành Sơn, Đà Nẵng"],
-                [isEnglish ? "Opening hours" : "Giờ mở cửa", "Mon-Sun 09:00-19:00"],
+                [isEnglish ? "Booking hours" : "Giờ nhận đặt lịch", "Mon-Sun 09:00-18:00"],
                 [isEnglish ? "Phone" : "Điện thoại", "0393549656 (Zalo / WhatsApp)"]
               ].map(([title, text]) => (
                 <article className="info-card reveal" key={title}>

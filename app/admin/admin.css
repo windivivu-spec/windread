@@ -229,6 +229,27 @@
 .admin-bookings-page .admin-bookings-header { padding:0 0 1rem; background:transparent; }
 .admin-bookings-page .admin-bookings-header h1 { font-family:"Young Bold",sans-serif; }
 .admin-bookings-page .booking-admin-panel { border:1px solid var(--admin-line); border-radius:1rem .9rem .45rem .9rem; background:var(--admin-white); box-shadow:0 16px 32px rgba(75,51,38,.055); }
+.admin-walk-in-panel { display:grid; gap:1rem; padding:1.25rem; margin:0 0 1.25rem; border:1px solid var(--admin-line); background:var(--admin-white); }
+.admin-walk-in-heading { display:flex; align-items:center; justify-content:space-between; gap:1rem; }
+.admin-walk-in-panel h2 { margin:.2rem 0 .4rem; font:1.4rem/1.1 "SVN VT Redzone Classic", Impact, sans-serif; }
+.admin-walk-in-panel p { margin:.2rem 0; color:var(--admin-muted); font-size:.8rem; }
+.admin-walk-in-fields { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:.75rem; align-items:end; }
+.admin-walk-in-barbers { grid-column:1/-1; min-width:0; padding:0; border:0; }
+.admin-walk-in-barbers legend { margin-bottom:.45rem; color:var(--admin-ink); font-size:.72rem; font-weight:700; }
+.admin-walk-in-barbers > div { display:grid; grid-template-columns:repeat(auto-fit,minmax(8.5rem,1fr)); gap:.5rem; }
+.admin-walk-in-barbers button { display:grid; gap:.2rem; min-height:3.65rem; padding:.55rem .7rem; border:1px solid var(--admin-line); background:#1d1316; color:var(--admin-ink); text-align:left; cursor:pointer; }
+.admin-walk-in-barbers button:hover, .admin-walk-in-barbers button.is-selected { border-color:#d83245; background:#351017; }
+.admin-walk-in-barbers button strong { font-size:.78rem; }
+.admin-walk-in-barbers button small { color:var(--admin-muted); font-size:.65rem; }
+.admin-walk-in-fields label { display:grid; gap:.35rem; min-width:0; color:var(--admin-ink); font-size:.72rem; font-weight:700; }
+.admin-walk-in-fields label span { color:var(--admin-muted); font-weight:400; }
+.admin-walk-in-fields input, .admin-walk-in-fields select { min-width:0; width:100%; min-height:2.55rem; padding:.55rem .65rem; border:1px solid var(--admin-line); border-radius:0; background:#1d1316; color:var(--admin-ink); font:inherit; }
+.admin-walk-in-fields .admin-button { width:100%; }
+.admin-walk-in-source { color:var(--admin-ink) !important; }
+.admin-walk-in-source button { margin-left:.5rem; border:0; background:none; color:#ff9ba7; cursor:pointer; }
+.admin-customer-help { color:var(--admin-muted); font-size:.82rem; margin:0 0 1rem; }
+@media (max-width:950px) { .admin-walk-in-fields { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media (max-width:600px) { .admin-walk-in-fields { grid-template-columns:1fr; } .admin-walk-in-heading { align-items:flex-start; flex-direction:column; } }
 .admin-list-invoice-link { color:var(--admin-accent-dark); font-size:.68rem; font-weight:800; text-decoration:none; }
 
 /* WINDREAD brand alignment: the admin inherits the club's dark, burgundy, street-led visual language. */
@@ -778,5 +799,3 @@
   margin-top: 0.5rem;
   font-style: italic;
 }
-
-

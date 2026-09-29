@@ -189,21 +189,10 @@ export const bookingService = {
   },
 
   async updateBookingStatus(bookingId: string, status: BookingStatus) {
-    try {
-      await fetchJson<Booking[]>(`/api/bookings/${encodeURIComponent(bookingId)}`, {
-        method: "PATCH",
-        body: JSON.stringify({ status })
-      });
-      return await this.fetchBookings();
-    } catch {
-      // Fall through to the local mock update.
-    }
-
-    const storedBookings = readStoredBookings();
-    const nextBookings = storedBookings.map((booking) =>
-      booking.id === bookingId ? { ...booking, status } : booking
-    );
-    writeStoredBookings(nextBookings);
-    return [...seedBookings, ...nextBookings];
+    await fetchJson(`/api/bookings/${encodeURIComponent(bookingId)}`, {
+      method: "PATCH",
+      body: JSON.stringify({ status })
+    });
+    return await this.fetchBookings();
   }
 };

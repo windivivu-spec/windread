@@ -87,7 +87,22 @@ export async function POST(request: NextRequest) {
     assertRole(context, ["admin", "manager", "cashier"]);
     const payload = checkoutPayload(await bodyJson(request));
     assertBranchAccess(context, payload.branchId);
+    const phoneDigits = payload.customerPhone?.replace(/\D/g, "") ?? "";
+    if (phoneDigits && (phoneDigits.length < 9 || phoneDigits.length > 15)) {
+      return NextResponse.json({ message: "Số điện thoại khách không hợp lệ." }, { status: 400 });
+    }
     const service = createServiceClient();
+    if (payload.bookingId) {
+      const { data: booking, error: bookingError } = await service.from("bookings")
+        .select("branch_id,status,start_time").eq("id", payload.bookingId).maybeSingle();
+      if (bookingError) throw bookingError;
+      if (!booking || booking.branch_id !== payload.branchId || booking.status === "cancelled") {
+        return NextResponse.json({ message: "Lịch không thuộc cơ sở này hoặc đã bị hủy." }, { status: 409 });
+      }
+      if (Date.now() < new Date(booking.start_time).getTime()) {
+        return NextResponse.json({ message: "Chưa thể chốt hóa đơn trước giờ phục vụ." }, { status: 400 });
+      }
+    }
     const { data: invoiceId, error } = await service.rpc("complete_windread_invoice", {
       p_branch_id: payload.branchId,
       p_customer_phone: payload.customerPhone,

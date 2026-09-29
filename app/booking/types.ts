@@ -60,6 +60,8 @@ export type Booking = {
   startTime: string;
   endTime: string;
   status: BookingStatus;
+  bookingOrigin?: "online" | "walk_in";
+  sourceBookingId?: string;
   guestCount: number;
   groupId?: string;
   createdAt: string;

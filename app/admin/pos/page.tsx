@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { adminFetch, formatVnd } from "../admin-ui";
 import { AdminFrame, useAdminSession } from "../components/AdminFrame";
@@ -13,7 +13,7 @@ type CartLine = { key: string; kind: "service" | "product" | "package" | "other"
 type Booking = { id: string; customerName: string; customerPhone: string; customerEmail?: string; note?: string; serviceId: string; barberId: string; branchId: string };
 
 function Pos() {
-  const { branchId } = useAdminSession();
+  const { branchId, setBranchId } = useAdminSession();
   const params = useSearchParams();
   const [catalog, setCatalog] = useState<Catalog>({ products: [], services: [], packages: [] });
   const [serviceCategory, setServiceCategory] = useState<ServiceCategory>("barber");
@@ -28,8 +28,17 @@ function Pos() {
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
   const [bookingId, setBookingId] = useState<string | null>(params.get("booking"));
+  const branchFromLinkApplied = useRef(false);
 
   useEffect(() => {
+    if (branchFromLinkApplied.current) return;
+    branchFromLinkApplied.current = true;
+    const requestedBranch = params.get("branch");
+    if (requestedBranch && requestedBranch !== branchId) setBranchId(requestedBranch);
+  }, [branchId, params, setBranchId]);
+
+  useEffect(() => {
+    if (!branchId || branchId === "all") return;
     setCart([]); setMessage("");
     Promise.all([
       adminFetch<Catalog>(`/api/admin/catalog?branchId=${encodeURIComponent(branchId)}`),
@@ -42,9 +51,9 @@ function Pos() {
     if (!nextBooking || !catalog.services.length) return;
     adminFetch<Booking>(`/api/bookings/${encodeURIComponent(nextBooking)}`).then((booking) => {
       if (booking.branchId !== branchId) return;
+      setCustomerName(booking.customerName); setCustomerPhone(booking.customerPhone); setCustomerEmail(booking.customerEmail ?? ""); setNote(booking.note ?? ""); setBookingId(booking.id);
       const service = catalog.services.find((item) => item.id === booking.serviceId);
       if (!service) return;
-      setCustomerName(booking.customerName); setCustomerPhone(booking.customerPhone); setCustomerEmail(booking.customerEmail ?? ""); setNote(booking.note ?? ""); setBookingId(booking.id);
       setCart((current) => current.length ? current : [{ key: crypto.randomUUID(), kind: "service", catalogId: service.id, description: service.name, unitPrice: service.price, quantity: 1, discountAmount: 0, barberId: booking.barberId }]);
     }).catch(() => setMessage("Không thể đọc booking để tạo hóa đơn."));
   }, [branchId, catalog.services, params]);

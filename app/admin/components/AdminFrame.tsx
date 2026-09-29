@@ -15,11 +15,12 @@ const AdminSessionContext = createContext<AdminSessionValue | null>(null);
 
 const navigation: Array<{ href: string; icon: string; label: string; roles: Role[] }> = [
   { href: "/admin/bookings", icon: "◷", label: "Lịch hẹn", roles: ["admin", "manager", "cashier", "employee"] },
+  { href: "/admin/customers", icon: "♙", label: "Khách hàng", roles: ["admin"] },
   { href: "/admin/news", icon: "✍", label: "Bài viết", roles: ["admin", "manager"] },
   { href: "/admin/settings", icon: "◌", label: "Cài đặt", roles: ["admin"] }
 ];
 
-const hiddenAdminPaths = ["/admin", "/admin/pos", "/admin/invoices", "/admin/customers", "/admin/catalog", "/admin/finance", "/admin/payroll", "/admin/reports"];
+const hiddenAdminPaths = ["/admin", "/admin/pos", "/admin/invoices", "/admin/catalog", "/admin/finance", "/admin/payroll", "/admin/reports"];
 
 export function useAdminSession() {
   const value = useContext(AdminSessionContext);

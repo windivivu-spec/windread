@@ -3848,7 +3848,7 @@ textarea:focus-visible {
   transition: border-color 180ms ease, background 180ms ease, color 180ms ease, transform 180ms ease;
 }
 
-.booking-stepper button:hover,
+.booking-stepper button:hover:not(:disabled),
 .booking-stepper button.is-active {
   border-color: rgba(216, 50, 69, 0.62);
   color: #fff8ef;
@@ -3859,6 +3859,17 @@ textarea:focus-visible {
 .booking-stepper button.is-complete {
   border-color: rgba(244, 238, 232, 0.22);
   color: rgba(244, 238, 232, 0.92);
+}
+
+.booking-stepper button:disabled {
+  cursor: not-allowed;
+  color: rgba(244, 238, 232, 0.34);
+  background: rgba(255, 255, 255, 0.015);
+}
+
+.booking-stepper button:disabled b {
+  background: rgba(244, 238, 232, 0.13);
+  color: rgba(244, 238, 232, 0.45);
 }
 
 .booking-stepper b {

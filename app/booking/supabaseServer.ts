@@ -43,7 +43,7 @@ type SupabaseBarberServiceRow = {
 type SupabaseBookingRow = {
   id: string;
   branch_id: string;
-  service_id: string;
+  service_id: string | null;
   barber_id: string;
   customer_name: string;
   customer_phone: string;
@@ -52,6 +52,8 @@ type SupabaseBookingRow = {
   start_time: string;
   end_time: string;
   status: BookingStatus;
+  booking_origin?: "online" | "walk_in";
+  source_booking_id?: string | null;
   guest_count?: number;
   group_id?: string | null;
   created_at: string;
@@ -175,7 +177,7 @@ function mapBooking(row: SupabaseBookingRow): Booking {
   return {
     id: row.id,
     branchId: row.branch_id,
-    serviceId: row.service_id,
+    serviceId: row.service_id ?? "",
     barberId: row.barber_id,
     customerName: row.customer_name,
     customerPhone: row.customer_phone,
@@ -184,6 +186,8 @@ function mapBooking(row: SupabaseBookingRow): Booking {
     startTime: row.start_time,
     endTime: row.end_time,
     status: row.status,
+    bookingOrigin: row.booking_origin ?? "online",
+    sourceBookingId: row.source_booking_id ?? undefined,
     guestCount: row.guest_count ?? 1,
     groupId: row.group_id ?? undefined,
     createdAt: row.created_at

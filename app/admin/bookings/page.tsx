@@ -1,11 +1,15 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
 import { bookingService } from "../../booking/bookingService";
+import { isOnlineBookableBarber } from "../../booking/onlineBooking";
 import { formatBookingTime, toDateInputValue } from "../../booking/availabilityUtils";
 import type { Barber, Booking, BookingStatus, Branch, Service } from "../../booking/types";
+import { adminFetch } from "../admin-ui";
 import { AdminFrame, useAdminSession } from "../components/AdminFrame";
+
+type AdminBarber = Pick<Barber, "id" | "branchId" | "name">;
+type WalkInDraft = { barberId: string; durationMinutes: number; customerName: string; customerPhone: string; sourceBookingId: string };
 
 const statuses: BookingStatus[] = ["pending", "confirmed", "cancelled", "completed"];
 const statusLabels: Record<BookingStatus, string> = {
@@ -72,7 +76,7 @@ function sortBookings(a: Booking, b: Booking) {
 }
 
 function BookingCalendar() {
-  const { branchId: adminBranchId, setBranchId: setAdminBranchId } = useAdminSession();
+  const { branchId: adminBranchId, setBranchId: setAdminBranchId, user } = useAdminSession();
   const [selectedDate, setSelectedDate] = useState(() => getInitialParam("date", toDateInputValue(new Date())));
   const [view, setView] = useState<CalendarView>(() => {
     const value = getInitialParam("view", "week");
@@ -87,10 +91,18 @@ function BookingCalendar() {
   const [hidePastBookings, setHidePastBookings] = useState(() => getInitialParam("past", "hide") !== "show");
   const [bookings, setBookings] = useState<Booking[]>(() => bookingService.getBookings(false));
   const [branches, setBranches] = useState<Branch[]>(() => bookingService.getBranches());
-  const [barbers, setBarbers] = useState<Barber[]>(() => bookingService.getBarbers());
+  const [barbers, setBarbers] = useState<AdminBarber[]>([]);
   const [services, setServices] = useState<Service[]>(() => bookingService.getServices());
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
+  const [actionMessage, setActionMessage] = useState("");
+  const [savingWalkIn, setSavingWalkIn] = useState(false);
+  const [walkInOpen, setWalkInOpen] = useState(false);
+  const [walkIn, setWalkIn] = useState<WalkInDraft>({ barberId: user.barberId ?? "", durationMinutes: 180, customerName: "", customerPhone: "", sourceBookingId: "" });
+
+  async function refreshBookings() {
+    setBookings(await adminFetch<Booking[]>("/api/bookings"));
+  }
 
   useEffect(() => {
     let isMounted = true;
@@ -98,14 +110,14 @@ function BookingCalendar() {
     Promise.all([
       bookingService.fetchBranches(),
       bookingService.fetchServices(),
-      bookingService.fetchBarbers(),
-      bookingService.fetchBookings()
+      adminFetch<Array<{ id: string; branch_id: string; name: string }>>("/api/admin/barbers"),
+      adminFetch<Booking[]>("/api/bookings")
     ])
       .then(([nextBranches, nextServices, nextBarbers, nextBookings]) => {
         if (!isMounted) return;
         setBranches(nextBranches);
         setServices(nextServices);
-        setBarbers(nextBarbers);
+        setBarbers(nextBarbers.map((barber) => ({ id: barber.id, branchId: barber.branch_id, name: barber.name })));
         setBookings(nextBookings);
         setLoadError("");
       })
@@ -198,12 +210,51 @@ function BookingCalendar() {
 
   const selectedBarber = barbers.find((barber) => barber.id === barberId);
   const selectedBranch = branches.find((branch) => branch.id === branchId);
+  const walkInBarbers = barbers.filter((barber) => isOnlineBookableBarber(barber.id) || (user.role === "employee" && barber.id === user.barberId));
+  const selectedWalkInBarber = walkInBarbers.find((barber) => barber.id === walkIn.barberId);
+  const walkInHours = Math.floor(walkIn.durationMinutes / 60);
+  const walkInMinutes = walkIn.durationMinutes % 60;
+  const walkInMinuteOptions = [0, 15, 30, 45].filter((minutes) => walkInHours * 60 + minutes <= 360);
 
-  async function updateStatus(bookingId: string, nextStatus: BookingStatus) {
-    setBookings((current) =>
-      current.map((booking) => (booking.id === bookingId ? { ...booking, status: nextStatus } : booking))
-    );
-    setBookings(await bookingService.updateBookingStatus(bookingId, nextStatus));
+  async function updateStatus(bookingId: string, nextStatus: BookingStatus, reason?: "late") {
+    setActionMessage("");
+    try {
+      await adminFetch(`/api/bookings/${encodeURIComponent(bookingId)}`, { method: "PATCH", body: JSON.stringify({ status: nextStatus, reason }) });
+      await refreshBookings();
+      setActionMessage(reason === "late" ? "Đã hủy lịch đến trễ. Có thể tạo lượt vãng lai từ lịch này." : "Đã cập nhật trạng thái lịch.");
+    } catch (error) {
+      setActionMessage(error instanceof Error ? error.message : "Không cập nhật được lịch.");
+      await refreshBookings().catch(() => undefined);
+    }
+  }
+
+  function reuseCancelledBooking(booking: Booking) {
+    setWalkIn({ barberId: booking.barberId, durationMinutes: 180, customerName: booking.customerName, customerPhone: booking.customerPhone, sourceBookingId: booking.id });
+    setWalkInOpen(true);
+    setActionMessage("Đã điền thông tin từ lịch bị hủy. Xác nhận thời lượng rồi khóa giờ từ lúc này.");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  async function createWalkIn() {
+    if (!selectedWalkInBarber) return;
+    setSavingWalkIn(true);
+    setActionMessage("");
+    try {
+      await adminFetch("/api/admin/walk-ins", { method: "POST", body: JSON.stringify(walkIn) });
+      await refreshBookings();
+      setAdminBranchId(selectedWalkInBarber.branchId);
+      setBranchId(selectedWalkInBarber.branchId);
+      setBarberId(walkIn.barberId);
+      setSelectedDate(toDateInputValue(new Date()));
+      setHidePastBookings(false);
+      setWalkIn((current) => ({ ...current, customerName: "", customerPhone: "", sourceBookingId: "" }));
+      setWalkInOpen(false);
+      setActionMessage("Đã khóa giờ vãng lai trên lịch của thợ.");
+    } catch (error) {
+      setActionMessage(error instanceof Error ? error.message : "Không khóa được giờ.");
+    } finally {
+      setSavingWalkIn(false);
+    }
   }
 
   function moveDate(direction: -1 | 1) {
@@ -222,6 +273,7 @@ function BookingCalendar() {
           <select
             aria-label={`Trạng thái ${booking.id}`}
             value={booking.status}
+            disabled={user.role === "employee" || booking.status === "completed" || booking.status === "cancelled"}
             onChange={(event) => updateStatus(booking.id, event.target.value as BookingStatus)}
           >
             {statuses.map((item) => (
@@ -232,7 +284,7 @@ function BookingCalendar() {
           </select>
         </div>
         <h3>{booking.customerName}</h3>
-        <p>{service?.name || booking.serviceId}</p>
+        <p>{booking.bookingOrigin === "walk_in" ? "Khóa giờ vãng lai" : service?.name || booking.serviceId}</p>
         <dl>
           <div>
             <dt>Thợ</dt>
@@ -246,13 +298,15 @@ function BookingCalendar() {
             <div>
               <dt>SĐT</dt>
               <dd>
-                <a href={`tel:${booking.customerPhone}`}>{booking.customerPhone}</a>
+                {booking.customerPhone ? <a href={`tel:${booking.customerPhone}`}>{booking.customerPhone}</a> : "Chưa có"}
               </dd>
             </div>
           )}
         </dl>
         {!compact && booking.note && <p className="admin-card-note">{booking.note}</p>}
-        {!compact && booking.status !== "cancelled" && <Link className="admin-text-button" href={`/admin/pos?booking=${encodeURIComponent(booking.id)}`}>Tạo hóa đơn</Link>}
+        {!compact && booking.status === "cancelled" && <button type="button" className="admin-text-button" onClick={() => reuseCancelledBooking(booking)}>Tạo lượt vãng lai</button>}
+        {!compact && (booking.status === "pending" || booking.status === "confirmed") && Date.now() >= new Date(booking.startTime).getTime() && <button type="button" className="admin-text-button" onClick={() => updateStatus(booking.id, "completed")}>Hoàn tất phục vụ</button>}
+        {!compact && (booking.status === "pending" || booking.status === "confirmed") && Date.now() >= new Date(booking.startTime).getTime() + 15 * 60_000 && <button type="button" className="admin-text-button" onClick={() => updateStatus(booking.id, "cancelled", "late")}>Hủy do đến trễ</button>}
       </article>
     );
   }
@@ -270,11 +324,11 @@ function BookingCalendar() {
         </div>
         <div className="admin-list-customer">
           <h3>{booking.customerName}</h3>
-          <a href={`tel:${booking.customerPhone}`}>{booking.customerPhone}</a>
+          {booking.customerPhone ? <a href={`tel:${booking.customerPhone}`}>{booking.customerPhone}</a> : <small>Chưa có SĐT</small>}
         </div>
         <div className="admin-list-detail">
           <span>Dịch vụ</span>
-          <strong>{service?.name || booking.serviceId}</strong>
+          <strong>{booking.bookingOrigin === "walk_in" ? "Khóa giờ vãng lai" : service?.name || booking.serviceId}</strong>
         </div>
         <div className="admin-list-detail">
           <span>Thợ / Cơ sở</span>
@@ -286,6 +340,7 @@ function BookingCalendar() {
           <select
             aria-label={`Trạng thái ${booking.id}`}
             value={booking.status}
+            disabled={user.role === "employee" || booking.status === "completed" || booking.status === "cancelled"}
             onChange={(event) => updateStatus(booking.id, event.target.value as BookingStatus)}
           >
             {statuses.map((item) => (
@@ -295,7 +350,9 @@ function BookingCalendar() {
             ))}
           </select>
         </label>
-        {booking.status !== "cancelled" && <Link className="admin-list-invoice-link" href={`/admin/pos?booking=${encodeURIComponent(booking.id)}`}>Thu tiền</Link>}
+        {booking.status === "cancelled" && <button type="button" className="admin-text-button" onClick={() => reuseCancelledBooking(booking)}>Tạo lượt vãng lai</button>}
+        {(booking.status === "pending" || booking.status === "confirmed") && Date.now() >= new Date(booking.startTime).getTime() && <button type="button" className="admin-text-button" onClick={() => updateStatus(booking.id, "completed")}>Hoàn tất phục vụ</button>}
+        {(booking.status === "pending" || booking.status === "confirmed") && Date.now() >= new Date(booking.startTime).getTime() + 15 * 60_000 && <button type="button" className="admin-text-button" onClick={() => updateStatus(booking.id, "cancelled", "late")}>Hủy do đến trễ</button>}
         {booking.note && <p className="admin-list-note">{booking.note}</p>}
       </article>
     );
@@ -329,6 +386,42 @@ function BookingCalendar() {
           </p>
         </div>
       </header>
+
+      <section className="admin-walk-in-panel" aria-label="Khóa giờ khách vãng lai">
+        <div className="admin-walk-in-heading"><div><p className="admin-kicker">Tại quầy · bắt đầu ngay</p><h2>Khóa giờ khách vãng lai</h2>{walkInOpen && <p>Chọn thợ và thời lượng, lịch online sẽ tự ẩn các giờ trùng. Không cần chọn dịch vụ.</p>}</div><button type="button" className="admin-button" onClick={() => setWalkInOpen((value) => !value)}>{walkInOpen ? "Đóng" : "Khóa giờ nhanh"}</button></div>
+        {walkInOpen && <div className="admin-walk-in-fields">
+          <fieldset className="admin-walk-in-barbers">
+            <legend>Chọn thợ</legend>
+            {walkInBarbers.length ? <div>
+              {walkInBarbers.map((barber) => (
+                <button
+                  type="button"
+                  className={walkIn.barberId === barber.id ? "is-selected" : ""}
+                  aria-pressed={walkIn.barberId === barber.id}
+                  key={barber.id}
+                  onClick={() => setWalkIn((current) => ({ ...current, barberId: barber.id, sourceBookingId: "" }))}
+                >
+                  <strong>{barber.name}</strong>
+                  <small>{branches.find((branch) => branch.id === barber.branchId)?.name || barber.branchId}</small>
+                </button>
+              ))}
+            </div> : <p>{isLoading ? "Đang tải danh sách thợ…" : "Chưa tải được danh sách thợ."}</p>}
+          </fieldset>
+          <label>Giờ<input aria-label="Thời lượng giờ" type="number" min={0} max={6} step={1} value={walkInHours} onChange={(event) => {
+            const hours = Math.min(6, Math.max(0, Math.floor(Number(event.target.value) || 0)));
+            setWalkIn((current) => ({ ...current, durationMinutes: Math.min(360, hours * 60 + current.durationMinutes % 60) }));
+          }} /></label>
+          <label>Phút<select aria-label="Thời lượng phút" value={walkInMinutes} onChange={(event) => {
+            const minutes = Number(event.target.value);
+            setWalkIn((current) => ({ ...current, durationMinutes: Math.min(360, Math.floor(current.durationMinutes / 60) * 60 + minutes) }));
+          }}>{walkInMinuteOptions.map((minutes) => <option key={minutes} value={minutes}>{String(minutes).padStart(2, "0")}</option>)}</select></label>
+          <label>Tên khách <span>(nếu có)</span><input value={walkIn.customerName} onChange={(event) => setWalkIn({ ...walkIn, customerName: event.target.value })} placeholder="Khách vãng lai" /></label>
+          <label>Số điện thoại <span>(nếu có)</span><input inputMode="tel" value={walkIn.customerPhone} onChange={(event) => setWalkIn({ ...walkIn, customerPhone: event.target.value })} placeholder="Lưu hồ sơ sau khi hoàn tất" /></label>
+          <button type="button" className="admin-button" disabled={!selectedWalkInBarber || walkIn.durationMinutes < 15 || savingWalkIn} onClick={createWalkIn}>{savingWalkIn ? "Đang khóa giờ…" : "Khóa giờ từ bây giờ"}</button>
+        </div>}
+        {walkInOpen && walkIn.sourceBookingId && <p className="admin-walk-in-source">Từ lịch đã hủy: {walkIn.sourceBookingId} <button type="button" onClick={() => setWalkIn({ ...walkIn, sourceBookingId: "" })}>Bỏ liên kết</button></p>}
+        {actionMessage && <p className="admin-inline-alert" role="status">{actionMessage}</p>}
+      </section>
 
       <section className="booking-admin-panel">
         <div className="admin-calendar-toolbar">
@@ -386,7 +479,7 @@ function BookingCalendar() {
           </label>
           <label>
             <span>Trạng thái</span>
-            <select value={status} onChange={(event) => setStatus(event.target.value as BookingStatus | "all")}>
+            <select value={status} onChange={(event) => { const next = event.target.value as BookingStatus | "all"; setStatus(next); if (next === "cancelled") setHidePastBookings(false); }}>
               <option value="all">Tất cả</option>
               {statuses.map((item) => (
                 <option value={item} key={item}>
