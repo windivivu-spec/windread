@@ -31,6 +31,7 @@ export type Service = {
   priceLabel?: string;
   category?: ServiceCategory;
   durationMinutes: number;
+  menuOrder?: number;
 };
 
 export type ServiceCategory = "barber" | "dreadlocks" | "braids" | "afro";

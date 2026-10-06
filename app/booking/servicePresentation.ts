@@ -98,7 +98,7 @@ export function groupServicesForDisplay(services: Service[], isEnglish: boolean)
     const placement = service.branchId === "chuong-duong" ? chuongDuongPlacement.get(service.id) : undefined;
     const sectionId = placement?.sectionId ?? fallbackSection(service);
     const bucket = buckets.get(sectionId) ?? [];
-    bucket.push({ service, itemOrder: placement?.itemOrder ?? Number.MAX_SAFE_INTEGER });
+    bucket.push({ service, itemOrder: service.menuOrder ?? placement?.itemOrder ?? Number.MAX_SAFE_INTEGER });
     buckets.set(sectionId, bucket);
   }
 

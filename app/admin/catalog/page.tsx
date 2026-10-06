@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
+import Link from "next/link";
 import { adminFetch, formatVnd } from "../admin-ui";
 import { AdminFrame, useAdminSession } from "../components/AdminFrame";
 
@@ -12,7 +13,7 @@ type Catalog = { products: Product[]; services: Service[]; packages: Package[]; 
 type Tab = "products" | "services" | "packages" | "suppliers";
 
 function CatalogContent() {
-  const { branchId } = useAdminSession();
+  const { branchId, user } = useAdminSession();
   const [catalog, setCatalog] = useState<Catalog>({ products: [], services: [], packages: [], suppliers: [] });
   const [tab, setTab] = useState<Tab>("products");
   const [message, setMessage] = useState("");
@@ -84,7 +85,7 @@ function CatalogContent() {
       {tab === "products" && <><p className="admin-kicker">Kho hàng</p><h2>Thêm sản phẩm</h2><form className="admin-form-stack" onSubmit={saveProduct}><label>Mã sản phẩm<input required value={productForm.sku} onChange={(event) => setProductForm({ ...productForm, sku: event.target.value })} placeholder="VD: WD-POM-01" /></label><label>Tên sản phẩm<input required value={productForm.name} onChange={(event) => setProductForm({ ...productForm, name: event.target.value })} /></label><div className="admin-form-pair"><label>Giá bán<input required type="number" min="0" value={productForm.salePrice} onChange={(event) => setProductForm({ ...productForm, salePrice: event.target.value })} /></label><label>Giá vốn<input type="number" min="0" value={productForm.costPrice} onChange={(event) => setProductForm({ ...productForm, costPrice: event.target.value })} /></label></div><div className="admin-form-pair"><label>Tồn đầu<input type="number" min="0" value={productForm.openingStock} onChange={(event) => setProductForm({ ...productForm, openingStock: event.target.value })} /></label><label>Mức nhắc<input type="number" min="0" value={productForm.reorderLevel} onChange={(event) => setProductForm({ ...productForm, reorderLevel: event.target.value })} /></label></div><label>Đơn vị<input value={productForm.unit} onChange={(event) => setProductForm({ ...productForm, unit: event.target.value })} /></label><button className="admin-button">Lưu sản phẩm</button></form></>}
       {tab === "packages" && <><p className="admin-kicker">Gói bán hàng</p><h2>Thêm gói</h2><form className="admin-form-stack" onSubmit={savePackage}><label>Tên gói<input required value={packageForm.name} onChange={(event) => setPackageForm({ ...packageForm, name: event.target.value })} placeholder="VD: Gói chăm sóc tháng" /></label><label>Giá gói<input required type="number" min="0" value={packageForm.salePrice} onChange={(event) => setPackageForm({ ...packageForm, salePrice: event.target.value })} /></label><label>Mô tả<textarea rows={4} value={packageForm.description} onChange={(event) => setPackageForm({ ...packageForm, description: event.target.value })} /></label><button className="admin-button">Lưu gói</button></form></>}
       {tab === "suppliers" && <><p className="admin-kicker">Nguồn hàng</p><h2>Thêm nhà cung cấp</h2><form className="admin-form-stack" onSubmit={saveSupplier}><label>Tên nhà cung cấp<input required value={supplierForm.name} onChange={(event) => setSupplierForm({ ...supplierForm, name: event.target.value })} /></label><label>Điện thoại<input value={supplierForm.phone} onChange={(event) => setSupplierForm({ ...supplierForm, phone: event.target.value })} /></label><label>Email<input type="email" value={supplierForm.email} onChange={(event) => setSupplierForm({ ...supplierForm, email: event.target.value })} /></label><label>Địa chỉ<input value={supplierForm.address} onChange={(event) => setSupplierForm({ ...supplierForm, address: event.target.value })} /></label><label>Ghi chú<textarea rows={2} value={supplierForm.note} onChange={(event) => setSupplierForm({ ...supplierForm, note: event.target.value })} /></label><button className="admin-button">Lưu nhà cung cấp</button></form></>}
-      {tab === "services" && <><p className="admin-kicker">Dịch vụ gốc</p><h2>Quản lý dịch vụ</h2><p className="admin-muted">Dịch vụ đang dùng chung với trang đặt lịch WINDREAD. Chỉnh giá và thời lượng trong cấu hình dịch vụ hiện có để lịch hẹn và POS luôn khớp nhau.</p></>}
+      {tab === "services" && <><p className="admin-kicker">Dịch vụ gốc</p><h2>Menu & giá</h2><p className="admin-muted">Menu công khai được quản lý tập trung để bảng giá, đặt lịch và POS luôn dùng cùng thông tin.</p>{user.role === "admin" && <Link className="admin-button" href="/admin/menu">Mở trang quản lý menu</Link>}</>}
     </aside>
   </div>;
 }

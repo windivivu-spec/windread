@@ -21,6 +21,7 @@ type SupabaseServiceRow = {
   price_label?: string | null;
   service_category?: ServiceCategory | null;
   duration_minutes: number;
+  menu_order?: number | null;
 };
 
 type SupabaseBarberRow = {
@@ -154,7 +155,8 @@ function mapService(row: SupabaseServiceRow): Service {
     price: row.price,
     priceLabel: row.price_label ?? undefined,
     category: row.service_category ?? undefined,
-    durationMinutes: row.duration_minutes
+    durationMinutes: row.duration_minutes,
+    menuOrder: row.menu_order ?? undefined
   };
 }
 
@@ -253,18 +255,8 @@ export async function getServices(branchId?: string): Promise<Service[]> {
 
   const branchFilter = branchId ? `&branch_id=eq.${encodeURIComponent(branchId)}` : "";
   return restFetch<SupabaseServiceRow[]>(
-    `services?select=*&is_bookable=eq.true${branchFilter}&order=price.asc`
-  ).then((rows) => {
-    const mapped = rows.map(mapService);
-    if (branchId === "chuong-duong") {
-      return mapped.sort((a, b) => {
-        if (a.id === "cd-haircut-expert") return -1;
-        if (b.id === "cd-haircut-expert") return 1;
-        return a.price - b.price;
-      });
-    }
-    return mapped;
-  });
+    `services?select=*&is_bookable=eq.true${branchFilter}&order=service_category.asc,menu_order.asc,price.asc`
+  ).then((rows) => rows.map(mapService));
 }
 
 export async function getBarbers(branchId?: string, serviceId?: string): Promise<Barber[]> {
