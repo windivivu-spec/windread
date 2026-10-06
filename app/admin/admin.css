@@ -247,9 +247,32 @@
 .admin-walk-in-fields .admin-button { width:100%; }
 .admin-walk-in-source { color:var(--admin-ink) !important; }
 .admin-walk-in-source button { margin-left:.5rem; border:0; background:none; color:#ff9ba7; cursor:pointer; }
+.admin-time-off-panel { display:grid; gap:1rem; padding:1.25rem; margin:0 0 1.25rem; border:1px solid var(--admin-line); background:var(--admin-white); }
+.admin-time-off-panel h2 { margin:.2rem 0 .4rem; font:1.4rem/1.1 "SVN VT Redzone Classic", Impact, sans-serif; }
+.admin-time-off-panel p { margin:.2rem 0; color:var(--admin-muted); font-size:.8rem; }
+.admin-time-off-form { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); align-items:end; gap:.75rem; padding:1rem; border:1px solid var(--admin-line); background:#1a1114; }
+.admin-time-off-form label { display:grid; gap:.35rem; min-width:0; color:var(--admin-ink); font-size:.72rem; font-weight:700; }
+.admin-time-off-form label span { color:var(--admin-muted); font-weight:400; }
+.admin-time-off-form input:not([type=checkbox]), .admin-time-off-form select { width:100%; min-width:0; min-height:2.55rem; padding:.55rem .65rem; border:1px solid var(--admin-line); border-radius:0; background:#1d1316; color:var(--admin-ink); font:inherit; }
+.admin-time-off-form .admin-time-off-all-day { display:flex; align-items:center; min-height:2.55rem; gap:.5rem; }
+.admin-time-off-all-day input { width:1.1rem; height:1.1rem; accent-color:var(--admin-accent-dark); }
+.admin-time-off-note { grid-column:span 2; }
+.admin-time-off-conflicts { grid-column:1/-1; padding:.7rem; border:1px solid var(--admin-danger); color:var(--admin-danger); font-size:.75rem; }
+.admin-time-off-conflicts ul { margin:.4rem 0 0; padding-left:1.2rem; }
+.admin-time-off-list { display:grid; gap:.45rem; }
+.admin-time-off-list article { display:flex; align-items:center; justify-content:space-between; gap:.8rem; padding:.65rem .8rem; border:1px solid var(--admin-line); background:#1d1316; }
+.admin-time-off-list article > div:first-child { display:grid; gap:.15rem; }
+.admin-time-off-list strong { color:var(--admin-ink); font-size:.8rem; }
+.admin-time-off-list span, .admin-time-off-list small { color:var(--admin-muted); font-size:.72rem; }
+.admin-time-off-actions { display:flex; gap:.45rem; }
+.admin-time-off-actions button { min-height:2.25rem; padding:.35rem .6rem; border:1px solid var(--admin-line); background:transparent; color:var(--admin-ink); cursor:pointer; }
+.admin-time-off-actions button:hover { border-color:var(--admin-accent-dark); }
+.admin-time-off-day-count { display:block; color:var(--admin-danger); font-size:.63rem; font-weight:600; }
+.admin-time-off-calendar-note { padding:.7rem 1rem; border-bottom:1px solid var(--admin-line); background:#351017; color:var(--admin-ink); font-size:.8rem; }
 .admin-customer-help { color:var(--admin-muted); font-size:.82rem; margin:0 0 1rem; }
 @media (max-width:950px) { .admin-walk-in-fields { grid-template-columns:repeat(2,minmax(0,1fr)); } }
-@media (max-width:600px) { .admin-walk-in-fields { grid-template-columns:1fr; } .admin-walk-in-heading { align-items:flex-start; flex-direction:column; } }
+@media (max-width:950px) { .admin-time-off-form { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media (max-width:600px) { .admin-walk-in-fields, .admin-time-off-form { grid-template-columns:1fr; } .admin-walk-in-heading { align-items:flex-start; flex-direction:column; } .admin-time-off-note { grid-column:auto; } .admin-time-off-list article { align-items:flex-start; flex-direction:column; } }
 .admin-list-invoice-link { color:var(--admin-accent-dark); font-size:.68rem; font-weight:800; text-decoration:none; }
 
 /* WINDREAD brand alignment: the admin inherits the club's dark, burgundy, street-led visual language. */

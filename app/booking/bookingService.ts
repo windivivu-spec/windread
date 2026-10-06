@@ -122,8 +122,11 @@ export const bookingService = {
     const params = new URLSearchParams({ branchId, serviceId, barberId, date });
     try {
       return await fetchJson(`/api/available-slots?${params.toString()}`) as ReturnType<typeof getAvailableSlots>;
-    } catch {
-      return this.getAvailableSlots(branchId, serviceId, barberId, date);
+    } catch (error) {
+      if (process.env.NODE_ENV === "development" && !process.env.NEXT_PUBLIC_SUPABASE_URL) {
+        return this.getAvailableSlots(branchId, serviceId, barberId, date);
+      }
+      throw error;
     }
   },
 

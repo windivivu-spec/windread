@@ -3,7 +3,7 @@ import { syncBookingToCalendar } from "./calendar";
 import { sendBarberBookingEmail } from "./email";
 import { barbers as mockBarbers, branches as mockBranches, seedBookings, services as mockServices } from "./mockBookingData";
 import { isOnlineBookableBarber } from "./onlineBooking";
-import type { Barber, Booking, BookingDraft, BookingStatus, Branch, Service, ServiceCategory, TimeSlot, Weekday, WorkingWindow } from "./types";
+import type { Barber, BarberTimeOff, Booking, BookingDraft, BookingStatus, Branch, Service, ServiceCategory, TimeSlot, Weekday, WorkingWindow } from "./types";
 
 type SupabaseBranchRow = {
   id: string;
@@ -254,7 +254,17 @@ export async function getServices(branchId?: string): Promise<Service[]> {
   const branchFilter = branchId ? `&branch_id=eq.${encodeURIComponent(branchId)}` : "";
   return restFetch<SupabaseServiceRow[]>(
     `services?select=*&is_bookable=eq.true${branchFilter}&order=price.asc`
-  ).then((rows) => rows.map(mapService));
+  ).then((rows) => {
+    const mapped = rows.map(mapService);
+    if (branchId === "chuong-duong") {
+      return mapped.sort((a, b) => {
+        if (a.id === "cd-haircut-expert") return -1;
+        if (b.id === "cd-haircut-expert") return 1;
+        return a.price - b.price;
+      });
+    }
+    return mapped;
+  });
 }
 
 export async function getBarbers(branchId?: string, serviceId?: string): Promise<Barber[]> {
@@ -316,7 +326,15 @@ async function findMatchingBooking(draft: BookingDraft): Promise<Booking | null>
 }
 
 export async function getSlots(branchId: string, serviceId: string, barberId: string, date: string): Promise<TimeSlot[]> {
-  const [services, allBarbers, bookings] = await Promise.all([getServices(branchId), getBarbers(branchId), getBookings()]);
+  const dayStart = new Date(`${date}T00:00:00+07:00`);
+  if (!Number.isFinite(dayStart.getTime())) return [];
+  const dayEnd = new Date(dayStart.getTime() + 86_400_000);
+  const timeOffPromise = isSupabaseConfigured()
+    ? restFetch<Array<{ barber_id: string; start_time: string; end_time: string }>>(
+        `barber_time_off?select=barber_id,start_time,end_time&start_time=lt.${encodeURIComponent(dayEnd.toISOString())}&end_time=gt.${encodeURIComponent(dayStart.toISOString())}`
+      ).then((rows): BarberTimeOff[] => rows.map((row) => ({ barberId: row.barber_id, startTime: row.start_time, endTime: row.end_time })))
+    : Promise.resolve([] as BarberTimeOff[]);
+  const [services, allBarbers, bookings, timeOff] = await Promise.all([getServices(branchId), getBarbers(branchId), getBookings(), timeOffPromise]);
   const barbers = allBarbers.filter((barber) => isOnlineBookableBarber(barber.id));
   const service = services.find((item) => item.id === serviceId);
   if (!service) return [];
@@ -327,7 +345,8 @@ export async function getSlots(branchId: string, serviceId: string, barberId: st
     barberId,
     date,
     barbers,
-    bookings
+    bookings,
+    timeOff
   });
 }
 

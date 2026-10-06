@@ -170,10 +170,10 @@ const locServices = [
 
 const barberServices = [
   {
-    name: "Cắt tóc & tạo kiểu",
-    desc: "Cắt tóc và tạo kiểu với pomade.",
-    time: "45 phút",
-    price: "120,000đ"
+    name: "W Signature Haircut",
+    desc: "Cắt tóc đặt trước với tư vấn tạo kiểu.",
+    time: "60 phút",
+    price: "160,000đ"
   },
   {
     name: "Fade hai bên & gáy",
@@ -259,12 +259,11 @@ const legacyPriceBoards = [
       {
         title: "Haircut, Beard & Facial Care",
         rows: [
-          ["Cắt tóc & tạo kiểu", "Với pomade", "120.000đ"],
+          ["W Signature Haircut", "Cắt tóc đặt trước với tư vấn tạo kiểu · 60 phút", "160.000đ"],
           ["Fade hai bên & gáy", "Làm gọn side và gáy", "90.000đ"],
           ["Cắt tóc nam dài", "Chỉnh form tóc nam dài", "200.000đ"],
           ["Tattoo tóc cơ bản", "Theo thiết kế", "50.000–150.000đ"],
           ["Gội đầu thư giãn", "Hair washing", "40.000đ"],
-          ["Cắt tóc bởi chuyên gia", "Chỉ nhận lịch hẹn trước", "160.000đ"],
           ["Tỉa râu", "Tạo form râu", "80.000đ"],
           ["Tỉa râu cơ bản / cạo viền", "Làm gọn đường viền", "70.000đ"],
           ["Cạo đầu / cạo mặt", "Dịch vụ cạo cơ bản", "70.000đ"],

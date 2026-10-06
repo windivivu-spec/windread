@@ -7,6 +7,7 @@ import { formatBookingTime, toDateInputValue } from "../../booking/availabilityU
 import type { Barber, Booking, BookingStatus, Branch, Service } from "../../booking/types";
 import { adminFetch } from "../admin-ui";
 import { AdminFrame, useAdminSession } from "../components/AdminFrame";
+import { TimeOffPanel, type AdminTimeOff } from "./TimeOffPanel";
 
 type AdminBarber = Pick<Barber, "id" | "branchId" | "name">;
 type WalkInDraft = { barberId: string; durationMinutes: number; customerName: string; customerPhone: string; sourceBookingId: string };
@@ -92,6 +93,8 @@ function BookingCalendar() {
   const [bookings, setBookings] = useState<Booking[]>(() => bookingService.getBookings(false));
   const [branches, setBranches] = useState<Branch[]>(() => bookingService.getBranches());
   const [barbers, setBarbers] = useState<AdminBarber[]>([]);
+  const [timeOff, setTimeOff] = useState<AdminTimeOff[]>([]);
+  const [timeOffError, setTimeOffError] = useState("");
   const [services, setServices] = useState<Service[]>(() => bookingService.getServices());
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
@@ -102,6 +105,11 @@ function BookingCalendar() {
 
   async function refreshBookings() {
     setBookings(await adminFetch<Booking[]>("/api/bookings"));
+  }
+
+  async function refreshTimeOff() {
+    setTimeOff(await adminFetch<AdminTimeOff[]>("/api/admin/time-off"));
+    setTimeOffError("");
   }
 
   useEffect(() => {
@@ -130,6 +138,10 @@ function BookingCalendar() {
     return () => {
       isMounted = false;
     };
+  }, []);
+
+  useEffect(() => {
+    refreshTimeOff().catch(() => setTimeOffError("Không tải được ngày nghỉ của thợ."));
   }, []);
 
   useEffect(() => {
@@ -210,6 +222,15 @@ function BookingCalendar() {
 
   const selectedBarber = barbers.find((barber) => barber.id === barberId);
   const selectedBranch = branches.find((branch) => branch.id === branchId);
+  const scopedTimeOff = timeOff.filter((period) => {
+    const barber = barbers.find((item) => item.id === period.barber_id);
+    return barber && (branchId === "all" || barber.branchId === branchId) && (barberId === "all" || period.barber_id === barberId);
+  });
+  const timeOffOnDate = (date: Date) => scopedTimeOff.filter((period) => {
+    const start = new Date(`${toDateInputValue(date)}T00:00:00+07:00`);
+    const end = new Date(start.getTime() + 86_400_000);
+    return new Date(period.start_time) < end && new Date(period.end_time) > start;
+  });
   const walkInBarbers = barbers.filter((barber) => isOnlineBookableBarber(barber.id) || (user.role === "employee" && barber.id === user.barberId));
   const selectedWalkInBarber = walkInBarbers.find((barber) => barber.id === walkIn.barberId);
   const walkInHours = Math.floor(walkIn.durationMinutes / 60);
@@ -423,6 +444,18 @@ function BookingCalendar() {
         {actionMessage && <p className="admin-inline-alert" role="status">{actionMessage}</p>}
       </section>
 
+      <TimeOffPanel
+        items={timeOff}
+        barbers={barbers}
+        branches={branches}
+        selectedDate={selectedDate}
+        selectedBarberId={barberId}
+        selectedBranchId={branchId}
+        canManage={user.role === "admin" || user.role === "manager"}
+        loadError={timeOffError}
+        onRefresh={refreshTimeOff}
+      />
+
       <section className="booking-admin-panel">
         <div className="admin-calendar-toolbar">
           <div className="admin-date-nav">
@@ -536,6 +569,7 @@ function BookingCalendar() {
               {weekDays.map((day) => (
                 <strong className={sameDay(new Date().toISOString(), day) ? "is-today" : ""} key={day.toISOString()}>
                   {formatDayLabel(day)}
+                  {timeOffOnDate(day).length > 0 && <small className="admin-time-off-day-count">{timeOffOnDate(day).length} lịch nghỉ</small>}
                 </strong>
               ))}
             </div>
@@ -574,6 +608,12 @@ function BookingCalendar() {
               <p className="section-kicker">{formatDayLabel(selectedDateValue)}</p>
               <h2>{visibleBookings.length} lịch trong ngày</h2>
             </header>
+            {timeOffOnDate(selectedDateValue).length > 0 && <div className="admin-time-off-calendar-note">Nghỉ: {timeOffOnDate(selectedDateValue).map((period) => {
+              const name = barbers.find((barber) => barber.id === period.barber_id)?.name || period.barber_id;
+              if (period.all_day) return `${name} (cả ngày)`;
+              const hour = (iso: string) => new Intl.DateTimeFormat("vi-VN", { timeZone: "Asia/Ho_Chi_Minh", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(new Date(iso));
+              return `${name} (${hour(period.start_time)}–${hour(period.end_time)})`;
+            }).join(", ")}</div>}
             <div className="admin-day-lanes">
               {calendarHours.map((hour) => {
                 const hourBookings = visibleBookings.filter((booking) => new Date(booking.startTime).getHours() === hour);

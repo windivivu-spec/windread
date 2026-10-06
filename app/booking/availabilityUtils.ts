@@ -1,4 +1,4 @@
-import type { Barber, Booking, Service, TimeSlot, Weekday } from "./types";
+import type { Barber, BarberTimeOff, Booking, Service, TimeSlot, Weekday } from "./types";
 
 export const BOOKING_BUFFER_MINUTES = 10;
 export const SLOT_STEP_MINUTES = 30;
@@ -85,6 +85,7 @@ export function isBarberAvailable(
   service: Service,
   start: Date,
   bookings: Booking[],
+  timeOff: BarberTimeOff[] = [],
   now = new Date()
 ) {
   if (start.getTime() <= now.getTime()) return false;
@@ -100,6 +101,7 @@ export function isBarberAvailable(
   const end = addMinutes(start, service.durationMinutes);
 
   if (start < shiftStart || end > shiftEnd) return false;
+  if (timeOff.some((period) => period.barberId === barber.id && start < new Date(period.endTime) && end > new Date(period.startTime))) return false;
 
   return !bookings.some((booking) => {
     if (booking.barberId !== barber.id) return false;
@@ -121,6 +123,7 @@ export function getAvailableSlots({
   date,
   barbers,
   bookings,
+  timeOff = [],
   now = new Date()
 }: {
   branchId: string;
@@ -129,6 +132,7 @@ export function getAvailableSlots({
   date: string;
   barbers: Barber[];
   bookings: Booking[];
+  timeOff?: BarberTimeOff[];
   now?: Date;
 }): TimeSlot[] {
   const branchBarbers = barbers.filter(
@@ -142,7 +146,7 @@ export function getAvailableSlots({
     const start = addMinutes(dayStart, minutes);
     const end = addMinutes(start, service.durationMinutes);
     const availableBarberIds = branchBarbers
-      .filter((barber) => isBarberAvailable(barber, service, start, bookings, now))
+      .filter((barber) => isBarberAvailable(barber, service, start, bookings, timeOff, now))
       .map((barber) => barber.id);
 
     if (availableBarberIds.length === 0) continue;

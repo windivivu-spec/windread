@@ -67,6 +67,12 @@ export type Booking = {
   createdAt: string;
 };
 
+export type BarberTimeOff = {
+  barberId: string;
+  startTime: string;
+  endTime: string;
+};
+
 export type BookingDraft = {
   branchId: string;
   serviceId: string;

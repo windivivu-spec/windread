@@ -43,7 +43,7 @@ const sections: SectionDefinition[] = [
 const sectionById = new Map(sections.map((section) => [section.id, section]));
 
 const chuongDuongOrder: Array<[SectionId, string[]]> = [
-  ["barber-main", ["cd-haircut", "cd-hot-towel-shave", "cd-haircut-expert"]],
+  ["barber-main", ["cd-haircut-expert", "cd-hot-towel-shave"]],
   ["barber-combos", ["cd-fresh-cut", "cd-gentlemans-set", "cd-full-grooming", "cd-win-dread-experience"]],
   ["barber-finish", ["cd-sides-back-fade", "cd-basic-beard-trim-line-up", "cd-hair-washing", "cd-wash-blowdry", "cd-basic-hair-tattoo"]],
   ["barber-texture", ["cd-down-perm", "cd-basic-perm", "cd-curly-perm", "cd-ruffled-perm", "cd-premlock-perm", "cd-afro-perm", "cd-hair-bleaching", "cd-hair-color", "cd-hair-blackening", "cd-bleach-root-touch-up", "cd-beard-coloring"]],

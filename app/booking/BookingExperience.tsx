@@ -57,6 +57,7 @@ export function BookingExperience({ isEnglish }: { isEnglish: boolean }) {
   const [services, setServices] = useState<Service[]>([]);
   const [barbers, setBarbers] = useState<Barber[]>([]);
   const [slots, setSlots] = useState<TimeSlot[]>([]);
+  const [slotsLoadError, setSlotsLoadError] = useState(false);
   const [draft, setDraft] = useState<BookingDraft>(initialDraft);
   const [errors, setErrors] = useState<BookingErrors>({});
   const [submitError, setSubmitError] = useState("");
@@ -341,6 +342,7 @@ export function BookingExperience({ isEnglish }: { isEnglish: boolean }) {
     if (!clientReady) return;
     if (!draft.branchId || !draft.serviceId || !draft.barberId || !draft.date) {
       setSlots([]);
+      setSlotsLoadError(false);
       return;
     }
     let active = true;
@@ -349,7 +351,14 @@ export function BookingExperience({ isEnglish }: { isEnglish: boolean }) {
       .fetchAvailableSlots(draft.branchId, draft.serviceId, draft.barberId, draft.date)
       .then((nextSlots) => {
         if (active) {
+          setSlotsLoadError(false);
           setSlots(draft.guestCount > 1 ? nextSlots.filter((slot) => slot.barberIds.length >= draft.guestCount) : nextSlots);
+        }
+      })
+      .catch(() => {
+        if (active) {
+          setSlots([]);
+          setSlotsLoadError(true);
         }
       });
 
@@ -590,6 +599,7 @@ export function BookingExperience({ isEnglish }: { isEnglish: boolean }) {
                   isEnglish={isEnglish}
                   guestCount={draft.guestCount}
                 />
+                {slotsLoadError && <p role="alert">{isEnglish ? "Could not load available times. Please try again shortly." : "Không tải được giờ trống. Vui lòng thử lại sau ít phút."}</p>}
               </>
             )}
           </section>

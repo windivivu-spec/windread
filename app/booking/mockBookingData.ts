@@ -307,12 +307,12 @@ const allServices: Service[] = [
     durationMinutes: 60
   },
   {
-    id: "cd-haircut",
+    id: "cd-haircut-expert",
     branchId: "chuong-duong",
-    name: "Cắt tóc & tạo kiểu",
-    description: "Cắt tóc và tạo kiểu với pomade.",
-    price: 120000,
-    durationMinutes: 45
+    name: "W Signature Haircut",
+    description: "Cắt tóc đặt trước với tư vấn tạo kiểu.",
+    price: 160000,
+    durationMinutes: 60
   },
   {
     id: "cd-sides-back-fade",
@@ -473,14 +473,6 @@ const allServices: Service[] = [
     description: "Hair washing cơ bản.",
     price: 50000,
     durationMinutes: 20
-  },
-  {
-    id: "cd-haircut-expert",
-    branchId: "chuong-duong",
-    name: "W Signature Haircut",
-    description: "Cắt tóc đặt trước với tư vấn tạo kiểu.",
-    price: 160000,
-    durationMinutes: 60
   },
   {
     id: "cd-basic-beard-trim-line-up",
