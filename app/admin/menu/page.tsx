@@ -14,6 +14,7 @@ type MenuService = {
   price_label: string | null;
   service_category: Category;
   duration_minutes: number;
+  is_price_visible: boolean;
   is_bookable: boolean;
   menu_order: number | null;
   menu_group: string;
@@ -28,9 +29,10 @@ type ServiceDraft = {
   priceLabel: string;
   category: Category;
   durationMinutes: string;
+  isPriceVisible: boolean;
   isBookable: boolean;
 };
-type Visibility = "all" | "active" | "paused";
+type Visibility = "all" | "booking" | "walk-in" | "hidden";
 
 const categoryLabels: Record<Category, string> = {
   barber: "Barber",
@@ -41,7 +43,7 @@ const categoryLabels: Record<Category, string> = {
 const categories = Object.keys(categoryLabels) as Category[];
 
 function emptyDraft(branchId: string): ServiceDraft {
-  return { branchId: branchId === "all" ? "" : branchId, name: "", description: "", price: "", priceLabel: "", category: "barber", durationMinutes: "45", isBookable: true };
+  return { branchId: branchId === "all" ? "" : branchId, name: "", description: "", price: "", priceLabel: "", category: "barber", durationMinutes: "45", isPriceVisible: true, isBookable: true };
 }
 
 function MenuContent() {
@@ -111,15 +113,17 @@ function MenuContent() {
     const query = search.trim().toLocaleLowerCase("vi");
     return services.filter((service) => {
       if (category !== "all" && service.service_category !== category) return false;
-      if (visibility === "active" && !service.is_bookable) return false;
-      if (visibility === "paused" && service.is_bookable) return false;
+      if (visibility === "booking" && !service.is_bookable) return false;
+      if (visibility === "walk-in" && (!service.is_price_visible || service.is_bookable)) return false;
+      if (visibility === "hidden" && service.is_price_visible) return false;
       if (!query) return true;
       return `${service.name} ${service.description}`.toLocaleLowerCase("vi").includes(query);
     });
   }, [category, search, services, visibility]);
 
-  const activeCount = services.filter((service) => service.is_bookable).length;
-  const pausedCount = services.length - activeCount;
+  const bookingCount = services.filter((service) => service.is_bookable).length;
+  const walkInCount = services.filter((service) => service.is_price_visible && !service.is_bookable).length;
+  const hiddenCount = services.filter((service) => !service.is_price_visible).length;
   const usedCategoryCount = new Set(services.map((service) => service.service_category)).size;
 
   function beginEdit(service: MenuService) {
@@ -133,6 +137,7 @@ function MenuContent() {
       priceLabel: service.price_label ?? "",
       category: service.service_category,
       durationMinutes: String(service.duration_minutes),
+      isPriceVisible: service.is_price_visible,
       isBookable: service.is_bookable
     });
   }
@@ -170,7 +175,7 @@ function MenuContent() {
           action: "update", id: service.id, branchId: service.branch_id,
           name: service.name, description: service.description, price: service.price,
           priceLabel: service.price_label ?? "", category: service.service_category,
-          durationMinutes: service.duration_minutes, isBookable: nextStatus
+          durationMinutes: service.duration_minutes, isPriceVisible: service.is_price_visible, isBookable: nextStatus
         })
       });
       setMessage(nextStatus ? `Đã mở lại “${service.name}”.` : `Đã tạm ngưng “${service.name}”.`);
@@ -218,8 +223,9 @@ function MenuContent() {
     </div>
 
     <section className="admin-menu-metrics" aria-label="Tổng quan menu">
-      <article><span>Đang mở đặt lịch</span><strong>{activeCount}</strong><small>dịch vụ trên menu</small></article>
-      <article><span>Tạm ngưng</span><strong>{pausedCount}</strong><small>vẫn giữ lịch sử cũ</small></article>
+      <article><span>Đặt lịch trực tuyến</span><strong>{bookingCount}</strong><small>chọn thợ và khung giờ</small></article>
+      <article><span>Walk-in</span><strong>{walkInCount}</strong><small>hiện giá, không đặt online</small></article>
+      <article><span>Đang ẩn</span><strong>{hiddenCount}</strong><small>không hiện trên bảng giá</small></article>
       <article><span>Nhóm dịch vụ</span><strong>{usedCategoryCount}</strong><small>Barber, locs, braids, afro</small></article>
     </section>
 
@@ -235,7 +241,7 @@ function MenuContent() {
           <button className={category === "all" ? "is-active" : ""} onClick={() => setCategory("all")}>Tất cả nhóm</button>
           {categories.map((item) => <button key={item} className={category === item ? "is-active" : ""} onClick={() => setCategory(item)}>{categoryLabels[item]}</button>)}
         </div>
-        <label className="admin-menu-status-filter"><span>Trạng thái</span><select value={visibility} onChange={(event) => setVisibility(event.target.value as Visibility)}><option value="all">Tất cả</option><option value="active">Đang mở</option><option value="paused">Tạm ngưng</option></select></label>
+        <label className="admin-menu-status-filter"><span>Trạng thái</span><select value={visibility} onChange={(event) => setVisibility(event.target.value as Visibility)}><option value="all">Tất cả</option><option value="booking">Đặt lịch online</option><option value="walk-in">Walk-in</option><option value="hidden">Đang ẩn</option></select></label>
       </div>
 
       {message && <p className="admin-form-success" role="status">{message}</p>}
@@ -249,28 +255,28 @@ function MenuContent() {
             const previous = visibleServices[index - 1];
             return <div className="admin-menu-entry" key={service.id}>
               {(!previous || previous.branch_id !== service.branch_id || previous.menu_group !== service.menu_group) && <div className="admin-menu-group-heading"><strong>{service.menu_group}</strong></div>}
-              <article className={`admin-menu-row${service.is_bookable ? "" : " is-paused"}`}>
+              <article className={`admin-menu-row${service.is_price_visible ? "" : " is-paused"}`}>
               <div className="admin-menu-order" aria-label={`Vị trí ${position + 1}`}>
                 <button aria-label={`Đưa ${service.name} lên`} disabled={saving || position <= 0} onClick={() => void moveService(service, -1)}>↑</button>
                 <span>{String(position + 1).padStart(2, "0")}</span>
                 <button aria-label={`Đưa ${service.name} xuống`} disabled={saving || position >= siblings.length - 1} onClick={() => void moveService(service, 1)}>↓</button>
               </div>
               <div className="admin-menu-service-copy">
-                <div className="admin-menu-title-line"><h3>{service.name}</h3><span className={`admin-status ${service.is_bookable ? "is-open" : "is-closed"}`}>{service.is_bookable ? "Đang mở" : "Tạm ngưng"}</span></div>
+                <div className="admin-menu-title-line"><h3>{service.name}</h3><span className={`admin-status ${service.is_bookable ? "is-open" : service.is_price_visible ? "is-walk-in" : "is-closed"}`}>{service.is_bookable ? "Đặt lịch online" : service.is_price_visible ? "Walk-in" : "Đang ẩn"}</span></div>
                 <p>{service.description || "Chưa có mô tả."}</p>
                 <div className="admin-menu-meta"><span>{categoryLabels[service.service_category]}</span><span>{service.duration_minutes} phút</span></div>
               </div>
               <div className="admin-menu-price"><strong>{service.price_label || formatVnd(service.price)}</strong><small>{formatVnd(service.price)}</small></div>
               <div className="admin-menu-actions">
                 <button className="admin-text-button" disabled={saving} onClick={() => beginEdit(service)}>Chỉnh sửa</button>
-                <button className="admin-text-button" disabled={saving} onClick={() => void setBookable(service)}>{service.is_bookable ? "Tạm ngưng" : "Mở lại"}</button>
+                {service.is_price_visible && <button className="admin-text-button" disabled={saving} onClick={() => void setBookable(service)}>{service.is_bookable ? "Tắt đặt lịch" : "Mở đặt lịch"}</button>}
               </div>
               </article>
             </div>;
           })}
         </div>
       ) : <div className="admin-menu-empty"><strong>Chưa có dịch vụ phù hợp.</strong><span>Thử đổi bộ lọc hoặc thêm dịch vụ mới cho chi nhánh.</span></div>}
-      <p className="admin-menu-footnote">Tạm ngưng sẽ ẩn dịch vụ khỏi đặt lịch mới. Lịch hẹn cũ vẫn giữ nguyên để tra cứu.</p>
+      <p className="admin-menu-footnote">Walk-in hiện trong bảng giá nhưng không xuất hiện trong luồng đặt lịch. Ẩn dịch vụ sẽ giữ nguyên lịch sử cũ.</p>
     </section>
 
     {draft && <div className="admin-menu-modal-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget && !saving) setDraft(null); }}>
@@ -283,7 +289,8 @@ function MenuContent() {
           <label>Nhóm dịch vụ<select value={draft.category} onChange={(event) => setDraft({ ...draft, category: event.target.value as Category })}>{categories.map((item) => <option key={item} value={item}>{categoryLabels[item]}</option>)}</select></label>
           <div className="admin-form-pair"><label>Giá (đ)<input required type="number" min="0" step="1000" inputMode="numeric" value={draft.price} onChange={(event) => setDraft({ ...draft, price: event.target.value })} /></label><label>Thời lượng (phút)<input required type="number" min="1" step="5" inputMode="numeric" value={draft.durationMinutes} onChange={(event) => setDraft({ ...draft, durationMinutes: event.target.value })} /></label></div>
           <label>Nhãn giá hiển thị <small>Để trống nếu giá cố định.</small><input maxLength={80} value={draft.priceLabel} onChange={(event) => setDraft({ ...draft, priceLabel: event.target.value })} placeholder="VD: Từ 250.000đ" /></label>
-          <label className="admin-menu-toggle"><input type="checkbox" checked={draft.isBookable} onChange={(event) => setDraft({ ...draft, isBookable: event.target.checked })} /><span><strong>Hiển thị để khách đặt lịch</strong><small>Tắt để tạm ngưng; lịch sử hiện có vẫn được giữ.</small></span></label>
+          <label className="admin-menu-toggle"><input type="checkbox" checked={draft.isPriceVisible} onChange={(event) => setDraft({ ...draft, isPriceVisible: event.target.checked, isBookable: event.target.checked ? draft.isBookable : false })} /><span><strong>Hiển thị trên bảng giá</strong><small>Tắt để ẩn khỏi bảng giá công khai; lịch sử hiện có vẫn được giữ.</small></span></label>
+          <label className="admin-menu-toggle"><input type="checkbox" checked={draft.isBookable} disabled={!draft.isPriceVisible} onChange={(event) => setDraft({ ...draft, isBookable: event.target.checked })} /><span><strong>Cho phép khách đặt lịch trực tuyến</strong><small>{draft.isPriceVisible ? "Tắt mục này cho dịch vụ walk-in: khách vẫn thấy giá nhưng không thể chọn barber hay khung giờ." : "Bật hiển thị trên bảng giá trước khi mở đặt lịch."}</small></span></label>
           <div className="admin-menu-modal-actions"><button type="button" className="admin-menu-cancel" disabled={saving} onClick={() => setDraft(null)}>Hủy</button><button className="admin-button" disabled={saving}>{saving ? "Đang lưu…" : "Lưu dịch vụ"}</button></div>
         </form>
       </section>

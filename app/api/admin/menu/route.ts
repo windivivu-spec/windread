@@ -17,6 +17,7 @@ type MenuServiceRow = {
   price_label: string | null;
   service_category: ServiceCategory | null;
   duration_minutes: number;
+  is_price_visible: boolean;
   is_bookable: boolean;
   menu_order: number | null;
 };
@@ -43,7 +44,9 @@ function nullableText(value: unknown, max = 160) {
 function serviceFields(body: Record<string, unknown>) {
   const category = asText(body.category, "Nhóm dịch vụ", { max: 24 });
   if (!serviceCategories.includes(category as ServiceCategory)) throw new Error("Nhóm dịch vụ không hợp lệ.");
+  if (typeof body.isPriceVisible !== "boolean") throw new Error("Trạng thái hiển thị bảng giá không hợp lệ.");
   if (typeof body.isBookable !== "boolean") throw new Error("Trạng thái dịch vụ không hợp lệ.");
+  if (body.isBookable && !body.isPriceVisible) throw new Error("Dịch vụ đặt lịch phải được hiển thị trên bảng giá.");
   return {
     name: asText(body.name, "Tên dịch vụ", { max: 120 }),
     description: asText(body.description, "Mô tả", { max: 600 }),
@@ -51,6 +54,7 @@ function serviceFields(body: Record<string, unknown>) {
     price_label: nullableText(body.priceLabel, 80),
     service_category: category,
     duration_minutes: asMoney(body.durationMinutes, "Thời lượng", { min: 1 }),
+    is_price_visible: body.isPriceVisible,
     is_bookable: body.isBookable
   };
 }
@@ -95,7 +99,7 @@ export async function GET(request: NextRequest) {
     if (branchId && branchId !== "all") assertBranchAccess(context, branchId);
 
     const service = createServiceClient();
-    let query = service.from("services").select("id,branch_id,name,description,price,price_label,service_category,duration_minutes,is_bookable,menu_order");
+    let query = service.from("services").select("id,branch_id,name,description,price,price_label,service_category,duration_minutes,is_price_visible,is_bookable,menu_order");
     if (branchId && branchId !== "all") query = query.eq("branch_id", branchId);
     const { data, error } = await query.order("branch_id");
     if (error) throw error;
@@ -137,7 +141,7 @@ export async function POST(request: NextRequest) {
       if (new Set(serviceIds).size !== serviceIds.length) throw new Error("Danh sách dịch vụ bị trùng.");
       const { data: allBranchRows, error: siblingsError } = await service
         .from("services")
-        .select("id,branch_id,name,description,price,price_label,service_category,duration_minutes,is_bookable,menu_order")
+        .select("id,branch_id,name,description,price,price_label,service_category,duration_minutes,is_price_visible,is_bookable,menu_order")
         .eq("branch_id", branchId);
       if (siblingsError) throw siblingsError;
       const allRows = (allBranchRows ?? []) as MenuServiceRow[];
@@ -173,7 +177,7 @@ export async function POST(request: NextRequest) {
       const { data: created, error: createError } = await service
         .from("services")
         .insert({ ...fields, id, branch_id: branchId, is_bookable: false, menu_order: Math.max(lastService?.menu_order ?? 1000, 1000) + 10 })
-        .select("id,branch_id,name,description,price,price_label,service_category,duration_minutes,is_bookable,menu_order")
+        .select("id,branch_id,name,description,price,price_label,service_category,duration_minutes,is_price_visible,is_bookable,menu_order")
         .single();
       if (createError) throw createError;
 
@@ -183,7 +187,7 @@ export async function POST(request: NextRequest) {
           .from("services")
           .update({ is_bookable: fields.is_bookable })
           .eq("id", id)
-          .select("id,branch_id,name,description,price,price_label,service_category,duration_minutes,is_bookable,menu_order")
+          .select("id,branch_id,name,description,price,price_label,service_category,duration_minutes,is_price_visible,is_bookable,menu_order")
           .single();
         if (error) throw error;
         return NextResponse.json({ service: data }, { status: 201 });
@@ -198,7 +202,7 @@ export async function POST(request: NextRequest) {
       const id = asText(body.id, "Dịch vụ", { max: 100 });
       const { data: current, error: currentError } = await service
         .from("services")
-        .select("id,branch_id,is_bookable")
+        .select("id,branch_id,is_price_visible,is_bookable")
         .eq("id", id)
         .eq("branch_id", branchId)
         .maybeSingle();
@@ -211,7 +215,7 @@ export async function POST(request: NextRequest) {
         .update(fields)
         .eq("id", id)
         .eq("branch_id", branchId)
-        .select("id,branch_id,name,description,price,price_label,service_category,duration_minutes,is_bookable,menu_order")
+        .select("id,branch_id,name,description,price,price_label,service_category,duration_minutes,is_price_visible,is_bookable,menu_order")
         .single();
       if (error) throw error;
       if (!fields.is_bookable) {

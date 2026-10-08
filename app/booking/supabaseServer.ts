@@ -21,6 +21,7 @@ type SupabaseServiceRow = {
   price_label?: string | null;
   service_category?: ServiceCategory | null;
   duration_minutes: number;
+  is_bookable?: boolean;
   menu_order?: number | null;
 };
 
@@ -91,6 +92,12 @@ function isMissingGroupMetadataError(error: unknown) {
   return error.message.includes("group_id") || error.message.includes("guest_count");
 }
 
+function isMissingPriceVisibilityError(error: unknown) {
+  return error instanceof SupabaseRestError
+    && (error.code === "PGRST204" || error.code === "42703")
+    && error.message.includes("is_price_visible");
+}
+
 function supabaseConfig() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -156,6 +163,7 @@ function mapService(row: SupabaseServiceRow): Service {
     priceLabel: row.price_label ?? undefined,
     category: row.service_category ?? undefined,
     durationMinutes: row.duration_minutes,
+    isBookable: row.is_bookable ?? true,
     menuOrder: row.menu_order ?? undefined
   };
 }
@@ -250,13 +258,33 @@ export async function getBranches(): Promise<Branch[]> {
 
 export async function getServices(branchId?: string): Promise<Service[]> {
   if (!isSupabaseConfigured()) {
-    return branchId ? mockServices.filter((service) => service.branchId === branchId) : mockServices;
+    return mockServices.filter((service) => service.isBookable !== false && (!branchId || service.branchId === branchId));
   }
 
   const branchFilter = branchId ? `&branch_id=eq.${encodeURIComponent(branchId)}` : "";
   return restFetch<SupabaseServiceRow[]>(
     `services?select=*&is_bookable=eq.true${branchFilter}&order=service_category.asc,menu_order.asc,price.asc`
   ).then((rows) => rows.map(mapService));
+}
+
+/** Public price-list catalogue. It may include walk-in-only services. */
+export async function getPricingServices(branchId?: string): Promise<Service[]> {
+  if (!isSupabaseConfigured()) {
+    return branchId ? mockServices.filter((service) => service.branchId === branchId) : mockServices;
+  }
+
+  const branchFilter = branchId ? `&branch_id=eq.${encodeURIComponent(branchId)}` : "";
+  try {
+    const rows = await restFetch<SupabaseServiceRow[]>(
+      `services?select=*&is_price_visible=eq.true${branchFilter}&order=service_category.asc,menu_order.asc,price.asc`
+    );
+    return rows.map(mapService);
+  } catch (error) {
+    // Keep the live price menu usable during a rolling deploy: the code can
+    // reach production before the new migration adds is_price_visible.
+    if (isMissingPriceVisibilityError(error)) return getServices(branchId);
+    throw error;
+  }
 }
 
 export async function getBarbers(branchId?: string, serviceId?: string): Promise<Barber[]> {

@@ -413,6 +413,7 @@
 .admin-inline-adjustment { background: rgba(163, 22, 38, .14); border-color: rgba(216, 50, 69, .35); }
 .admin-status.is-open { border-color: rgba(142, 199, 171, .55); background: rgba(142, 199, 171, .1); color: #a8dfbf; }
 .admin-status.is-closed { border-color: rgba(244, 238, 232, .22); background: rgba(255, 255, 255, .04); color: #d9cbc4; }
+.admin-status.is-walk-in { border-color: rgba(255, 199, 112, .52); background: rgba(255, 183, 77, .1); color: #ffd18a; }
 .admin-finance-totals > div { background: rgba(255, 255, 255, .04); }
 .admin-payroll-summary { background: linear-gradient(90deg, rgba(58, 5, 11, .96), rgba(18, 11, 13, .96)); border-color: rgba(216, 50, 69, .45); }
 

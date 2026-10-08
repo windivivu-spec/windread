@@ -3366,6 +3366,52 @@ textarea:focus-visible {
   margin-top: clamp(24px, 2.6vw, 36px);
 }
 
+.pricing-fulfilment + .pricing-fulfilment {
+  margin-top: clamp(34px, 4vw, 58px);
+  padding-top: clamp(28px, 3vw, 42px);
+  border-top: 1px solid rgba(244, 238, 232, 0.16);
+}
+
+.pricing-fulfilment > header {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: 12px;
+  align-items: baseline;
+  margin: 0 0 18px;
+}
+
+.pricing-fulfilment > header p {
+  grid-row: span 2;
+  margin: 0;
+  padding: 7px 8px 6px;
+  border: 1px solid currentColor;
+  color: #f0c27b;
+  font-family: var(--font-small);
+  font-size: 0.66rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.pricing-fulfilment-priority > header p { color: var(--accent-strong); }
+
+.pricing-fulfilment > header h5 {
+  margin: 0;
+  color: #fff8ef;
+  font-family: "SVN VT Redzone Classic", Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
+  font-size: clamp(1rem, 1.4vw, 1.28rem);
+  letter-spacing: 0.055em;
+  line-height: 1.05;
+  text-transform: uppercase;
+}
+
+.pricing-fulfilment > header span {
+  color: var(--muted);
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
 .pricing-subgroup h5 {
   margin: 0 0 8px;
   color: var(--accent-strong);
@@ -3386,7 +3432,7 @@ textarea:focus-visible {
 .price-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  min-height: 122px;
+  min-height: 146px;
   gap: 18px;
   align-items: stretch;
   padding: 16px 18px;
@@ -3412,6 +3458,23 @@ textarea:focus-visible {
 
 .price-row-book:active {
   transform: translateY(1px);
+}
+
+.price-row-walk-in {
+  border-color: rgba(240, 194, 123, 0.3);
+  background: linear-gradient(100deg, rgba(121, 78, 20, 0.22), rgba(255, 255, 255, 0.025));
+}
+
+.price-row-walk-in-label {
+  margin: 0;
+  color: #f0c27b;
+  font-family: var(--font-small);
+  font-size: 0.66rem;
+  font-style: normal;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  text-transform: uppercase;
 }
 
 .price-row strong,
@@ -3457,7 +3520,9 @@ textarea:focus-visible {
 }
 
 .price-row-copy {
-  align-self: center;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  align-self: stretch;
 }
 
 .price-row-copy > span {
@@ -3465,15 +3530,27 @@ textarea:focus-visible {
   display: -webkit-box;
   overflow: hidden;
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 1;
+  -webkit-line-clamp: 3;
+  align-self: start;
+  margin-top: 10px;
+  line-height: 1.5;
 }
 
 .price-row-facts {
   display: grid;
   min-width: max-content;
-  align-content: space-between;
+  grid-template-rows: auto 1fr;
+  align-content: stretch;
   justify-items: end;
   padding: 1px 0;
+}
+
+.price-row-meta {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  min-height: 1.2rem;
 }
 
 .price-row-facts .price-row-duration {
@@ -3486,6 +3563,7 @@ textarea:focus-visible {
 }
 
 .price-row b {
+  align-self: end;
   white-space: nowrap;
   color: var(--accent-strong);
   font-size: clamp(0.94rem, 1.2vw, 1.08rem);

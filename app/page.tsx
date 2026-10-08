@@ -702,7 +702,7 @@ export function SitePage({
 
     Promise.all(
       ["chuong-duong", "an-thuong"].map(async (branchId) => {
-        const response = await fetch(`/api/services?branchId=${branchId}`);
+        const response = await fetch(`/api/services?audience=pricing&branchId=${branchId}`);
         if (!response.ok) throw new Error("Pricing recovery failed");
         return (await response.json()) as Service[];
       })
@@ -916,6 +916,49 @@ export function SitePage({
     if (nextBoard && !nextBoard.groups.some((group) => group.id === activePricingCategoryId)) {
       setActivePricingCategoryId(nextBoard.groups[0]?.id ?? "barber");
     }
+  }
+
+  const isChuongDuongBarberPrice = activePricingBoard?.id === "chuong-duong" && activePricingGroup?.id === "barber";
+  const walkInSections = activePricingGroup?.sections
+    .map((section) => ({ ...section, services: section.services.filter((service) => service.isBookable === false) }))
+    .filter((section) => section.services.length > 0) ?? [];
+  const prioritySections = activePricingGroup?.sections
+    .map((section) => ({ ...section, services: section.services.filter((service) => service.isBookable !== false) }))
+    .filter((section) => section.services.length > 0) ?? [];
+
+  function renderPriceSections(sections: typeof prioritySections, bookingEnabled: boolean) {
+    return sections.map((section) => (
+      <section className="pricing-subgroup" key={section.id}>
+        <h5>{section.label}</h5>
+        <div className="price-table">
+          {section.services.map((service) => {
+            const localizedService = getLocalizedService(service, isEnglish);
+            const rowContent = <>
+              <div className="price-row-copy">
+                <strong>{localizedService.name}</strong>
+                <span title={localizedService.description}>{localizedService.description}</span>
+              </div>
+              <div className="price-row-facts">
+                <div className="price-row-meta">
+                  {!bookingEnabled && <em className="price-row-walk-in-label">{isEnglish ? "Walk-in only" : "Chỉ nhận tại tiệm"}</em>}
+                  <span className="price-row-duration">{service.durationMinutes} {isEnglish ? "min" : "phút"}</span>
+                </div>
+                <b>{getLocalizedPriceLabel(service, isEnglish) || formatCurrency(service.price, isEnglish)}</b>
+              </div>
+            </>;
+            return bookingEnabled ? (
+              <a className="price-row price-row-book" href={`/booking?branch=${encodeURIComponent(service.branchId)}&service=${encodeURIComponent(service.id)}`} key={service.id}>
+                {rowContent}
+              </a>
+            ) : (
+              <article className="price-row price-row-walk-in" key={service.id}>
+                {rowContent}
+              </article>
+            );
+          })}
+        </div>
+      </section>
+    ));
   }
 
   return (
@@ -1489,8 +1532,8 @@ export function SitePage({
           <div className="pricing-board">
             <p className="pricing-intro">
               {isEnglish
-                ? "Choose your location first. Each branch has its own bookable menu and crew."
-                : "Chọn đúng cơ sở trước khi đặt lịch. Mỗi chi nhánh có bảng giá và đội ngũ phục vụ riêng."}
+                ? "Choose your location first. Walk-in prices are shown for reference; only priority services can be booked online."
+                : "Chọn đúng cơ sở trước khi đặt lịch. Giá walk-in vẫn được công khai, còn đặt lịch trực tuyến chỉ dành cho dịch vụ ưu tiên."}
             </p>
             <div className="pricing-branches">
               {visiblePricingServices.length > 0 && activePricingBoard && activePricingGroup ? (
@@ -1534,32 +1577,16 @@ export function SitePage({
                     <div className="pricing-groups">
                       <section className="pricing-group" key={`${activePricingBoard.id}-${activePricingGroup.id}`}>
                         <h4>{activePricingGroup.title}</h4>
-                        {activePricingGroup.sections.map((section) => (
-                          <section className="pricing-subgroup" key={section.id}>
-                            <h5>{section.label}</h5>
-                            <div className="price-table">
-                              {section.services.map((service) => {
-                                const localizedService = getLocalizedService(service, isEnglish);
-                                return (
-                                  <a
-                                    className={`price-row price-row-book${service.id === "cd-win-dread-experience" ? " price-row-signature" : ""}`}
-                                    href={`/booking?branch=${encodeURIComponent(service.branchId)}&service=${encodeURIComponent(service.id)}`}
-                                    key={service.id}
-                                  >
-                                    <div className="price-row-copy">
-                                      <strong>{localizedService.name}</strong>
-                                      <span title={localizedService.description}>{localizedService.description}</span>
-                                    </div>
-                                    <div className="price-row-facts">
-                                      <span className="price-row-duration">{service.durationMinutes} {isEnglish ? "min" : "phút"}</span>
-                                      <b>{getLocalizedPriceLabel(service, isEnglish) || formatCurrency(service.price, isEnglish)}</b>
-                                    </div>
-                                  </a>
-                                );
-                              })}
-                            </div>
-                          </section>
-                        ))}
+                        {isChuongDuongBarberPrice ? <>
+                          {walkInSections.length > 0 && <section className="pricing-fulfilment pricing-fulfilment-walk-in">
+                            <header><p>Walk-in</p><h5>{isEnglish ? "Come in, no appointment needed" : "Tới trực tiếp · không cần đặt lịch"}</h5><span>{isEnglish ? "A barber is assigned based on availability." : "Barber được xếp theo tình trạng sẵn sàng."}</span></header>
+                            {renderPriceSections(walkInSections, false)}
+                          </section>}
+                          {prioritySections.length > 0 && <section className="pricing-fulfilment pricing-fulfilment-priority">
+                            <header><p>Priority appointment</p><h5>{isEnglish ? "Choose your barber · choose your time" : "Chọn barber · chọn khung giờ"}</h5><span>{isEnglish ? "Book ahead for priority service." : "Đặt trước để được ưu tiên phục vụ."}</span></header>
+                            {renderPriceSections(prioritySections, true)}
+                          </section>}
+                        </> : renderPriceSections(activePricingGroup.sections, true)}
                         {activePricingBoard.id === "chuong-duong" && activePricingGroup.id === "afro" && (
                           <div className="pricing-afro-guide">
                             <section>

@@ -44,7 +44,7 @@ const sectionById = new Map(sections.map((section) => [section.id, section]));
 
 const chuongDuongOrder: Array<[SectionId, string[]]> = [
   ["barber-main", ["cd-haircut-expert", "cd-hot-towel-shave"]],
-  ["barber-combos", ["cd-fresh-cut", "cd-gentlemans-set", "cd-full-grooming", "cd-win-dread-experience"]],
+  ["barber-combos", ["cd-fresh-cut", "cd-priority-fresh-cut", "cd-gentlemans-set", "cd-priority-gentlemans-set", "cd-full-grooming", "cd-priority-full-grooming", "cd-win-dread-experience"]],
   ["barber-finish", ["cd-sides-back-fade", "cd-basic-beard-trim-line-up", "cd-hair-washing", "cd-wash-blowdry", "cd-basic-hair-tattoo"]],
   ["barber-texture", ["cd-down-perm", "cd-basic-perm", "cd-curly-perm", "cd-ruffled-perm", "cd-premlock-perm", "cd-afro-perm", "cd-hair-bleaching", "cd-hair-color", "cd-hair-blackening", "cd-bleach-root-touch-up", "cd-beard-coloring"]],
   ["dread-main", ["cd-dreadlocks-new"]],
@@ -121,13 +121,16 @@ export function groupServicesForDisplay(services: Service[], isEnglish: boolean)
 type EnglishServiceCopy = Pick<Service, "name" | "description">;
 
 const englishServiceCopy: Record<string, EnglishServiceCopy> = {
-  "cd-haircut": { name: "Haircut & styling", description: "Haircut and styling." },
+  "cd-haircut": { name: "Haircut", description: "Walk in without an appointment. Your barber is assigned based on availability." },
   "cd-hot-towel-shave": { name: "Hot & cold towel shave", description: "Beard trim and shaping, face shave, hot and cold towels." },
-  "cd-haircut-expert": { name: "Signature haircut", description: "Signature haircut; advance booking recommended." },
-  "cd-fresh-cut": { name: "Fresh Cut", description: "Haircut and styling with a wash." },
-  "cd-gentlemans-set": { name: "Gentleman's Set", description: "Haircut and styling with a hot and cold towel shave." },
-  "cd-full-grooming": { name: "Full Grooming", description: "Haircut and styling, wash, and hot and cold towel shave." },
+  "cd-haircut-expert": { name: "Haircut", description: "Choose your barber and time. Book ahead for priority service." },
+  "cd-fresh-cut": { name: "Fresh Cut", description: "Haircut and hair wash. Walk in; your barber is assigned based on availability." },
+  "cd-gentlemans-set": { name: "Gentleman's Set", description: "Haircut, beard grooming and shave. Walk in; your barber is assigned based on availability." },
+  "cd-full-grooming": { name: "Full Grooming", description: "Haircut, hair wash, beard grooming and shave. Walk in; your barber is assigned based on availability." },
   "cd-win-dread-experience": { name: "W Signature Grooming Experience", description: "Signature haircut, wash, grooming and hot and cold towel shave. Advance booking only." },
+  "cd-priority-fresh-cut": { name: "Priority Fresh Cut", description: "Haircut and styling with a wash; choose your barber and time." },
+  "cd-priority-gentlemans-set": { name: "Priority Gentleman's Set", description: "Haircut, beard grooming and shave; choose your barber and time." },
+  "cd-priority-full-grooming": { name: "Priority Full Grooming", description: "Haircut, wash, beard grooming and shave; choose your barber and time." },
   "cd-sides-back-fade": { name: "Sides & nape fade", description: "A clean-up for the sides and nape." },
   "cd-basic-beard-trim-line-up": { name: "Basic beard trim & line-up", description: "Beard and outline clean-up." },
   "cd-hair-washing": { name: "Hair wash", description: "Basic hair wash." },

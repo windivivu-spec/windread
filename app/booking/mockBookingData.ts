@@ -307,12 +307,72 @@ const allServices: Service[] = [
     durationMinutes: 60
   },
   {
+    id: "cd-haircut",
+    branchId: "chuong-duong",
+    name: "Haircut",
+    description: "Tới trực tiếp, không cần đặt lịch. Thợ được xếp theo tình trạng sẵn sàng.",
+    price: 120000,
+    durationMinutes: 45,
+    isBookable: false
+  },
+  {
     id: "cd-haircut-expert",
     branchId: "chuong-duong",
-    name: "W Signature Haircut",
-    description: "Cắt tóc đặt trước với tư vấn tạo kiểu.",
+    name: "Haircut",
+    description: "Chọn barber · chọn khung giờ. Đặt lịch trước và được ưu tiên phục vụ.",
     price: 160000,
+    durationMinutes: 45
+  },
+  {
+    id: "cd-fresh-cut",
+    branchId: "chuong-duong",
+    name: "Fresh Cut",
+    description: "Haircut + Hair Wash. Tới trực tiếp, không cần đặt lịch.",
+    price: 150000,
+    durationMinutes: 60,
+    isBookable: false
+  },
+  {
+    id: "cd-priority-fresh-cut",
+    branchId: "chuong-duong",
+    name: "Priority Fresh Cut",
+    description: "Haircut + Hair Wash. Chọn barber · chọn khung giờ · ưu tiên phục vụ.",
+    price: 190000,
     durationMinutes: 60
+  },
+  {
+    id: "cd-gentlemans-set",
+    branchId: "chuong-duong",
+    name: "Gentleman's Set",
+    description: "Haircut + Beard Grooming & Shave. Tới trực tiếp, không cần đặt lịch.",
+    price: 200000,
+    durationMinutes: 75,
+    isBookable: false
+  },
+  {
+    id: "cd-priority-gentlemans-set",
+    branchId: "chuong-duong",
+    name: "Priority Gentleman's Set",
+    description: "Haircut + Beard Grooming & Shave. Chọn barber · chọn khung giờ · ưu tiên phục vụ.",
+    price: 240000,
+    durationMinutes: 75
+  },
+  {
+    id: "cd-full-grooming",
+    branchId: "chuong-duong",
+    name: "Full Grooming",
+    description: "Haircut + Hair Wash + Beard Grooming & Shave. Tới trực tiếp, không cần đặt lịch.",
+    price: 250000,
+    durationMinutes: 90,
+    isBookable: false
+  },
+  {
+    id: "cd-priority-full-grooming",
+    branchId: "chuong-duong",
+    name: "Priority Full Grooming",
+    description: "Haircut + Hair Wash + Beard Grooming & Shave. Chọn barber · chọn khung giờ · ưu tiên phục vụ.",
+    price: 290000,
+    durationMinutes: 90
   },
   {
     id: "cd-sides-back-fade",

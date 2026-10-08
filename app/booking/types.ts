@@ -31,6 +31,8 @@ export type Service = {
   priceLabel?: string;
   category?: ServiceCategory;
   durationMinutes: number;
+  /** Whether this price can be selected in the online booking flow. */
+  isBookable?: boolean;
   menuOrder?: number;
 };
 

@@ -44,7 +44,7 @@ export const bookingService = {
   },
 
   getServices(branchId?: string) {
-    return branchId ? services.filter((service) => service.branchId === branchId) : services;
+    return services.filter((service) => service.isBookable !== false && (!branchId || service.branchId === branchId));
   },
 
   getBarbers(branchId?: string, serviceId?: string) {
