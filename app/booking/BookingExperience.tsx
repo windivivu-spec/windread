@@ -1,7 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { FormEvent, RefObject, useEffect, useMemo, useRef, useState } from "react";
+import { FormEvent, RefObject, useEffect, useId, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { bookingService } from "./bookingService";
 import {
   BOOKING_BUFFER_MINUTES,
@@ -71,6 +72,8 @@ export function BookingExperience({ isEnglish }: { isEnglish: boolean }) {
   const [activeStepIndex, setActiveStepIndex] = useState(0);
   const [slideDirection, setSlideDirection] = useState<"forward" | "back">("forward");
   const bookingFormRef = useRef<HTMLFormElement | null>(null);
+  const bookingDockRef = useRef<HTMLDivElement | null>(null);
+  const bookingFormId = useId();
   const bookingResultRef = useRef<HTMLElement | null>(null);
   const activeStepIndexRef = useRef(activeStepIndex);
 
@@ -99,6 +102,20 @@ export function BookingExperience({ isEnglish }: { isEnglish: boolean }) {
   );
   const visibleStepIndex = Math.min(activeStepIndex, Math.max(bookingSteps.length - 1, 0));
   const activeStep = bookingSteps[visibleStepIndex];
+  const stepPanelRef = useRef<HTMLElement | null>(null);
+  const previousStepKeyRef = useRef(activeStep.key);
+  useEffect(() => {
+    if (previousStepKeyRef.current === activeStep.key) return;
+    previousStepKeyRef.current = activeStep.key;
+    const frame = window.requestAnimationFrame(() => {
+      stepPanelRef.current?.focus({ preventScroll: true });
+      stepPanelRef.current?.scrollIntoView({
+        behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth",
+        block: "start"
+      });
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [activeStep.key]);
   const isStepComplete = (key: BookingStepKey) => {
     switch (key) {
       case "branch": return branches.some((branch) => branch.id === draft.branchId);
@@ -151,6 +168,22 @@ export function BookingExperience({ isEnglish }: { isEnglish: boolean }) {
   useEffect(() => {
     setClientReady(true);
   }, []);
+
+  useEffect(() => {
+    if (!clientReady || createdBooking || !bookingDockRef.current) return;
+    const root = document.documentElement;
+    const dock = bookingDockRef.current;
+    const updateHeight = () => root.style.setProperty("--booking-dock-height", `${dock.getBoundingClientRect().height}px`);
+    root.classList.add("has-booking-dock");
+    updateHeight();
+    const observer = new ResizeObserver(updateHeight);
+    observer.observe(dock);
+    return () => {
+      observer.disconnect();
+      root.classList.remove("has-booking-dock");
+      root.style.removeProperty("--booking-dock-height");
+    };
+  }, [clientReady, createdBooking]);
 
   useEffect(() => {
     if (!clientReady) return;
@@ -390,6 +423,11 @@ export function BookingExperience({ isEnglish }: { isEnglish: boolean }) {
 
   async function submitBooking(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (activeStep.key !== "info") {
+      if (isStepComplete(activeStep.key)) moveToStep(visibleStepIndex + 1);
+      return;
+    }
+    if (isSubmitting) return;
     setIsSubmitting(true);
     setSubmitError("");
     const result = await bookingService.createBooking(draft);
@@ -488,7 +526,7 @@ export function BookingExperience({ isEnglish }: { isEnglish: boolean }) {
   }
 
   return (
-    <form className="booking-console reveal" ref={bookingFormRef} onSubmit={submitBooking}>
+    <form id={bookingFormId} className="booking-console reveal" ref={bookingFormRef} onSubmit={submitBooking}>
       <div className={`booking-stepper booking-stepper-${bookingSteps.length}`} aria-label={isEnglish ? "Booking steps" : "Các bước đặt lịch"}>
         {bookingSteps.map((step, index) => (
           <button
@@ -527,7 +565,7 @@ export function BookingExperience({ isEnglish }: { isEnglish: boolean }) {
 
       <div className="booking-wizard-shell">
         <div className="booking-step-viewport">
-          <section className={`booking-panel booking-step-card slide-${slideDirection}`} key={activeStep.key}>
+          <section className={`booking-panel booking-step-card slide-${slideDirection}`} key={activeStep.key} ref={stepPanelRef} tabIndex={-1} aria-label={activeStep.label}>
             {activeStep.key === "info" && (
               <>
                 <CustomerInfoForm
@@ -544,7 +582,6 @@ export function BookingExperience({ isEnglish }: { isEnglish: boolean }) {
                   slot={selectedSlot}
                   draft={draft}
                   submitError={submitError}
-                  isSubmitting={isSubmitting}
                   isEnglish={isEnglish}
                 />
               </>
@@ -605,26 +642,47 @@ export function BookingExperience({ isEnglish }: { isEnglish: boolean }) {
           </section>
         </div>
 
-        <div className="booking-wizard-nav">
+        {clientReady && createPortal(
+        <div className="booking-dock" ref={bookingDockRef} role="region" aria-label={isEnglish ? "Booking summary and actions" : "Tóm tắt và thao tác đặt lịch"}>
+          <div className="booking-dock-inner">
+            <details className="booking-dock-summary" key={activeStep.key}>
+              <summary>
+                <span className="booking-dock-current">
+                  <small>{isEnglish ? "Step" : "Bước"} {visibleStepIndex + 1}/{bookingSteps.length} · {activeStep.label}</small>
+                  <strong>{selectedService ? getLocalizedService(selectedService, isEnglish).name : isEnglish ? "Your booking" : "Lịch hẹn của bạn"}</strong>
+                  <span className="booking-dock-disclosure">{isEnglish ? "View details" : "Xem chi tiết"} <span aria-hidden="true">⌃</span></span>
+                </span>
+                {selectedService && <span className="booking-dock-price"><small>{isEnglish ? "Estimated" : "Tạm tính"}</small><b>{getLocalizedPriceLabel(selectedService, isEnglish) ? `${getLocalizedPriceLabel(selectedService, isEnglish)}${draft.guestCount > 1 ? ` × ${draft.guestCount}` : ""}` : formatCurrency(selectedService.price * draft.guestCount, isEnglish)}</b></span>}
+              </summary>
+              <dl>
+                <div><dt>{isEnglish ? "Branch" : "Cơ sở"}</dt><dd>{selectedBranch?.address ?? (isEnglish ? "Not selected" : "Chưa chọn")}</dd></div>
+                <div><dt>{isEnglish ? "Service" : "Dịch vụ"}</dt><dd>{selectedService ? `${getLocalizedService(selectedService, isEnglish).name} · ${selectedService.durationMinutes} ${isEnglish ? "min" : "phút"}` : isEnglish ? "Not selected" : "Chưa chọn"}</dd></div>
+                <div><dt>{isEnglish ? "Barber" : "Thợ"}</dt><dd>{isGroupBooking ? (isEnglish ? "Crew auto-matched" : "Crew tự xếp thợ") : draft.barberId === "any" ? (isEnglish ? "Any available barber" : "Thợ bất kỳ") : selectedBarber?.name ?? (isEnglish ? "Not selected" : "Chưa chọn")}</dd></div>
+                <div><dt>{isEnglish ? "Time" : "Ngày giờ"}</dt><dd>{selectedSlot ? formatBookingTime(selectedSlot.startTime, isEnglish) : isEnglish ? "Not selected" : "Chưa chọn"}</dd></div>
+                <div><dt>{isEnglish ? "Guests" : "Số khách"}</dt><dd>{draft.guestCount}</dd></div>
+              </dl>
+            </details>
+        <div className="booking-dock-actions">
           <button
             className="ghost-button"
             type="button"
             onClick={moveToPreviousStep}
-            disabled={visibleStepIndex === 0}
+            disabled={visibleStepIndex === 0 || isSubmitting}
           >
             {isEnglish ? "Back" : "Quay lại"}
           </button>
-          <span>
-            {visibleStepIndex + 1}/{bookingSteps.length}
-          </span>
           {visibleStepIndex < bookingSteps.length - 1 ? (
-            <button className="book-button" type="button" onClick={() => moveToStep(visibleStepIndex + 1)} disabled={!isStepComplete(activeStep.key)}>
+            <button key="next" className="book-button" type="button" onClick={(event) => { event.preventDefault(); moveToStep(visibleStepIndex + 1); }} disabled={!isStepComplete(activeStep.key)}>
               {isEnglish ? "Next" : "Tiếp tục"}
             </button>
           ) : (
-            <span className="booking-nav-hint">{isEnglish ? "Review and confirm below" : "Kiểm tra rồi xác nhận bên trên"}</span>
+            <button key="confirm" className="book-button" type="submit" form={bookingFormId} disabled={isSubmitting}>
+              {isSubmitting ? (isEnglish ? "Holding slot..." : "Đang giữ ghế...") : isEnglish ? "Confirm booking" : "Xác nhận đặt lịch"}
+            </button>
           )}
         </div>
+          </div>
+        </div>, document.body)}
       </div>
     </form>
   );
@@ -1065,7 +1123,6 @@ function BookingSummary({
   slot,
   draft,
   submitError,
-  isSubmitting,
   isEnglish
 }: {
   branch?: Branch;
@@ -1074,7 +1131,6 @@ function BookingSummary({
   slot?: TimeSlot;
   draft: BookingDraft;
   submitError: string;
-  isSubmitting: boolean;
   isEnglish: boolean;
 }) {
   return (
@@ -1109,11 +1165,6 @@ function BookingSummary({
           <dd>{draft.customerPhone || "-"}</dd>
         </div>
       </dl>
-      <div className="booking-summary-actions">
-        <button className="book-button large" type="submit" disabled={isSubmitting}>
-          {isSubmitting ? (isEnglish ? "Holding slot..." : "Đang giữ ghế...") : isEnglish ? "Confirm booking" : "Xác nhận đặt lịch"}
-        </button>
-      </div>
       {submitError && <p className="booking-alert">{submitError}</p>}
       <p className="booking-fineprint">
         {isEnglish

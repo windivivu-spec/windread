@@ -933,6 +933,21 @@ export function SitePage({
         <div className="price-table">
           {section.services.map((service) => {
             const localizedService = getLocalizedService(service, isEnglish);
+            const haircutNote = service.id === "cd-haircut"
+              ? {
+                  label: isEnglish ? "Walk-in" : "Khách đến trực tiếp",
+                  text: isEnglish
+                    ? "No booking required · Walk in anytime. Service is subject to availability and waiting time."
+                    : "Không cần đặt lịch · Có thể ghé tiệm bất cứ lúc nào. Phục vụ tùy tình trạng thợ và thời gian chờ."
+                }
+              : service.id === "cd-haircut-expert"
+                ? {
+                    label: isEnglish ? "Appointment" : "Đặt lịch trước",
+                    text: isEnglish
+                      ? "Choose your preferred barber and time. Your appointment is reserved for you."
+                      : "Chọn barber và khung giờ bạn muốn. Lịch hẹn được giữ riêng cho bạn."
+                  }
+                : null;
             const rowContent = <>
               <div className="price-row-copy">
                 <strong>{localizedService.name}</strong>
@@ -945,13 +960,20 @@ export function SitePage({
                 </div>
                 <b>{getLocalizedPriceLabel(service, isEnglish) || formatCurrency(service.price, isEnglish)}</b>
               </div>
+              {haircutNote && (
+                <div className="price-row-note">
+                  <b>{haircutNote.label}</b>
+                  <span>{haircutNote.text}</span>
+                </div>
+              )}
             </>;
+            const haircutClass = haircutNote ? " price-row-haircut" : "";
             return bookingEnabled ? (
-              <a className="price-row price-row-book" href={`/booking?branch=${encodeURIComponent(service.branchId)}&service=${encodeURIComponent(service.id)}`} key={service.id}>
+              <a className={`price-row price-row-book${haircutClass}`} href={`/booking?branch=${encodeURIComponent(service.branchId)}&service=${encodeURIComponent(service.id)}`} key={service.id}>
                 {rowContent}
               </a>
             ) : (
-              <article className="price-row price-row-walk-in" key={service.id}>
+              <article className={`price-row price-row-walk-in${haircutClass}`} key={service.id}>
                 {rowContent}
               </article>
             );
