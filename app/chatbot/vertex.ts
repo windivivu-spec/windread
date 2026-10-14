@@ -354,6 +354,7 @@ export async function confirmParsedBookingSummary(
   const result = await createBooking({
     branchId: branch.id,
     serviceId: service.id,
+    serviceIds: [service.id],
     barberId: barber?.id ?? "any",
     date: parsed.date,
     slot: parsed.slot,
@@ -539,7 +540,7 @@ export async function executeChatbotTool(
       }
     }
 
-    const slots = await getSlots(branch.id, service.id, barberId, date);
+    const slots = await getSlots(branch.id, [service.id], barberId, date);
     return {
       branchId: branch.id,
       serviceId: service.id,
@@ -624,6 +625,7 @@ export async function executeChatbotTool(
     const draft: BookingDraft = {
       branchId: branch.id,
       serviceId: service.id,
+      serviceIds: [service.id],
       barberId: barber?.id ?? "any",
       date: normalizedBookingDate(textArg(args, "date")),
       slot: textArg(args, "slot"),

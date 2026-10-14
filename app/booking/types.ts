@@ -54,7 +54,10 @@ export type Barber = {
 export type Booking = {
   id: string;
   branchId: string;
+  /** The first selected service, retained for legacy calendar and admin views. */
   serviceId: string;
+  /** Every service included in this appointment, in the order chosen by the guest. */
+  serviceIds: string[];
   barberId: string;
   customerName: string;
   customerPhone: string;
@@ -78,7 +81,9 @@ export type BarberTimeOff = {
 
 export type BookingDraft = {
   branchId: string;
+  /** The first selected service, retained for backward-compatible API consumers. */
   serviceId: string;
+  serviceIds: string[];
   barberId: string;
   date: string;
   slot: string;

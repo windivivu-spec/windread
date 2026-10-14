@@ -1,0 +1,59 @@
+.menu { min-width: 0; }
+.section { padding-block: 28px 32px; border-top: 1px solid var(--line); }
+.heading { display: flex; align-items: baseline; gap: 10px; margin: 0 0 24px; color: var(--text); font-size: clamp(1.3rem, 2.2vw, 1.9rem); line-height: 1.2; text-transform: uppercase; letter-spacing: .035em; }
+.heading > span:first-child { color: var(--accent-strong); font-variant-numeric: tabular-nums; }
+.haircutGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+.haircutCard { display: flex; flex-direction: column; min-width: 0; padding: clamp(20px, 3vw, 32px); border: 1px solid var(--line); background: rgba(244, 238, 232, .065); color: var(--text); text-decoration: none; }
+.priorityCard { border-color: var(--accent-strong); background: rgba(163, 22, 38, .08); }
+.cardLabel { min-height: 2.8em; color: var(--muted); font-family: var(--font-small); font-size: clamp(.8rem, 1.2vw, 1rem); text-transform: uppercase; line-height: 1.4; }
+.priorityCard .cardLabel, .priorityCard .cardPrice { color: var(--accent-strong); }
+.cardPrice { display: block; margin: 6px 0 22px; font-size: clamp(1.8rem, 3.2vw, 3rem); font-variant-numeric: tabular-nums; line-height: 1.1; }
+.cardBenefit { font-size: clamp(1rem, 1.6vw, 1.4rem); font-weight: 500; line-height: 1.35; }
+.haircutCard p { max-width: 32ch; margin: 12px 0 0; color: var(--muted); font-size: clamp(.9rem, 1.2vw, 1rem); line-height: 1.55; }
+.cardCta { display: flex; justify-content: space-between; align-items: center; gap: 10px; min-height: 48px; margin-top: 20px; padding-top: 14px; border-top: 1px solid var(--line); font-family: var(--font-small); font-size: .8rem; text-transform: uppercase; }
+.comboGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px; }
+.combo { min-width: 0; display: flex; flex-direction: column; }
+.itemHeading { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.itemHeading h6 { min-width: 0; margin: 0; color: var(--text); font-size: clamp(1.1rem, 1.5vw, 1.4rem); line-height: 1.25; }
+.itemHeading > span { flex-shrink: 0; color: var(--muted); font-size: .85rem; white-space: nowrap; }
+.description { margin: 10px 0 16px; color: var(--muted); font-size: .94rem; line-height: 1.5; }
+.rates { margin-top: auto; }
+.rate { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 8px; align-items: center; min-height: 48px; color: var(--text); text-decoration: none; border-bottom: 1px solid var(--line); }
+.rate > span:first-child { font-family: var(--font-small); font-size: .72rem; text-transform: uppercase; letter-spacing: .04em; }
+.rate b { font-size: 1.3rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.priorityRate { color: var(--accent-strong); }
+.arrow { font-size: 1rem; }
+a.haircutCard, a.rate { transition: background-color 180ms ease, border-color 180ms ease; }
+a.haircutCard:hover { background: rgba(163, 22, 38, .22); }
+a.rate:hover { background: rgba(163, 22, 38, .12); }
+a.haircutCard:focus-visible, a.rate:focus-visible { outline: 2px solid var(--accent-strong); outline-offset: 4px; }
+@media (min-width: 1024px) {
+  .haircutCard { padding: 20px 24px; }
+  .cardLabel { min-height: 0; }
+  .cardPrice { margin: 10px 0 12px; }
+  .haircutCard p { max-width: 44ch; margin-top: 8px; }
+  .cardCta { min-height: 40px; margin-top: 12px; padding-top: 8px; }
+}
+@media (max-width: 1000px) {
+  .comboGrid { grid-template-columns: 1fr; gap: 0; }
+  .combo { padding-block: 20px; border-bottom: 1px solid var(--line); }
+  .combo:first-child { padding-top: 0; }
+  .combo:last-child { border-bottom: 0; padding-bottom: 0; }
+  .rate { border-bottom: 0; }
+}
+@media (max-width: 600px) {
+  .section { padding-block: 22px 28px; }
+  .heading { margin-bottom: 20px; gap: 8px; font-size: 1.3rem; }
+  .haircutGrid { gap: 10px; }
+  .haircutCard { padding: 16px 12px; }
+  .cardLabel { font-size: .75rem; }
+  .cardPrice { font-size: clamp(1.3rem, 6vw, 1.8rem); margin-bottom: 18px; white-space: nowrap; }
+  .cardBenefit { font-size: .95rem; }
+  .haircutCard p { font-size: .82rem; }
+  .cardCta { font-size: .65rem; }
+  .itemHeading h6 { font-size: 1.15rem; }
+  .description { font-size: .92rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  a.haircutCard, a.rate { transition: none; }
+}

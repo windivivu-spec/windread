@@ -6,10 +6,11 @@ export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
 
   try {
-    const barbers = await getBarbers(
-      searchParams.get("branchId") ?? undefined,
-      searchParams.get("serviceId") ?? undefined
-    );
+    const serviceIds = (searchParams.get("serviceIds") ?? searchParams.get("serviceId") ?? "")
+      .split(",")
+      .map((serviceId) => serviceId.trim())
+      .filter(Boolean);
+    const barbers = await getBarbers(searchParams.get("branchId") ?? undefined, serviceIds);
     return NextResponse.json(
       barbers.filter((barber) => isOnlineBookableBarber(barber.id)).map(({ email: _email, ...barber }) => barber)
     );

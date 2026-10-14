@@ -27,6 +27,7 @@ type StoredBooking = {
 const initialDraft: BookingDraft = {
   branchId: "",
   serviceId: "",
+  serviceIds: [],
   barberId: "",
   date: getUpcomingDays(1)[0]?.value ?? "",
   slot: "",
@@ -78,7 +79,11 @@ export function BookingExperience({ isEnglish }: { isEnglish: boolean }) {
   const activeStepIndexRef = useRef(activeStepIndex);
 
   const selectedBranch = branches.find((branch) => branch.id === draft.branchId);
-  const selectedService = services.find((service) => service.id === draft.serviceId);
+  const selectedServices = services.filter((service) => draft.serviceIds.includes(service.id));
+  const selectedService = selectedServices[0];
+  const selectedServicesDuration = selectedServices.reduce((total, service) => total + service.durationMinutes, 0);
+  const selectedServicesPrice = selectedServices.reduce((total, service) => total + service.price, 0);
+  const hasVariableServicePrice = selectedServices.some((service) => Boolean(getLocalizedPriceLabel(service, isEnglish)));
   const filteredBarbers = barbers;
   const lockedBarber = lockedBarberId
     ? bookingService.getBarbers().find((barber) => barber.id === lockedBarberId)
@@ -119,7 +124,9 @@ export function BookingExperience({ isEnglish }: { isEnglish: boolean }) {
   const isStepComplete = (key: BookingStepKey) => {
     switch (key) {
       case "branch": return branches.some((branch) => branch.id === draft.branchId);
-      case "service": return services.some((service) => service.id === draft.serviceId && service.branchId === draft.branchId);
+      case "service": return draft.serviceIds.length > 0 && draft.serviceIds.every((serviceId) =>
+        services.some((service) => service.id === serviceId && service.branchId === draft.branchId)
+      );
       case "barber": return draft.barberId === "any" || barbers.some((barber) => barber.id === draft.barberId);
       case "time": return Boolean(draft.date && draft.slot && slots.some((slot) => slot.startTime === draft.slot));
       case "info": return false;
@@ -202,6 +209,9 @@ export function BookingExperience({ isEnglish }: { isEnglish: boolean }) {
       branchId: barber?.branchId ?? branch?.id ?? current.branchId,
       barberId: barber?.id ?? (current.guestCount > 1 ? "any" : ""),
       serviceId: barber ? barber.serviceIds[0] ?? current.serviceId : serviceId ?? current.serviceId,
+      serviceIds: barber
+        ? (barber.serviceIds[0] ? [barber.serviceIds[0]] : current.serviceIds)
+        : (serviceId ? [serviceId] : current.serviceIds),
       guestCount: barber ? 1 : current.guestCount,
       slot: ""
     }));
@@ -268,7 +278,11 @@ export function BookingExperience({ isEnglish }: { isEnglish: boolean }) {
         window.localStorage.removeItem(LAST_BOOKING_STORAGE_KEY);
         return;
       }
-      setSavedBooking({ ...parsed.booking, guestCount: parsed.booking.guestCount ?? 1 } as Booking);
+      setSavedBooking({
+        ...parsed.booking,
+        serviceIds: parsed.booking.serviceIds ?? (parsed.booking.serviceId ? [parsed.booking.serviceId] : []),
+        guestCount: parsed.booking.guestCount ?? 1
+      } as Booking);
       setSavedBookingExpiresAt(expiresAt);
     } catch {
       window.localStorage.removeItem(LAST_BOOKING_STORAGE_KEY);
@@ -323,11 +337,12 @@ export function BookingExperience({ isEnglish }: { isEnglish: boolean }) {
       setServices(nextServices);
       setDraft((current) => {
         if (current.branchId !== draft.branchId) return current;
-        const serviceStillValid = nextServices.some((service) => service.id === current.serviceId);
-        if (serviceStillValid) return current;
+        const nextServiceIds = current.serviceIds.filter((serviceId) => nextServices.some((service) => service.id === serviceId));
+        if (nextServiceIds.length === current.serviceIds.length) return current;
         return {
           ...current,
-          serviceId: "",
+          serviceId: nextServiceIds[0] ?? "",
+          serviceIds: nextServiceIds,
           barberId: "",
           slot: ""
         };
@@ -352,28 +367,28 @@ export function BookingExperience({ isEnglish }: { isEnglish: boolean }) {
         slot: ""
       };
     });
-  }, [barbers, draft.branchId, draft.serviceId, lockedBarberId]);
+  }, [barbers, draft.branchId, draft.serviceIds, lockedBarberId]);
 
   useEffect(() => {
     if (!clientReady) return;
-    if (!draft.branchId || !draft.serviceId) {
+    if (!draft.branchId || draft.serviceIds.length === 0) {
       setBarbers([]);
       return;
     }
     let active = true;
 
-    bookingService.fetchBarbers(draft.branchId, draft.serviceId).then((nextBarbers) => {
+    bookingService.fetchBarbers(draft.branchId, draft.serviceIds).then((nextBarbers) => {
       if (active) setBarbers(nextBarbers);
     });
 
     return () => {
       active = false;
     };
-  }, [clientReady, draft.branchId, draft.serviceId]);
+  }, [clientReady, draft.branchId, draft.serviceIds]);
 
   useEffect(() => {
     if (!clientReady) return;
-    if (!draft.branchId || !draft.serviceId || !draft.barberId || !draft.date) {
+    if (!draft.branchId || draft.serviceIds.length === 0 || !draft.barberId || !draft.date) {
       setSlots([]);
       setSlotsLoadError(false);
       return;
@@ -381,7 +396,7 @@ export function BookingExperience({ isEnglish }: { isEnglish: boolean }) {
     let active = true;
 
     bookingService
-      .fetchAvailableSlots(draft.branchId, draft.serviceId, draft.barberId, draft.date)
+      .fetchAvailableSlots(draft.branchId, draft.serviceIds, draft.barberId, draft.date)
       .then((nextSlots) => {
         if (active) {
           setSlotsLoadError(false);
@@ -398,17 +413,22 @@ export function BookingExperience({ isEnglish }: { isEnglish: boolean }) {
     return () => {
       active = false;
     };
-  }, [bookingsVersion, clientReady, draft.barberId, draft.branchId, draft.date, draft.guestCount, draft.serviceId]);
+  }, [bookingsVersion, clientReady, draft.barberId, draft.branchId, draft.date, draft.guestCount, draft.serviceIds]);
 
   function updateDraft(value: Partial<BookingDraft>) {
     setDraft((current) => {
       const next = { ...current, ...value };
+      if (value.serviceIds) next.serviceId = value.serviceIds[0] ?? "";
+      if (value.guestCount && value.guestCount > 1 && next.serviceIds.length > 1) {
+        next.serviceIds = [next.serviceIds[0]];
+        next.serviceId = next.serviceIds[0];
+      }
       if (next.guestCount > 1) {
         next.barberId = "any";
       } else if (value.guestCount !== undefined && current.guestCount > 1 && !lockedBarberId) {
         next.barberId = "";
       }
-      if (value.guestCount !== undefined || value.branchId || value.serviceId || value.barberId || value.date) {
+      if (value.guestCount !== undefined || value.branchId || value.serviceId || value.serviceIds || value.barberId || value.date) {
         next.slot = "";
       }
       return next;
@@ -577,7 +597,7 @@ export function BookingExperience({ isEnglish }: { isEnglish: boolean }) {
                 />
                 <BookingSummary
                   branch={selectedBranch}
-                  service={selectedService}
+                  services={selectedServices}
                   barber={selectedBarber}
                   slot={selectedSlot}
                   draft={draft}
@@ -591,7 +611,7 @@ export function BookingExperience({ isEnglish }: { isEnglish: boolean }) {
               <BranchSelector
                 branches={branches}
                 selectedBranchId={draft.branchId}
-                onSelect={(branchId) => updateDraft({ branchId, serviceId: "", barberId: "", slot: "" })}
+                onSelect={(branchId) => updateDraft({ branchId, serviceId: "", serviceIds: [], barberId: "", slot: "" })}
                 error={errors.branchId}
                 isEnglish={isEnglish}
               />
@@ -600,8 +620,15 @@ export function BookingExperience({ isEnglish }: { isEnglish: boolean }) {
             {!lockedBarberId && activeStep.key === "service" && (
               <ServiceSelector
                 services={services}
-                selectedServiceId={draft.serviceId}
-                onSelect={(serviceId) => updateDraft({ serviceId, barberId: isGroupBooking ? "any" : "", slot: "" })}
+                selectedServiceIds={draft.serviceIds}
+                onToggle={(serviceId) => {
+                  const nextServiceIds = isGroupBooking
+                    ? [serviceId]
+                    : draft.serviceIds.includes(serviceId)
+                      ? draft.serviceIds.filter((id) => id !== serviceId)
+                      : [...draft.serviceIds, serviceId];
+                  updateDraft({ serviceIds: nextServiceIds, barberId: isGroupBooking ? "any" : "", slot: "" });
+                }}
                 error={errors.serviceId}
                 isEnglish={isEnglish}
                 guestCount={draft.guestCount}
@@ -649,14 +676,20 @@ export function BookingExperience({ isEnglish }: { isEnglish: boolean }) {
               <summary>
                 <span className="booking-dock-current">
                   <small>{isEnglish ? "Step" : "Bước"} {visibleStepIndex + 1}/{bookingSteps.length} · {activeStep.label}</small>
-                  <strong>{selectedService ? getLocalizedService(selectedService, isEnglish).name : isEnglish ? "Your booking" : "Lịch hẹn của bạn"}</strong>
+                  <strong>{selectedServices.length > 1
+                    ? (isEnglish ? `${selectedServices.length} services selected` : `Đã chọn ${selectedServices.length} dịch vụ`)
+                    : selectedService ? getLocalizedService(selectedService, isEnglish).name : isEnglish ? "Your booking" : "Lịch hẹn của bạn"}</strong>
                   <span className="booking-dock-disclosure">{isEnglish ? "View details" : "Xem chi tiết"} <span aria-hidden="true">⌃</span></span>
                 </span>
-                {selectedService && <span className="booking-dock-price"><small>{isEnglish ? "Estimated" : "Tạm tính"}</small><b>{getLocalizedPriceLabel(selectedService, isEnglish) ? `${getLocalizedPriceLabel(selectedService, isEnglish)}${draft.guestCount > 1 ? ` × ${draft.guestCount}` : ""}` : formatCurrency(selectedService.price * draft.guestCount, isEnglish)}</b></span>}
+                {selectedService && <span className="booking-dock-price"><small>{isEnglish ? "Estimated" : "Tạm tính"}</small><b>{selectedServices.length > 1 && hasVariableServicePrice
+                  ? (isEnglish ? "Price on consult" : "Giá theo tư vấn")
+                  : selectedServices.length === 1 && getLocalizedPriceLabel(selectedService, isEnglish)
+                  ? `${getLocalizedPriceLabel(selectedService, isEnglish)}${draft.guestCount > 1 ? ` × ${draft.guestCount}` : ""}`
+                  : formatCurrency(selectedServicesPrice * draft.guestCount, isEnglish)}</b></span>}
               </summary>
               <dl>
                 <div><dt>{isEnglish ? "Branch" : "Cơ sở"}</dt><dd>{selectedBranch?.address ?? (isEnglish ? "Not selected" : "Chưa chọn")}</dd></div>
-                <div><dt>{isEnglish ? "Service" : "Dịch vụ"}</dt><dd>{selectedService ? `${getLocalizedService(selectedService, isEnglish).name} · ${selectedService.durationMinutes} ${isEnglish ? "min" : "phút"}` : isEnglish ? "Not selected" : "Chưa chọn"}</dd></div>
+                <div><dt>{isEnglish ? "Service" : "Dịch vụ"}</dt><dd>{selectedServices.length > 0 ? `${selectedServices.map((service) => getLocalizedService(service, isEnglish).name).join(" + ")} · ${selectedServicesDuration} ${isEnglish ? "min" : "phút"}` : isEnglish ? "Not selected" : "Chưa chọn"}</dd></div>
                 <div><dt>{isEnglish ? "Barber" : "Thợ"}</dt><dd>{isGroupBooking ? (isEnglish ? "Crew auto-matched" : "Crew tự xếp thợ") : draft.barberId === "any" ? (isEnglish ? "Any available barber" : "Thợ bất kỳ") : selectedBarber?.name ?? (isEnglish ? "Not selected" : "Chưa chọn")}</dd></div>
                 <div><dt>{isEnglish ? "Time" : "Ngày giờ"}</dt><dd>{selectedSlot ? formatBookingTime(selectedSlot.startTime, isEnglish) : isEnglish ? "Not selected" : "Chưa chọn"}</dd></div>
                 <div><dt>{isEnglish ? "Guests" : "Số khách"}</dt><dd>{draft.guestCount}</dd></div>
@@ -806,15 +839,15 @@ function BranchSelector({
 
 function ServiceSelector({
   services,
-  selectedServiceId,
-  onSelect,
+  selectedServiceIds,
+  onToggle,
   error,
   isEnglish,
   guestCount
 }: {
   services: Service[];
-  selectedServiceId: string;
-  onSelect: (serviceId: string) => void;
+  selectedServiceIds: string[];
+  onToggle: (serviceId: string) => void;
   error?: string;
   isEnglish: boolean;
   guestCount: number;
@@ -829,10 +862,17 @@ function ServiceSelector({
   const currentCategory = serviceCategories.find((category) => category.id === visibleCategory);
   const categoryServices = services.filter((service) => getServiceCategory(service) === visibleCategory);
   const serviceSections = groupServicesForDisplay(categoryServices, isEnglish);
+  const selectedServices = services.filter((service) => selectedServiceIds.includes(service.id));
+  const selectedDuration = selectedServices.reduce((total, service) => total + service.durationMinutes, 0);
+  const selectedPrice = selectedServices.reduce((total, service) => total + service.price, 0);
+  const hasVariablePrice = selectedServices.some((service) => Boolean(getLocalizedPriceLabel(service, isEnglish)));
 
   return (
     <div className="booking-block">
-      <h3>{isEnglish ? "Choose service" : "Chọn dịch vụ"}</h3>
+      <div className="booking-block-title">
+        <h3>{isEnglish ? "Choose service" : "Chọn dịch vụ"}</h3>
+        <span>{isEnglish ? "Choose one or more" : "Chọn một hoặc nhiều"}</span>
+      </div>
       {guestCount > 1 && (
         <div className="group-booking-note">
           <strong>{isEnglish ? `${guestCount} guests, one shared service` : `${guestCount} khách, cùng một dịch vụ`}</strong>
@@ -841,6 +881,15 @@ function ServiceSelector({
               ? "We will match enough available barbers so your group can start together."
               : "Crew sẽ xếp đủ thợ còn trống để cả nhóm bắt đầu cùng lúc."}
           </span>
+        </div>
+      )}
+      {selectedServices.length > 0 && (
+        <div className="selected-service-cart" aria-live="polite">
+          <div>
+            <strong>{isEnglish ? `${selectedServices.length} selected` : `Đã chọn ${selectedServices.length} dịch vụ`}</strong>
+            <span>{selectedServices.map((service) => getLocalizedService(service, isEnglish).name).join(" · ")}</span>
+          </div>
+          <b>{selectedDuration} {isEnglish ? "min" : "phút"} · {hasVariablePrice ? (isEnglish ? "Price on consult" : "Giá theo tư vấn") : formatCurrency(selectedPrice, isEnglish)}</b>
         </div>
       )}
       <div className="service-category-tabs" role="tablist" aria-label={isEnglish ? "Service groups" : "Nhóm dịch vụ"}>
@@ -873,10 +922,11 @@ function ServiceSelector({
                 const localizedService = getLocalizedService(service, isEnglish);
                 return (
                   <button
-                    className={selectedServiceId === service.id ? "is-selected" : ""}
+                    className={selectedServiceIds.includes(service.id) ? "is-selected" : ""}
                     type="button"
                     key={service.id}
-                    onClick={() => onSelect(service.id)}
+                    onClick={() => onToggle(service.id)}
+                    aria-pressed={selectedServiceIds.includes(service.id)}
                   >
                     <strong>{localizedService.name}</strong>
                     <span>{service.durationMinutes} {isEnglish ? "min" : "phút"}</span>
@@ -1118,7 +1168,7 @@ function CustomerInfoForm({
 
 function BookingSummary({
   branch,
-  service,
+  services,
   barber,
   slot,
   draft,
@@ -1126,7 +1176,7 @@ function BookingSummary({
   isEnglish
 }: {
   branch?: Branch;
-  service?: Service;
+  services: Service[];
   barber?: Barber;
   slot?: TimeSlot;
   draft: BookingDraft;
@@ -1146,7 +1196,9 @@ function BookingSummary({
         </div>
         <div>
           <dt>{isEnglish ? "Service" : "Dịch vụ"}</dt>
-          <dd>{service ? `${getLocalizedService(service, isEnglish).name} / ${service.durationMinutes} ${isEnglish ? "min" : "phút"}` : "-"}</dd>
+          <dd>{services.length > 0
+            ? `${services.map((service) => getLocalizedService(service, isEnglish).name).join(" + ")} / ${services.reduce((total, service) => total + service.durationMinutes, 0)} ${isEnglish ? "min" : "phút"}`
+            : "-"}</dd>
         </div>
         <div>
           <dt>{isEnglish ? "Guests" : "Số khách"}</dt>
@@ -1193,7 +1245,9 @@ function BookingSuccess({
   resultRef: RefObject<HTMLElement | null>;
 }) {
   const branch = branches.find((item) => item.id === booking.branchId);
-  const service = services.find((item) => item.id === booking.serviceId);
+  const bookingServices = (booking.serviceIds.length > 0 ? booking.serviceIds : [booking.serviceId])
+    .map((serviceId) => services.find((item) => item.id === serviceId))
+    .filter((service): service is Service => Boolean(service));
   const barber = barbers.find((item) => item.id === booking.barberId);
 
   return (
@@ -1214,7 +1268,7 @@ function BookingSuccess({
       </div>
       <dl>
         <dt>{isEnglish ? "Service" : "Dịch vụ"}</dt>
-        <dd>{service ? getLocalizedService(service, isEnglish).name : "-"}</dd>
+        <dd>{bookingServices.length > 0 ? bookingServices.map((service) => getLocalizedService(service, isEnglish).name).join(" + ") : "-"}</dd>
         <dt>{isEnglish ? "Guests" : "Số khách"}</dt>
         <dd>{booking.guestCount} {isEnglish ? (booking.guestCount === 1 ? "guest" : "guests") : "khách"}</dd>
         <dt>{isEnglish ? "Barber" : "Thợ"}</dt>

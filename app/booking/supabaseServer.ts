@@ -1,4 +1,4 @@
-import { getAvailableSlots, getBookingEnd } from "./availabilityUtils";
+import { getAvailableSlots, getBookingEnd, getServicesDuration } from "./availabilityUtils";
 import { syncBookingToCalendar } from "./calendar";
 import { sendBarberBookingEmail } from "./email";
 import { barbers as mockBarbers, branches as mockBranches, seedBookings, services as mockServices } from "./mockBookingData";
@@ -46,6 +46,7 @@ type SupabaseBookingRow = {
   id: string;
   branch_id: string;
   service_id: string | null;
+  service_ids?: string[] | null;
   barber_id: string;
   customer_name: string;
   customer_phone: string;
@@ -90,6 +91,12 @@ function isBookingConflictError(error: unknown) {
 function isMissingGroupMetadataError(error: unknown) {
   if (!(error instanceof SupabaseRestError) || error.code !== "PGRST204") return false;
   return error.message.includes("group_id") || error.message.includes("guest_count");
+}
+
+function isMissingServiceIdsError(error: unknown) {
+  return error instanceof SupabaseRestError
+    && (error.code === "PGRST204" || error.code === "42703")
+    && error.message.includes("service_ids");
 }
 
 function isMissingPriceVisibilityError(error: unknown) {
@@ -188,6 +195,7 @@ function mapBooking(row: SupabaseBookingRow): Booking {
     id: row.id,
     branchId: row.branch_id,
     serviceId: row.service_id ?? "",
+    serviceIds: row.service_ids?.filter(Boolean) ?? (row.service_id ? [row.service_id] : []),
     barberId: row.barber_id,
     customerName: row.customer_name,
     customerPhone: row.customer_phone,
@@ -224,7 +232,10 @@ function findRequestedSlot(slots: TimeSlot[], requestedValue: string) {
 export function validateBookingDraft(draft: BookingDraft) {
   const errors: Partial<Record<keyof BookingDraft, string>> = {};
   if (!draft.branchId) errors.branchId = "Chọn cơ sở trước khi giữ ghế.";
-  if (!draft.serviceId) errors.serviceId = "Chọn dịch vụ để tính thời lượng slot.";
+  if (!draft.serviceId || draft.serviceIds.length === 0) errors.serviceId = "Chọn ít nhất một dịch vụ để tính thời lượng slot.";
+  if (draft.guestCount > 1 && draft.serviceIds.length > 1) {
+    errors.serviceId = "Đặt nhóm hiện hỗ trợ một dịch vụ chung cho cả nhóm.";
+  }
   if (!draft.barberId) errors.barberId = "Chọn thợ hoặc Thợ bất kỳ.";
   if (!Number.isInteger(draft.guestCount) || draft.guestCount < 1 || draft.guestCount > 4) {
     errors.guestCount = "Số khách cần từ 1 đến 4 người.";
@@ -287,11 +298,11 @@ export async function getPricingServices(branchId?: string): Promise<Service[]> 
   }
 }
 
-export async function getBarbers(branchId?: string, serviceId?: string): Promise<Barber[]> {
+export async function getBarbers(branchId?: string, serviceIds: string[] = []): Promise<Barber[]> {
   if (!isSupabaseConfigured()) {
     return mockBarbers.filter((barber) => {
       if (branchId && barber.branchId !== branchId) return false;
-      if (serviceId && !barber.serviceIds.includes(serviceId)) return false;
+      if (serviceIds.some((serviceId) => !barber.serviceIds.includes(serviceId))) return false;
       return true;
     });
   }
@@ -309,7 +320,7 @@ export async function getBarbers(branchId?: string, serviceId?: string): Promise
         serviceRows.filter((row) => row.barber_id === barber.id).map((row) => row.service_id)
       )
     )
-    .filter((barber) => !serviceId || barber.serviceIds.includes(serviceId));
+    .filter((barber) => serviceIds.every((serviceId) => barber.serviceIds.includes(serviceId)));
 }
 
 export async function getBookings(): Promise<Booking[]> {
@@ -342,10 +353,16 @@ async function findMatchingBooking(draft: BookingDraft): Promise<Booking | null>
   }
 
   const rows = await restFetch<SupabaseBookingRow[]>(`bookings?${filters.join("&")}`);
-  return rows[0] ? mapBooking(rows[0]) : null;
+  const requestedServiceIds = [...new Set(draft.serviceIds)];
+  const matchingRow = rows.find((row) => {
+    const existingServiceIds = row.service_ids?.filter(Boolean) ?? (row.service_id ? [row.service_id] : []);
+    return existingServiceIds.length === requestedServiceIds.length
+      && existingServiceIds.every((serviceId, index) => serviceId === requestedServiceIds[index]);
+  });
+  return matchingRow ? mapBooking(matchingRow) : null;
 }
 
-export async function getSlots(branchId: string, serviceId: string, barberId: string, date: string): Promise<TimeSlot[]> {
+export async function getSlots(branchId: string, serviceIds: string[], barberId: string, date: string): Promise<TimeSlot[]> {
   const dayStart = new Date(`${date}T00:00:00+07:00`);
   if (!Number.isFinite(dayStart.getTime())) return [];
   const dayEnd = new Date(dayStart.getTime() + 86_400_000);
@@ -356,12 +373,14 @@ export async function getSlots(branchId: string, serviceId: string, barberId: st
     : Promise.resolve([] as BarberTimeOff[]);
   const [services, allBarbers, bookings, timeOff] = await Promise.all([getServices(branchId), getBarbers(branchId), getBookings(), timeOffPromise]);
   const barbers = allBarbers.filter((barber) => isOnlineBookableBarber(barber.id));
-  const service = services.find((item) => item.id === serviceId);
-  if (!service) return [];
+  const selectedServices = serviceIds
+    .map((serviceId) => services.find((item) => item.id === serviceId))
+    .filter((service): service is Service => Boolean(service));
+  if (selectedServices.length !== serviceIds.length || selectedServices.length === 0) return [];
 
   return getAvailableSlots({
     branchId,
-    service,
+    services: selectedServices,
     barberId,
     date,
     barbers,
@@ -371,6 +390,8 @@ export async function getSlots(branchId: string, serviceId: string, barberId: st
 }
 
 export async function createBooking(draft: BookingDraft) {
+  const serviceIds = [...new Set((draft.serviceIds ?? (draft.serviceId ? [draft.serviceId] : [])).filter(Boolean))];
+  draft = { ...draft, serviceId: serviceIds[0] ?? "", serviceIds };
   if (!isOnlineBookableBarber(draft.barberId)) {
     return { booking: null, errors: { barberId: "Liên hệ hotline để đặt lịch với WIN DREAD." }, message: "Vui lòng gọi hotline để đặt lịch với WIN DREAD." };
   }
@@ -380,12 +401,17 @@ export async function createBooking(draft: BookingDraft) {
   }
 
   const services = await getServices(draft.branchId);
-  const service = services.find((item) => item.id === draft.serviceId);
-  if (!service) return { booking: null, errors: {}, message: "Dịch vụ không tồn tại." };
+  const selectedServices = serviceIds
+    .map((serviceId) => services.find((item) => item.id === serviceId))
+    .filter((service): service is Service => Boolean(service));
+  if (selectedServices.length !== serviceIds.length || selectedServices.length === 0) {
+    return { booking: null, errors: { serviceId: "Một hoặc nhiều dịch vụ không còn khả dụng." }, message: "Dịch vụ đã chọn không còn khả dụng." };
+  }
+  const service = selectedServices[0];
   const branches = await getBranches();
   const selectedBranch = branches.find((branch) => branch.id === draft.branchId);
 
-  const availableSlots = await getSlots(draft.branchId, draft.serviceId, draft.barberId, draft.date);
+  const availableSlots = await getSlots(draft.branchId, serviceIds, draft.barberId, draft.date);
   // Conversational models may preserve the instant but change the ISO format
   // (for example 04:00Z vs 11:00+07:00). Compare timestamps, not raw strings.
   const selectedSlot = findRequestedSlot(availableSlots, draft.slot);
@@ -405,7 +431,7 @@ export async function createBooking(draft: BookingDraft) {
     };
   }
 
-  const barbers = await getBarbers(draft.branchId, draft.serviceId);
+  const barbers = await getBarbers(draft.branchId, serviceIds);
   const selectedBarberIds = draft.barberId === "any"
     ? selectedSlot.barberIds.slice(0, draft.guestCount)
     : [draft.barberId];
@@ -423,13 +449,14 @@ export async function createBooking(draft: BookingDraft) {
     id: `WD-${Date.now().toString(36).toUpperCase()}${index + 1}`,
     branchId: draft.branchId,
     serviceId: draft.serviceId,
+    serviceIds,
     barberId,
     customerName: draft.customerName.trim(),
     customerPhone: draft.customerPhone.trim(),
     customerEmail: draft.customerEmail.trim() || undefined,
     note: draft.note.trim() || undefined,
     startTime: selectedSlot.startTime,
-    endTime: getBookingEnd(selectedSlot.startTime, service.durationMinutes),
+    endTime: getBookingEnd(selectedSlot.startTime, getServicesDuration(selectedServices)),
     status: "pending",
     guestCount: draft.guestCount,
     groupId,
@@ -453,7 +480,7 @@ export async function createBooking(draft: BookingDraft) {
         barberName: selectedBarber?.name,
         branchName: selectedBranch?.name,
         branchAddress: selectedBranch?.address,
-        serviceName: service.name
+        serviceName: selectedServices.map((selectedService) => selectedService.name).join(" + ")
       });
     } catch (error) {
       console.warn("Brevo booking email failed:", error);
@@ -485,6 +512,7 @@ export async function createBooking(draft: BookingDraft) {
         id: booking.id,
         branch_id: booking.branchId,
         service_id: booking.serviceId,
+        service_ids: booking.serviceIds,
         barber_id: booking.barberId,
         customer_name: booking.customerName,
         customer_phone: booking.customerPhone,
@@ -503,18 +531,32 @@ export async function createBooking(draft: BookingDraft) {
         body: JSON.stringify(body)
       });
 
-    let rows: SupabaseBookingRow[];
-    try {
-      rows = await insertRows(bookingRows);
-    } catch (error) {
-      if (!isMissingGroupMetadataError(error)) throw error;
-
-      // Older WINDREAD databases predate group booking metadata. A single-customer
-      // chatbot booking can safely use the original schema until its migration runs.
-      rows = await insertRows(
-        bookingRows.map(({ guest_count: _guestCount, group_id: _groupId, ...row }) => row)
-      );
+    let rows: SupabaseBookingRow[] | undefined;
+    let pendingRows: Array<Record<string, unknown>> = bookingRows;
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      try {
+        rows = await insertRows(pendingRows);
+        break;
+      } catch (error) {
+        if (isMissingServiceIdsError(error)) {
+          if (serviceIds.length > 1) {
+            return {
+              booking: null,
+              errors: { serviceId: "Hệ thống đang cập nhật để hỗ trợ nhiều dịch vụ." },
+              message: "Tính năng nhiều dịch vụ đang được cập nhật. Vui lòng chọn một dịch vụ hoặc thử lại sau ít phút."
+            };
+          }
+          pendingRows = pendingRows.map(({ service_ids: _serviceIds, ...row }) => row);
+          continue;
+        }
+        if (isMissingGroupMetadataError(error)) {
+          pendingRows = pendingRows.map(({ guest_count: _guestCount, group_id: _groupId, ...row }) => row);
+          continue;
+        }
+        throw error;
+      }
     }
+    if (!rows) throw new Error("Could not create booking rows.");
     const createdBooking = mapBooking(rows[0]);
     const createdBookings = rows.map(mapBooking);
     await Promise.all(createdBookings.flatMap((booking) => [

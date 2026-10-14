@@ -4322,6 +4322,47 @@ textarea:focus-visible {
   line-height: 1.45;
 }
 
+.selected-service-cart {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px 14px;
+  border: 1px solid rgba(216, 50, 69, 0.5);
+  background: rgba(163, 22, 38, 0.16);
+}
+
+.selected-service-cart > div { min-width: 0; }
+
+.selected-service-cart strong,
+.selected-service-cart span,
+.selected-service-cart b {
+  display: block;
+}
+
+.selected-service-cart strong,
+.selected-service-cart b {
+  color: var(--accent-strong);
+  font-family: var(--font-small);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.selected-service-cart span {
+  margin-top: 4px;
+  color: var(--text);
+  font-size: 0.84rem;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.selected-service-cart b {
+  flex: 0 0 auto;
+  text-align: right;
+}
+
 .booking-choice-grid,
 .service-pick-grid,
 .barber-pick-grid,
@@ -8759,6 +8800,13 @@ textarea:focus-visible {
     min-height: 72px;
     padding: 8px 5px;
   }
+
+  .selected-service-cart {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .selected-service-cart b { text-align: left; }
 
   .service-category-tabs {
     gap: 5px;

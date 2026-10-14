@@ -47,11 +47,11 @@ export const bookingService = {
     return services.filter((service) => service.isBookable !== false && (!branchId || service.branchId === branchId));
   },
 
-  getBarbers(branchId?: string, serviceId?: string) {
+  getBarbers(branchId?: string, serviceIds: string[] = []) {
     return barbers.filter((barber) => {
       if (!isOnlineBookableBarber(barber.id)) return false;
       if (branchId && barber.branchId !== branchId) return false;
-      if (serviceId && !barber.serviceIds.includes(serviceId)) return false;
+      if (serviceIds.some((serviceId) => !barber.serviceIds.includes(serviceId))) return false;
       return true;
     });
   },
@@ -78,15 +78,15 @@ export const bookingService = {
     }
   },
 
-  async fetchBarbers(branchId?: string, serviceId?: string) {
+  async fetchBarbers(branchId?: string, serviceIds: string[] = []) {
     const params = new URLSearchParams();
     if (branchId) params.set("branchId", branchId);
-    if (serviceId) params.set("serviceId", serviceId);
+    if (serviceIds.length > 0) params.set("serviceIds", serviceIds.join(","));
 
     try {
       return (await fetchJson<typeof barbers>(`/api/barbers?${params.toString()}`)).filter((barber) => isOnlineBookableBarber(barber.id));
     } catch {
-      return this.getBarbers(branchId, serviceId);
+      return this.getBarbers(branchId, serviceIds);
     }
   },
 
@@ -100,31 +100,33 @@ export const bookingService = {
 
   getAvailableSlots(
     branchId: string,
-    serviceId: string,
+    serviceIds: string[],
     barberId: string,
     date: string,
     includeStored = true
   ) {
-    const service = services.find((item) => item.id === serviceId);
-    if (!service) return [];
+    const selectedServices = serviceIds
+      .map((serviceId) => services.find((item) => item.id === serviceId))
+      .filter((service): service is (typeof services)[number] => Boolean(service));
+    if (selectedServices.length !== serviceIds.length || selectedServices.length === 0) return [];
 
     return getAvailableSlots({
       branchId,
-      service,
+      services: selectedServices,
       barberId,
       date,
-      barbers: this.getBarbers(branchId, serviceId),
+      barbers: this.getBarbers(branchId, serviceIds),
       bookings: this.getBookings(includeStored)
     });
   },
 
-  async fetchAvailableSlots(branchId: string, serviceId: string, barberId: string, date: string) {
-    const params = new URLSearchParams({ branchId, serviceId, barberId, date });
+  async fetchAvailableSlots(branchId: string, serviceIds: string[], barberId: string, date: string) {
+    const params = new URLSearchParams({ branchId, serviceIds: serviceIds.join(","), barberId, date });
     try {
       return await fetchJson(`/api/available-slots?${params.toString()}`) as ReturnType<typeof getAvailableSlots>;
     } catch (error) {
       if (process.env.NODE_ENV === "development" && !process.env.NEXT_PUBLIC_SUPABASE_URL) {
-        return this.getAvailableSlots(branchId, serviceId, barberId, date);
+        return this.getAvailableSlots(branchId, serviceIds, barberId, date);
       }
       throw error;
     }
@@ -133,7 +135,7 @@ export const bookingService = {
   validateDraft(draft: BookingDraft) {
     const errors: Partial<Record<keyof BookingDraft, string>> = {};
     if (!draft.branchId) errors.branchId = "Chọn cơ sở trước khi giữ ghế.";
-    if (!draft.serviceId) errors.serviceId = "Chọn dịch vụ để tính thời lượng slot.";
+    if (!draft.serviceId || draft.serviceIds.length === 0) errors.serviceId = "Chọn ít nhất một dịch vụ để tính thời lượng slot.";
     if (!draft.barberId) errors.barberId = "Chọn thợ hoặc Thợ bất kỳ.";
     if (!Number.isInteger(draft.guestCount) || draft.guestCount < 1 || draft.guestCount > 4) {
       errors.guestCount = "Số khách cần từ 1 đến 4 người.";

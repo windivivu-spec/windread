@@ -5,11 +5,11 @@ import { usePathname } from "next/navigation";
 import type { CSSProperties } from "react";
 import { useEffect, useState } from "react";
 import { branchProfiles } from "./branches/branchData";
-import { formatCurrency } from "./booking/availabilityUtils";
 import { BookingExperience } from "./booking/BookingExperience";
 import { getServiceCategory, serviceCategories } from "./booking/serviceCategories";
-import { getLocalizedPriceLabel, getLocalizedService, groupServicesForDisplay } from "./booking/servicePresentation";
+import { getLocalizedService, groupServicesForDisplay } from "./booking/servicePresentation";
 import type { Service } from "./booking/types";
+import { PriceMenu } from "./pricing/PriceMenu";
 
 const orderedBranchProfiles = [...branchProfiles].sort((a, b) => a.label.vi.localeCompare(b.label.vi));
 
@@ -919,69 +919,6 @@ export function SitePage({
   }
 
   const isChuongDuongBarberPrice = activePricingBoard?.id === "chuong-duong" && activePricingGroup?.id === "barber";
-  const walkInSections = activePricingGroup?.sections
-    .map((section) => ({ ...section, services: section.services.filter((service) => service.isBookable === false) }))
-    .filter((section) => section.services.length > 0) ?? [];
-  const prioritySections = activePricingGroup?.sections
-    .map((section) => ({ ...section, services: section.services.filter((service) => service.isBookable !== false) }))
-    .filter((section) => section.services.length > 0) ?? [];
-
-  function renderPriceSections(sections: typeof prioritySections, bookingEnabled: boolean) {
-    return sections.map((section) => (
-      <section className="pricing-subgroup" key={section.id}>
-        <h5>{section.label}</h5>
-        <div className="price-table">
-          {section.services.map((service) => {
-            const localizedService = getLocalizedService(service, isEnglish);
-            const haircutNote = service.id === "cd-haircut"
-              ? {
-                  label: isEnglish ? "Walk-in" : "Khách đến trực tiếp",
-                  text: isEnglish
-                    ? "No booking required · Walk in anytime. Service is subject to availability and waiting time."
-                    : "Không cần đặt lịch · Có thể ghé tiệm bất cứ lúc nào. Phục vụ tùy tình trạng thợ và thời gian chờ."
-                }
-              : service.id === "cd-haircut-expert"
-                ? {
-                    label: isEnglish ? "Appointment" : "Đặt lịch trước",
-                    text: isEnglish
-                      ? "Choose your preferred barber and time. Your appointment is reserved for you."
-                      : "Chọn barber và khung giờ bạn muốn. Lịch hẹn được giữ riêng cho bạn."
-                  }
-                : null;
-            const rowContent = <>
-              <div className="price-row-copy">
-                <strong>{localizedService.name}</strong>
-                <span title={localizedService.description}>{localizedService.description}</span>
-              </div>
-              <div className="price-row-facts">
-                <div className="price-row-meta">
-                  {!bookingEnabled && <em className="price-row-walk-in-label">{isEnglish ? "Walk-in only" : "Chỉ nhận tại tiệm"}</em>}
-                  <span className="price-row-duration">{service.durationMinutes} {isEnglish ? "min" : "phút"}</span>
-                </div>
-                <b>{getLocalizedPriceLabel(service, isEnglish) || formatCurrency(service.price, isEnglish)}</b>
-              </div>
-              {haircutNote && (
-                <div className="price-row-note">
-                  <b>{haircutNote.label}</b>
-                  <span>{haircutNote.text}</span>
-                </div>
-              )}
-            </>;
-            const haircutClass = haircutNote ? " price-row-haircut" : "";
-            return bookingEnabled ? (
-              <a className={`price-row price-row-book${haircutClass}`} href={`/booking?branch=${encodeURIComponent(service.branchId)}&service=${encodeURIComponent(service.id)}`} key={service.id}>
-                {rowContent}
-              </a>
-            ) : (
-              <article className={`price-row price-row-walk-in${haircutClass}`} key={service.id}>
-                {rowContent}
-              </article>
-            );
-          })}
-        </div>
-      </section>
-    ));
-  }
 
   return (
     <main id="main-content">
@@ -1599,16 +1536,7 @@ export function SitePage({
                     <div className="pricing-groups">
                       <section className="pricing-group" key={`${activePricingBoard.id}-${activePricingGroup.id}`}>
                         <h4>{activePricingGroup.title}</h4>
-                        {isChuongDuongBarberPrice ? <>
-                          {walkInSections.length > 0 && <section className="pricing-fulfilment pricing-fulfilment-walk-in">
-                            <header><p>Walk-in</p><h5>{isEnglish ? "Come in, no appointment needed" : "Tới trực tiếp · không cần đặt lịch"}</h5><span>{isEnglish ? "A barber is assigned based on availability." : "Barber được xếp theo tình trạng sẵn sàng."}</span></header>
-                            {renderPriceSections(walkInSections, false)}
-                          </section>}
-                          {prioritySections.length > 0 && <section className="pricing-fulfilment pricing-fulfilment-priority">
-                            <header><p>Priority appointment</p><h5>{isEnglish ? "Choose your barber · choose your time" : "Chọn barber · chọn khung giờ"}</h5><span>{isEnglish ? "Book ahead for priority service." : "Đặt trước để được ưu tiên phục vụ."}</span></header>
-                            {renderPriceSections(prioritySections, true)}
-                          </section>}
-                        </> : renderPriceSections(activePricingGroup.sections, true)}
+                        <PriceMenu sections={activePricingGroup.sections} isEnglish={isEnglish} compareBarberPrices={isChuongDuongBarberPrice} />
                         {activePricingBoard.id === "chuong-duong" && activePricingGroup.id === "afro" && (
                           <div className="pricing-afro-guide">
                             <section>

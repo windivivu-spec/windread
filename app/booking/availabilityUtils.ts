@@ -80,16 +80,20 @@ export function getBookingEnd(startTime: string, durationMinutes: number) {
   return addMinutes(new Date(startTime), durationMinutes).toISOString();
 }
 
+export function getServicesDuration(services: Service[]) {
+  return services.reduce((total, service) => total + service.durationMinutes, 0);
+}
+
 export function isBarberAvailable(
   barber: Barber,
-  service: Service,
+  services: Service[],
   start: Date,
   bookings: Booking[],
   timeOff: BarberTimeOff[] = [],
   now = new Date()
 ) {
   if (start.getTime() <= now.getTime()) return false;
-  if (!barber.serviceIds.includes(service.id)) return false;
+  if (services.length === 0 || services.some((service) => !barber.serviceIds.includes(service.id))) return false;
 
   const dateValue = toDateInputValue(start);
   const weekday = weekdays[weekdayIndex(dateValue)];
@@ -98,7 +102,7 @@ export function isBarberAvailable(
 
   const shiftStart = buildLocalDateTime(dateValue, hours.start);
   const shiftEnd = buildLocalDateTime(dateValue, hours.end);
-  const end = addMinutes(start, service.durationMinutes);
+  const end = addMinutes(start, getServicesDuration(services));
 
   if (start < shiftStart || end > shiftEnd) return false;
   if (timeOff.some((period) => period.barberId === barber.id && start < new Date(period.endTime) && end > new Date(period.startTime))) return false;
@@ -118,7 +122,7 @@ export function isBarberAvailable(
 
 export function getAvailableSlots({
   branchId,
-  service,
+  services,
   barberId,
   date,
   barbers,
@@ -127,7 +131,7 @@ export function getAvailableSlots({
   now = new Date()
 }: {
   branchId: string;
-  service: Service;
+  services: Service[];
   barberId: string;
   date: string;
   barbers: Barber[];
@@ -144,9 +148,9 @@ export function getAvailableSlots({
 
   for (let minutes = 0; minutes < 24 * 60; minutes += SLOT_STEP_MINUTES) {
     const start = addMinutes(dayStart, minutes);
-    const end = addMinutes(start, service.durationMinutes);
+    const end = addMinutes(start, getServicesDuration(services));
     const availableBarberIds = branchBarbers
-      .filter((barber) => isBarberAvailable(barber, service, start, bookings, timeOff, now))
+      .filter((barber) => isBarberAvailable(barber, services, start, bookings, timeOff, now))
       .map((barber) => barber.id);
 
     if (availableBarberIds.length === 0) continue;
