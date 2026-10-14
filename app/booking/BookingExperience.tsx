@@ -11,7 +11,7 @@ import {
   getUpcomingDays
 } from "./availabilityUtils";
 import { getServiceCategory, serviceCategories } from "./serviceCategories";
-import { getLocalizedPriceLabel, getLocalizedService, groupServicesForDisplay } from "./servicePresentation";
+import { getLocalizedPriceLabel, getLocalizedService, getSelectedServicesPriceLabel, groupServicesForDisplay } from "./servicePresentation";
 import type { Barber, Booking, BookingDraft, Branch, Service, TimeSlot } from "./types";
 
 type BookingErrors = Partial<Record<keyof BookingDraft, string>>;
@@ -82,8 +82,6 @@ export function BookingExperience({ isEnglish }: { isEnglish: boolean }) {
   const selectedServices = services.filter((service) => draft.serviceIds.includes(service.id));
   const selectedService = selectedServices[0];
   const selectedServicesDuration = selectedServices.reduce((total, service) => total + service.durationMinutes, 0);
-  const selectedServicesPrice = selectedServices.reduce((total, service) => total + service.price, 0);
-  const hasVariableServicePrice = selectedServices.some((service) => Boolean(getLocalizedPriceLabel(service, isEnglish)));
   const filteredBarbers = barbers;
   const lockedBarber = lockedBarberId
     ? bookingService.getBarbers().find((barber) => barber.id === lockedBarberId)
@@ -681,11 +679,7 @@ export function BookingExperience({ isEnglish }: { isEnglish: boolean }) {
                     : selectedService ? getLocalizedService(selectedService, isEnglish).name : isEnglish ? "Your booking" : "Lịch hẹn của bạn"}</strong>
                   <span className="booking-dock-disclosure">{isEnglish ? "View details" : "Xem chi tiết"} <span aria-hidden="true">⌃</span></span>
                 </span>
-                {selectedService && <span className="booking-dock-price"><small>{isEnglish ? "Estimated" : "Tạm tính"}</small><b>{selectedServices.length > 1 && hasVariableServicePrice
-                  ? (isEnglish ? "Price on consult" : "Giá theo tư vấn")
-                  : selectedServices.length === 1 && getLocalizedPriceLabel(selectedService, isEnglish)
-                  ? `${getLocalizedPriceLabel(selectedService, isEnglish)}${draft.guestCount > 1 ? ` × ${draft.guestCount}` : ""}`
-                  : formatCurrency(selectedServicesPrice * draft.guestCount, isEnglish)}</b></span>}
+                {selectedService && <span className="booking-dock-price"><small>{isEnglish ? "Estimated" : "Tạm tính"}</small><b>{getSelectedServicesPriceLabel(selectedServices, draft.guestCount, isEnglish)}</b></span>}
               </summary>
               <dl>
                 <div><dt>{isEnglish ? "Branch" : "Cơ sở"}</dt><dd>{selectedBranch?.address ?? (isEnglish ? "Not selected" : "Chưa chọn")}</dd></div>
@@ -864,8 +858,6 @@ function ServiceSelector({
   const serviceSections = groupServicesForDisplay(categoryServices, isEnglish);
   const selectedServices = services.filter((service) => selectedServiceIds.includes(service.id));
   const selectedDuration = selectedServices.reduce((total, service) => total + service.durationMinutes, 0);
-  const selectedPrice = selectedServices.reduce((total, service) => total + service.price, 0);
-  const hasVariablePrice = selectedServices.some((service) => Boolean(getLocalizedPriceLabel(service, isEnglish)));
 
   return (
     <div className="booking-block">
@@ -889,7 +881,7 @@ function ServiceSelector({
             <strong>{isEnglish ? `${selectedServices.length} selected` : `Đã chọn ${selectedServices.length} dịch vụ`}</strong>
             <span>{selectedServices.map((service) => getLocalizedService(service, isEnglish).name).join(" · ")}</span>
           </div>
-          <b>{selectedDuration} {isEnglish ? "min" : "phút"} · {hasVariablePrice ? (isEnglish ? "Price on consult" : "Giá theo tư vấn") : formatCurrency(selectedPrice, isEnglish)}</b>
+          <b>{selectedDuration} {isEnglish ? "min" : "phút"} · {getSelectedServicesPriceLabel(selectedServices, guestCount, isEnglish)}</b>
         </div>
       )}
       <div className="service-category-tabs" role="tablist" aria-label={isEnglish ? "Service groups" : "Nhóm dịch vụ"}>

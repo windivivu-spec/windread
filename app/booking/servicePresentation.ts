@@ -1,5 +1,6 @@
 import { getServiceCategory } from "./serviceCategories";
 import type { Service, ServiceCategory } from "./types";
+import { formatCurrency } from "./availabilityUtils";
 
 type SectionId =
   | "barber-main"
@@ -250,4 +251,22 @@ export function getLocalizedPriceLabel(service: Service, isEnglish: boolean): st
     .replace(/\s*\/\s*bịch/gi, " / pack")
     .replace(/\s*\/\s*30\s*phút/gi, " / 30 min")
     .replace(/\s*\/\s*phút/gi, " / min");
+}
+
+export function hasFixedServicePrice(service: Service): boolean {
+  const label = service.priceLabel?.trim();
+  if (!label) return true;
+  // A plain amount is still a fixed price. Ranges, "from" prices and
+  // per-hour/per-item rates need consultation or an additional quantity.
+  return /^(?:\d+|\d{1,3}(?:[.,\s]\d{3})+)\s*(?:đ|₫|vnd|vnđ)?$/iu.test(label);
+}
+
+export function getSelectedServicesPriceLabel(services: Service[], guestCount: number, isEnglish: boolean): string {
+  if (services.every(hasFixedServicePrice)) {
+    return formatCurrency(services.reduce((total, service) => total + service.price, 0) * guestCount, isEnglish);
+  }
+  if (services.length === 1) {
+    return `${getLocalizedPriceLabel(services[0], isEnglish)}${guestCount > 1 ? ` × ${guestCount}` : ""}`;
+  }
+  return isEnglish ? "Price on consult" : "Giá theo tư vấn";
 }
