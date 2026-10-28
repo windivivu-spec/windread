@@ -19,6 +19,7 @@ type SupabaseServiceRow = {
   description: string;
   price: number;
   price_label?: string | null;
+  walk_in_price?: number | null;
   service_category?: ServiceCategory | null;
   duration_minutes: number;
   is_bookable?: boolean;
@@ -168,6 +169,7 @@ function mapService(row: SupabaseServiceRow): Service {
     description: row.description,
     price: row.price,
     priceLabel: row.price_label ?? undefined,
+    walkInPrice: row.walk_in_price ?? undefined,
     category: row.service_category ?? undefined,
     durationMinutes: row.duration_minutes,
     isBookable: row.is_bookable ?? true,

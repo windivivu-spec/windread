@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
     if (branchId) assertBranchAccess(context, branchId);
     const service = createServiceClient();
     let products = service.from("products").select("id,branch_id,sku,name,sale_price,cost_price,stock_on_hand,reorder_level,unit,is_active,product_categories(name),suppliers(name)").order("name").limit(200);
-    let services = service.from("services").select("id,branch_id,name,description,price,price_label,service_category,duration_minutes,is_bookable").order("name").limit(200);
+    let services = service.from("services").select("id,branch_id,name,description,price,price_label,walk_in_price,service_category,duration_minutes,is_bookable").order("name").limit(200);
     let packages = service.from("service_packages").select("id,branch_id,name,sale_price,description,is_active,service_package_items(quantity,service_id)").order("name").limit(100);
     let suppliers = service.from("suppliers").select("id,name,phone,email,address,note").order("name").limit(100);
     if (branchId) {

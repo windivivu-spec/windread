@@ -12,6 +12,7 @@ type MenuService = {
   description: string;
   price: number;
   price_label: string | null;
+  walk_in_price: number | null;
   service_category: Category;
   duration_minutes: number;
   is_price_visible: boolean;
@@ -27,6 +28,8 @@ type ServiceDraft = {
   description: string;
   price: string;
   priceLabel: string;
+  splitPricing: boolean;
+  walkInPrice: string;
   category: Category;
   durationMinutes: string;
   isPriceVisible: boolean;
@@ -43,7 +46,7 @@ const categoryLabels: Record<Category, string> = {
 const categories = Object.keys(categoryLabels) as Category[];
 
 function emptyDraft(branchId: string): ServiceDraft {
-  return { branchId: branchId === "all" ? "" : branchId, name: "", description: "", price: "", priceLabel: "", category: "barber", durationMinutes: "45", isPriceVisible: true, isBookable: true };
+  return { branchId: branchId === "all" ? "" : branchId, name: "", description: "", price: "", priceLabel: "", splitPricing: false, walkInPrice: "", category: "barber", durationMinutes: "45", isPriceVisible: true, isBookable: true };
 }
 
 function MenuContent() {
@@ -135,6 +138,8 @@ function MenuContent() {
       description: service.description,
       price: String(service.price),
       priceLabel: service.price_label ?? "",
+      splitPricing: service.walk_in_price != null,
+      walkInPrice: service.walk_in_price == null ? "" : String(service.walk_in_price),
       category: service.service_category,
       durationMinutes: String(service.duration_minutes),
       isPriceVisible: service.is_price_visible,
@@ -151,7 +156,7 @@ function MenuContent() {
     try {
       await adminFetch("/api/admin/menu", {
         method: "POST",
-        body: JSON.stringify({ action: draft.id ? "update" : "create", ...draft, price: Number(draft.price), durationMinutes: Number(draft.durationMinutes) })
+        body: JSON.stringify({ action: draft.id ? "update" : "create", ...draft, price: Number(draft.price), walkInPrice: draft.splitPricing ? Number(draft.walkInPrice) : null, durationMinutes: Number(draft.durationMinutes) })
       });
       setDraft(null);
       setMessage(draft.id ? `Đã cập nhật “${draft.name}”.` : `Đã thêm “${draft.name}” vào menu.`);
@@ -174,7 +179,8 @@ function MenuContent() {
         body: JSON.stringify({
           action: "update", id: service.id, branchId: service.branch_id,
           name: service.name, description: service.description, price: service.price,
-          priceLabel: service.price_label ?? "", category: service.service_category,
+          priceLabel: service.price_label ?? "", splitPricing: service.walk_in_price != null,
+          walkInPrice: service.walk_in_price, category: service.service_category,
           durationMinutes: service.duration_minutes, isPriceVisible: service.is_price_visible, isBookable: nextStatus
         })
       });
@@ -266,7 +272,7 @@ function MenuContent() {
                 <p>{service.description || "Chưa có mô tả."}</p>
                 <div className="admin-menu-meta"><span>{categoryLabels[service.service_category]}</span><span>{service.duration_minutes} phút</span></div>
               </div>
-              <div className="admin-menu-price"><strong>{service.price_label || formatVnd(service.price)}</strong><small>{formatVnd(service.price)}</small></div>
+              <div className="admin-menu-price">{service.walk_in_price != null ? <><small>Walk-in: {formatVnd(service.walk_in_price)}</small><strong>Appointment: {formatVnd(service.price)}</strong></> : <><strong>{service.price_label || formatVnd(service.price)}</strong><small>Giá chung{service.price_label ? ` · ${formatVnd(service.price)}` : ""}</small></>}</div>
               <div className="admin-menu-actions">
                 <button className="admin-text-button" disabled={saving} onClick={() => beginEdit(service)}>Chỉnh sửa</button>
                 {service.is_price_visible && <button className="admin-text-button" disabled={saving} onClick={() => void setBookable(service)}>{service.is_bookable ? "Tắt đặt lịch" : "Mở đặt lịch"}</button>}
@@ -276,7 +282,7 @@ function MenuContent() {
           })}
         </div>
       ) : <div className="admin-menu-empty"><strong>Chưa có dịch vụ phù hợp.</strong><span>Thử đổi bộ lọc hoặc thêm dịch vụ mới cho chi nhánh.</span></div>}
-      <p className="admin-menu-footnote">Walk-in hiện trong bảng giá nhưng không xuất hiện trong luồng đặt lịch. Ẩn dịch vụ sẽ giữ nguyên lịch sử cũ.</p>
+      <p className="admin-menu-footnote">Giá appointment được dùng khi đặt lịch trực tuyến. Tắt đặt lịch để chỉ nhận tại tiệm; ẩn dịch vụ vẫn giữ lịch sử cũ.</p>
     </section>
 
     {draft && <div className="admin-menu-modal-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget && !saving) setDraft(null); }}>
@@ -287,8 +293,10 @@ function MenuContent() {
           <label>Tên dịch vụ<input autoFocus required maxLength={120} value={draft.name} onChange={(event) => setDraft({ ...draft, name: event.target.value })} /></label>
           <label>Mô tả<textarea required rows={3} maxLength={600} value={draft.description} onChange={(event) => setDraft({ ...draft, description: event.target.value })} /></label>
           <label>Nhóm dịch vụ<select value={draft.category} onChange={(event) => setDraft({ ...draft, category: event.target.value as Category })}>{categories.map((item) => <option key={item} value={item}>{categoryLabels[item]}</option>)}</select></label>
-          <div className="admin-form-pair"><label>Giá (đ)<input required type="number" min="0" step="1000" inputMode="numeric" value={draft.price} onChange={(event) => setDraft({ ...draft, price: event.target.value })} /></label><label>Thời lượng (phút)<input required type="number" min="1" step="5" inputMode="numeric" value={draft.durationMinutes} onChange={(event) => setDraft({ ...draft, durationMinutes: event.target.value })} /></label></div>
-          <label>Nhãn giá hiển thị <small>Để trống nếu giá cố định.</small><input maxLength={80} value={draft.priceLabel} onChange={(event) => setDraft({ ...draft, priceLabel: event.target.value })} placeholder="VD: Từ 250.000đ" /></label>
+          <label className="admin-menu-toggle"><input type="checkbox" checked={draft.splitPricing} onChange={(event) => setDraft({ ...draft, splitPricing: event.target.checked, walkInPrice: draft.walkInPrice || draft.price })} /><span><strong>Giá walk-in và appointment riêng</strong><small>Bật để nhập hai giá; tắt để dùng một giá chung.</small></span></label>
+          <div className="admin-form-pair"><label>{draft.splitPricing ? "Giá appointment (đ)" : "Giá chung (đ)"}<input required type="number" min="0" step="1000" inputMode="numeric" value={draft.price} onChange={(event) => setDraft({ ...draft, price: event.target.value })} /></label><label>Thời lượng (phút)<input required type="number" min="1" step="5" inputMode="numeric" value={draft.durationMinutes} onChange={(event) => setDraft({ ...draft, durationMinutes: event.target.value })} /></label></div>
+          {draft.splitPricing && <label>Giá walk-in (đ)<input required type="number" min="0" step="1000" inputMode="numeric" value={draft.walkInPrice} onChange={(event) => setDraft({ ...draft, walkInPrice: event.target.value })} /></label>}
+          {!draft.splitPricing && <label>Nhãn giá hiển thị <small>Để trống nếu giá cố định.</small><input maxLength={80} value={draft.priceLabel} onChange={(event) => setDraft({ ...draft, priceLabel: event.target.value })} placeholder="VD: Từ 250.000đ" /></label>}
           <label className="admin-menu-toggle"><input type="checkbox" checked={draft.isPriceVisible} onChange={(event) => setDraft({ ...draft, isPriceVisible: event.target.checked, isBookable: event.target.checked ? draft.isBookable : false })} /><span><strong>Hiển thị trên bảng giá</strong><small>Tắt để ẩn khỏi bảng giá công khai; lịch sử hiện có vẫn được giữ.</small></span></label>
           <label className="admin-menu-toggle"><input type="checkbox" checked={draft.isBookable} disabled={!draft.isPriceVisible} onChange={(event) => setDraft({ ...draft, isBookable: event.target.checked })} /><span><strong>Cho phép khách đặt lịch trực tuyến</strong><small>{draft.isPriceVisible ? "Tắt mục này cho dịch vụ walk-in: khách vẫn thấy giá nhưng không thể chọn barber hay khung giờ." : "Bật hiển thị trên bảng giá trước khi mở đặt lịch."}</small></span></label>
           <div className="admin-menu-modal-actions"><button type="button" className="admin-menu-cancel" disabled={saving} onClick={() => setDraft(null)}>Hủy</button><button className="admin-button" disabled={saving}>{saving ? "Đang lưu…" : "Lưu dịch vụ"}</button></div>

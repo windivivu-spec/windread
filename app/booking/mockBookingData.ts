@@ -316,6 +316,7 @@ const allServices: Service[] = [
     isBookable: false
   },
   {
+    walkInPrice: 120000,
     id: "cd-haircut-expert",
     branchId: "chuong-duong",
     name: "Haircut",
@@ -333,6 +334,7 @@ const allServices: Service[] = [
     isBookable: false
   },
   {
+    walkInPrice: 150000,
     id: "cd-priority-fresh-cut",
     branchId: "chuong-duong",
     name: "Priority Fresh Cut",
@@ -350,6 +352,7 @@ const allServices: Service[] = [
     isBookable: false
   },
   {
+    walkInPrice: 200000,
     id: "cd-priority-gentlemans-set",
     branchId: "chuong-duong",
     name: "Priority Gentleman's Set",
@@ -367,6 +370,7 @@ const allServices: Service[] = [
     isBookable: false
   },
   {
+    walkInPrice: 250000,
     id: "cd-priority-full-grooming",
     branchId: "chuong-duong",
     name: "Priority Full Grooming",

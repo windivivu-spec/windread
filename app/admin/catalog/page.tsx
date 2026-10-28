@@ -6,7 +6,7 @@ import { adminFetch, formatVnd } from "../admin-ui";
 import { AdminFrame, useAdminSession } from "../components/AdminFrame";
 
 type Product = { id: string; sku: string; name: string; sale_price: number; stock_on_hand: number; reorder_level: number; unit: string };
-type Service = { id: string; name: string; price: number; duration_minutes: number; is_bookable: boolean };
+type Service = { id: string; name: string; price: number; walk_in_price: number | null; duration_minutes: number; is_bookable: boolean };
 type Package = { id: string; name: string; sale_price: number; is_active: boolean };
 type Supplier = { id: string; name: string; phone: string | null; email: string | null };
 type Catalog = { products: Product[]; services: Service[]; packages: Package[]; suppliers: Supplier[] };
@@ -75,7 +75,7 @@ function CatalogContent() {
       {message && <p className={message.startsWith("Đã") ? "admin-form-success" : "admin-form-error"}>{message}</p>}
       <div className="admin-table-wrap">
         {tab === "products" && <table><thead><tr><th>Sản phẩm</th><th>Giá bán</th><th>Tồn</th><th>Mức nhắc</th><th /></tr></thead><tbody>{catalog.products.map((item) => <tr key={item.id}><td><strong>{item.name}</strong><small>{item.sku} · {item.unit}</small></td><td>{formatVnd(item.sale_price)}</td><td className={item.stock_on_hand <= item.reorder_level ? "is-warning" : ""}>{item.stock_on_hand}</td><td>{item.reorder_level}</td><td><button className="admin-text-button" onClick={() => setAdjustment({ productId: item.id, name: item.name, quantity: "", note: "" })}>Điều chỉnh</button></td></tr>)}</tbody></table>}
-        {tab === "services" && <table><thead><tr><th>Dịch vụ</th><th>Thời lượng</th><th>Giá</th><th>Trạng thái</th></tr></thead><tbody>{catalog.services.map((item) => <tr key={item.id}><td><strong>{item.name}</strong></td><td>{item.duration_minutes} phút</td><td>{formatVnd(item.price)}</td><td>{item.is_bookable ? "Đang bán" : "Tạm ngưng"}</td></tr>)}</tbody></table>}
+        {tab === "services" && <table><thead><tr><th>Dịch vụ</th><th>Thời lượng</th><th>Giá</th><th>Trạng thái</th></tr></thead><tbody>{catalog.services.map((item) => <tr key={item.id}><td><strong>{item.name}</strong></td><td>{item.duration_minutes} phút</td><td>{item.walk_in_price != null ? <>Walk-in: {formatVnd(item.walk_in_price)}<br />Appointment: {formatVnd(item.price)}</> : formatVnd(item.price)}</td><td>{item.is_bookable ? "Đang bán" : "Tạm ngưng"}</td></tr>)}</tbody></table>}
         {tab === "packages" && <table><thead><tr><th>Gói dịch vụ</th><th>Giá</th><th>Trạng thái</th></tr></thead><tbody>{catalog.packages.map((item) => <tr key={item.id}><td><strong>{item.name}</strong></td><td>{formatVnd(item.sale_price)}</td><td>{item.is_active ? "Đang bán" : "Tạm ngưng"}</td></tr>)}</tbody></table>}
         {tab === "suppliers" && <table><thead><tr><th>Nhà cung cấp</th><th>Điện thoại</th><th>Email</th></tr></thead><tbody>{catalog.suppliers.map((item) => <tr key={item.id}><td><strong>{item.name}</strong></td><td>{item.phone || "—"}</td><td>{item.email || "—"}</td></tr>)}</tbody></table>}
       </div>

@@ -29,6 +29,7 @@ export type Service = {
   description: string;
   price: number;
   priceLabel?: string;
+  walkInPrice?: number;
   category?: ServiceCategory;
   durationMinutes: number;
   /** Whether this price can be selected in the online booking flow. */

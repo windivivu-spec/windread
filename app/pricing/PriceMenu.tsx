@@ -21,17 +21,20 @@ export function PriceMenu({ sections, isEnglish, compareBarberPrices }: {
 }) {
   const allServices = sections.flatMap((section) => section.services);
   const price = (service: Service) => getLocalizedPriceLabel(service, isEnglish) || formatCurrency(service.price, isEnglish);
-  const pairs = compareBarberPrices ? comparisonPairs.map(([walkInId, priorityId]) => ({
-    id: walkInId,
-    walkIn: allServices.find((service) => service.id === walkInId),
-    priority: allServices.find((service) => service.id === priorityId)
-  })).filter((pair) => pair.walkIn && pair.priority) : [];
+  const legacyIds = new Set<string>(comparisonPairs.map(([id]) => id));
+  const pairs = compareBarberPrices ? comparisonPairs.map(([walkInId, priorityId]) => {
+    const priority = allServices.find((service) => service.id === priorityId);
+    const walkIn = priority?.walkInPrice != null
+      ? { ...priority, id: walkInId, price: priority.walkInPrice, priceLabel: undefined }
+      : undefined;
+    return { id: walkInId, walkIn, priority };
+  }).filter((pair) => pair.walkIn && pair.priority) : [];
   const haircut = pairs.find((pair) => pair.id === "cd-haircut");
   const combos = pairs.filter((pair) => pair.id !== "cd-haircut");
   const pairedIds = new Set(pairs.flatMap((pair) => [pair.walkIn?.id, pair.priority?.id]).filter(Boolean));
   const remainingSections = sections.map((section) => ({
     ...section,
-    services: section.services.filter((service) => !pairedIds.has(service.id))
+    services: section.services.filter((service) => !pairedIds.has(service.id) && !legacyIds.has(service.id))
   })).filter((section) => section.services.length > 0);
   let sectionNumber = 0;
   const heading = (label: string) => (
@@ -96,7 +99,7 @@ export function PriceMenu({ sections, isEnglish, compareBarberPrices }: {
                 {service.isBookable === false && <em className="price-row-walk-in-label">{isEnglish ? "Walk-in only" : "Chỉ nhận tại tiệm"}</em>}
                 <span className="price-row-duration">{service.durationMinutes} {isEnglish ? "min" : "phút"}</span>
               </div>
-              <b>{price(service)}</b>
+              {service.walkInPrice != null ? <div><div>Walk-in: {formatCurrency(service.walkInPrice, isEnglish)}</div><b>Appointment: {price(service)}</b></div> : <b>{price(service)}</b>}
             </div>
           </>;
           return service.isBookable === false

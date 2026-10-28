@@ -6,6 +6,8 @@ import { createServiceClient } from "../../../../lib/supabase/service";
 import { groupServicesForDisplay } from "../../../booking/servicePresentation";
 import type { Service } from "../../../booking/types";
 
+const legacyWalkInIds = new Set(["cd-haircut", "cd-fresh-cut", "cd-gentlemans-set", "cd-full-grooming"]);
+
 const serviceCategories = ["barber", "dreadlocks", "braids", "afro"] as const;
 type ServiceCategory = (typeof serviceCategories)[number];
 type MenuServiceRow = {
@@ -15,6 +17,7 @@ type MenuServiceRow = {
   description: string;
   price: number;
   price_label: string | null;
+  walk_in_price: number | null;
   service_category: ServiceCategory | null;
   duration_minutes: number;
   is_price_visible: boolean;
@@ -51,7 +54,8 @@ function serviceFields(body: Record<string, unknown>) {
     name: asText(body.name, "Tên dịch vụ", { max: 120 }),
     description: asText(body.description, "Mô tả", { max: 600 }),
     price: asMoney(body.price, "Giá dịch vụ"),
-    price_label: nullableText(body.priceLabel, 80),
+    price_label: body.splitPricing ? null : nullableText(body.priceLabel, 80),
+    walk_in_price: body.splitPricing === true ? asMoney(body.walkInPrice, "Giá walk-in") : null,
     service_category: category,
     duration_minutes: asMoney(body.durationMinutes, "Thời lượng", { min: 1 }),
     is_price_visible: body.isPriceVisible,
@@ -99,11 +103,11 @@ export async function GET(request: NextRequest) {
     if (branchId && branchId !== "all") assertBranchAccess(context, branchId);
 
     const service = createServiceClient();
-    let query = service.from("services").select("id,branch_id,name,description,price,price_label,service_category,duration_minutes,is_price_visible,is_bookable,menu_order");
+    let query = service.from("services").select("id,branch_id,name,description,price,price_label,walk_in_price,service_category,duration_minutes,is_price_visible,is_bookable,menu_order");
     if (branchId && branchId !== "all") query = query.eq("branch_id", branchId);
     const { data, error } = await query.order("branch_id");
     if (error) throw error;
-    const rows = (data ?? []) as MenuServiceRow[];
+    const rows = ((data ?? []) as MenuServiceRow[]).filter((row) => !legacyWalkInIds.has(row.id));
     const branchIds = [...new Set(rows.map((row) => row.branch_id))];
     const ordered: Array<MenuServiceRow & { menu_group: string; menu_position: number }> = [];
     for (const currentBranchId of branchIds) {
@@ -141,10 +145,10 @@ export async function POST(request: NextRequest) {
       if (new Set(serviceIds).size !== serviceIds.length) throw new Error("Danh sách dịch vụ bị trùng.");
       const { data: allBranchRows, error: siblingsError } = await service
         .from("services")
-        .select("id,branch_id,name,description,price,price_label,service_category,duration_minutes,is_price_visible,is_bookable,menu_order")
+        .select("id,branch_id,name,description,price,price_label,walk_in_price,service_category,duration_minutes,is_price_visible,is_bookable,menu_order")
         .eq("branch_id", branchId);
       if (siblingsError) throw siblingsError;
-      const allRows = (allBranchRows ?? []) as MenuServiceRow[];
+      const allRows = ((allBranchRows ?? []) as MenuServiceRow[]).filter((row) => !legacyWalkInIds.has(row.id));
       const target = allRows.find((row) => row.service_category === category && serviceIds.includes(row.id));
       if (!target) throw new Error("Không tìm thấy nhóm dịch vụ cần sắp xếp.");
       const siblingGroup = groupServicesForDisplay(allRows.filter((row) => row.service_category === category).map(toService), false)
@@ -177,7 +181,7 @@ export async function POST(request: NextRequest) {
       const { data: created, error: createError } = await service
         .from("services")
         .insert({ ...fields, id, branch_id: branchId, is_bookable: false, menu_order: Math.max(lastService?.menu_order ?? 1000, 1000) + 10 })
-        .select("id,branch_id,name,description,price,price_label,service_category,duration_minutes,is_price_visible,is_bookable,menu_order")
+        .select("id,branch_id,name,description,price,price_label,walk_in_price,service_category,duration_minutes,is_price_visible,is_bookable,menu_order")
         .single();
       if (createError) throw createError;
 
@@ -187,7 +191,7 @@ export async function POST(request: NextRequest) {
           .from("services")
           .update({ is_bookable: fields.is_bookable })
           .eq("id", id)
-          .select("id,branch_id,name,description,price,price_label,service_category,duration_minutes,is_price_visible,is_bookable,menu_order")
+          .select("id,branch_id,name,description,price,price_label,walk_in_price,service_category,duration_minutes,is_price_visible,is_bookable,menu_order")
           .single();
         if (error) throw error;
         return NextResponse.json({ service: data }, { status: 201 });
@@ -215,7 +219,7 @@ export async function POST(request: NextRequest) {
         .update(fields)
         .eq("id", id)
         .eq("branch_id", branchId)
-        .select("id,branch_id,name,description,price,price_label,service_category,duration_minutes,is_price_visible,is_bookable,menu_order")
+        .select("id,branch_id,name,description,price,price_label,walk_in_price,service_category,duration_minutes,is_price_visible,is_bookable,menu_order")
         .single();
       if (error) throw error;
       if (!fields.is_bookable) {
