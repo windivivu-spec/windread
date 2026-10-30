@@ -918,7 +918,7 @@ export function SitePage({
     }
   }
 
-  const isChuongDuongBarberPrice = activePricingBoard?.id === "chuong-duong" && activePricingGroup?.id === "barber";
+  const comparisonBranch = activePricingGroup?.id === "barber" ? activePricingBoard?.id : undefined;
 
   return (
     <main id="main-content">
@@ -1536,8 +1536,8 @@ export function SitePage({
                     <div className="pricing-groups">
                       <section className="pricing-group" key={`${activePricingBoard.id}-${activePricingGroup.id}`}>
                         <h4>{activePricingGroup.title}</h4>
-                        <PriceMenu sections={activePricingGroup.sections} isEnglish={isEnglish} compareBarberPrices={isChuongDuongBarberPrice} />
-                        {activePricingBoard.id === "chuong-duong" && activePricingGroup.id === "afro" && (
+                        <PriceMenu sections={activePricingGroup.sections} isEnglish={isEnglish} comparisonBranch={comparisonBranch} />
+                        {activePricingGroup.id === "afro" && (
                           <div className="pricing-afro-guide">
                             <section>
                               <h5>{isEnglish ? "Level guide" : "Hướng dẫn mức giá"}</h5>
@@ -1547,7 +1547,7 @@ export function SitePage({
                             </section>
                             <section>
                               <h5>{isEnglish ? "Add-on" : "Dịch vụ bổ sung"}</h5>
-                              <p><strong>{isEnglish ? "Extra detangling" : "Gỡ rối thêm"}</strong><span>+100.000đ / 30 {isEnglish ? "min" : "phút"}</span></p>
+                              {activePricingBoard.id === "chuong-duong" && <p><strong>{isEnglish ? "Extra detangling" : "Gỡ rối thêm"}</strong><span>+100.000đ / 30 {isEnglish ? "min" : "phút"}</span></p>}
                               <p><strong>Signature Afro Care</strong><span>{isEnglish ? "Level 2 +50.000đ · Level 3 +100.000đ" : "Mức 2 +50.000đ · Mức 3 +100.000đ"}</span></p>
                             </section>
                           </div>
@@ -1570,13 +1570,13 @@ export function SitePage({
                       </section>
                       <section className="vip-experience" aria-labelledby="vip-experience-title">
                         <h4 id="vip-experience-title">{isEnglish ? "Signature VIP experience" : "Trải nghiệm VIP đặc biệt"}</h4>
-                        <p>{isEnglish ? "VIP Gentleman's Combo includes:" : "VIP Gentleman's Combo bao gồm:"}</p>
+                        <p>{isEnglish ? "Signature VIP Experience includes:" : "Signature VIP Experience bao gồm:"}</p>
                         <ul>
-                          <li>{isEnglish ? "Personal styling consultation" : "Tư vấn kiểu tóc cá nhân"}</li>
-                          <li>{isEnglish ? "Haircut or shave on request" : "Cắt tóc hoặc cạo theo yêu cầu"}</li>
-                          <li>{isEnglish ? "Hot and cold towel grooming" : "Chăm sóc với khăn nóng và lạnh"}</li>
-                          <li>{isEnglish ? "Priority appointment, no waiting" : "Ưu tiên lịch hẹn, hạn chế chờ đợi"}</li>
-                          <li>{isEnglish ? "Special gift for VIP guests" : "Quà tặng dành cho khách VIP"}</li>
+                          <li>{isEnglish ? "Haircut, wash and styling" : "Cắt tóc, gội đầu và tạo kiểu"}</li>
+                          <li>{isEnglish ? "Hot and cold towel shave" : "Cạo khăn nóng và lạnh"}</li>
+                          <li>{isEnglish ? "Priority appointment" : "Ưu tiên lịch hẹn"}</li>
+                          <li>{isEnglish ? "One complimentary short drink" : "Một ly short drink miễn phí"}</li>
+                          <li>{isEnglish ? "Games with your barber" : "Chơi game cùng barber"}</li>
                         </ul>
                       </section>
                     </div>

@@ -3,34 +3,44 @@ import { getLocalizedPriceLabel, getLocalizedService, type ServiceDisplayGroup }
 import type { Service } from "../booking/types";
 import styles from "./PriceMenu.module.css";
 
-const comparisonPairs = [
-  ["cd-haircut", "cd-haircut-expert"],
-  ["cd-fresh-cut", "cd-priority-fresh-cut"],
-  ["cd-gentlemans-set", "cd-priority-gentlemans-set"],
-  ["cd-full-grooming", "cd-priority-full-grooming"]
-] as const;
+const comparisonPairs = {
+  "chuong-duong": [
+    ["cd-haircut", "cd-haircut-expert"],
+    ["cd-fresh-cut", "cd-priority-fresh-cut"],
+    ["cd-gentlemans-set", "cd-priority-gentlemans-set"],
+    ["cd-full-grooming", "cd-priority-full-grooming"]
+  ],
+  "an-thuong": [
+    ["an-haircut-styling-walk-in", "an-haircut-styling"],
+    ["an-combo-haircut-wash-walk-in", "an-combo-haircut-wash"],
+    ["an-gentlemans-set-1-walk-in", "an-gentlemans-set-1"],
+    ["an-gentlemans-set-2-walk-in", "an-gentlemans-set-2"]
+  ]
+} as const;
 
 function bookingHref(service: Service) {
   return `/booking?branch=${encodeURIComponent(service.branchId)}&service=${encodeURIComponent(service.id)}`;
 }
 
-export function PriceMenu({ sections, isEnglish, compareBarberPrices }: {
+export function PriceMenu({ sections, isEnglish, comparisonBranch }: {
   sections: ServiceDisplayGroup[];
   isEnglish: boolean;
-  compareBarberPrices: boolean;
+  comparisonBranch?: keyof typeof comparisonPairs;
 }) {
   const allServices = sections.flatMap((section) => section.services);
   const price = (service: Service) => getLocalizedPriceLabel(service, isEnglish) || formatCurrency(service.price, isEnglish);
-  const legacyIds = new Set<string>(comparisonPairs.map(([id]) => id));
-  const pairs = compareBarberPrices ? comparisonPairs.map(([walkInId, priorityId]) => {
+  const branchPairs = comparisonBranch ? comparisonPairs[comparisonBranch] : [];
+  const legacyIds = new Set<string>(comparisonPairs["chuong-duong"].map(([id]) => id));
+  const pairs = branchPairs.map(([walkInId, priorityId]) => {
     const priority = allServices.find((service) => service.id === priorityId);
     const walkIn = priority?.walkInPrice != null
       ? { ...priority, id: walkInId, price: priority.walkInPrice, priceLabel: undefined }
       : undefined;
     return { id: walkInId, walkIn, priority };
-  }).filter((pair) => pair.walkIn && pair.priority) : [];
-  const haircut = pairs.find((pair) => pair.id === "cd-haircut");
-  const combos = pairs.filter((pair) => pair.id !== "cd-haircut");
+  }).filter((pair) => pair.walkIn && pair.priority);
+  const haircutId = branchPairs[0]?.[0];
+  const haircut = pairs.find((pair) => pair.id === haircutId);
+  const combos = pairs.filter((pair) => pair.id !== haircutId);
   const pairedIds = new Set(pairs.flatMap((pair) => [pair.walkIn?.id, pair.priority?.id]).filter(Boolean));
   const remainingSections = sections.map((section) => ({
     ...section,
@@ -74,7 +84,7 @@ export function PriceMenu({ sections, isEnglish, compareBarberPrices }: {
       <div className={styles.comboGrid}>
         {combos.map((pair) => {
           const service = pair.walkIn ?? pair.priority!;
-          const localized = getLocalizedService(service, isEnglish);
+          const localized = getLocalizedService(comparisonBranch === "an-thuong" ? pair.priority! : service, isEnglish);
           return <article className={styles.combo} key={pair.id}>
             <div className={styles.itemHeading}><h6>{localized.name.replace(/^Priority\s+/i, "")}</h6><span>{service.durationMinutes} {isEnglish ? "min" : "phút"}</span></div>
             <p className={styles.description}>{localized.description.split(".")[0]}</p>

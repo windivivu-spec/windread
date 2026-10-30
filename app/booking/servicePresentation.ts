@@ -226,9 +226,19 @@ const englishServiceCopy: Record<string, EnglishServiceCopy> = {
   "an-locs-washing": { name: "Dread / loc wash & cleanse", description: "Price varies by dread or loc length." },
   "an-afro-wash-blowdry": { name: "Afro wash & blow-dry", description: "Afro wash and blow-dry; price varies by hair length." },
   "an-basic-hair-tattoo": { name: "Basic hair tattoo", description: "Price varies by design." },
-  "an-gentlemans-set-1": { name: "Gentleman's Set I", description: "Haircut, hot/cold towel shave and Uppercut." },
-  "an-gentlemans-set-2": { name: "Gentleman's Set II", description: "Haircut, wash, hot/cold towel shave and Uppercut." },
-  "an-vip-gentlemans-combo": { name: "VIP Gentleman's Combo", description: "Advance booking only; styling consult, haircut/shave, hot/cold towels, grooming and priority service." }
+  "an-gentlemans-set-1": { name: "Haircut + hot & cold towel shave", description: "Haircut and hot & cold towel shave." },
+  "an-gentlemans-set-2": { name: "Haircut + wash + hot & cold towel shave", description: "Haircut, wash and hot & cold towel shave." },
+  "an-vip-gentlemans-combo": { name: "Signature VIP Experience", description: "Appointment only: haircut, wash, styling, hot & cold towel shave, one short drink and games with your barber." },
+  "an-hairline-touch-up": { name: "Hairline touch-up", description: "Hairline touch-up." },
+  "an-combo-haircut-wash": { name: "Haircut + wash", description: "Haircut and hair wash." },
+  "an-fashion-color": { name: "Fashion colour", description: "Approximately 1.5–3 hours." },
+  "an-afro-wash": { name: "Afro wash", description: "Approximately 20–30 minutes." },
+  "an-afro-wash-care": { name: "Afro wash & care", description: "Approximately 30–45 minutes." },
+  "an-afro-blow-dry": { name: "Afro wash & stretch blow-dry", description: "Approximately 45–60 minutes." },
+  "an-afro-professional-blowout": { name: "Professional Afro blowout", description: "Approximately 45–75 minutes." },
+  "an-afro-deep-treatment": { name: "Deep treatment", description: "Approximately 50–75 minutes." },
+  "an-afro-signature-care": { name: "Signature Afro Care", description: "Wash, deep treatment, care and styling; approximately 90–120 minutes." },
+  "an-afro-finger-comb-coil": { name: "Finger / comb coil", description: "Manual coil styling; duration varies." }
 };
 
 export function getLocalizedService(service: Service, isEnglish: boolean): Service {
